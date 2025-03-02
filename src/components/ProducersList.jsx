@@ -2,13 +2,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 const ProducersList = ({ producers, categoryName }) => {
   const container = {
@@ -39,33 +32,14 @@ const ProducersList = ({ producers, categoryName }) => {
           animate="show"
         >
           {producers.map((producer, index) => (
-            <motion.div key={index} variants={item} className="producer-card rounded-2xl shadow-md overflow-hidden">
+            <motion.div key={index} variants={item} className="producer-card">
               <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
-                <div className="relative h-48">
-                  <Carousel className="w-full h-full">
-                    <CarouselContent className="h-full">
-                      {producer.producerImage.exterior && (
-                        <CarouselItem className="h-full">
-                          <img 
-                            src={producer.producerImage.exterior || "/placeholder.svg"}
-                            alt={`${producer.producerName} - экстерьер`}
-                            className="w-full h-full object-cover"
-                          />
-                        </CarouselItem>
-                      )}
-                      {producer.producerImage.interior && (
-                        <CarouselItem className="h-full">
-                          <img 
-                            src={producer.producerImage.interior || "/placeholder.svg"}
-                            alt={`${producer.producerName} - интерьер`}
-                            className="w-full h-full object-cover"
-                          />
-                        </CarouselItem>
-                      )}
-                    </CarouselContent>
-                    <CarouselPrevious className="left-2 bg-white/70 hover:bg-white" />
-                    <CarouselNext className="right-2 bg-white/70 hover:bg-white" />
-                  </Carousel>
+                <div className="relative">
+                  <img 
+                    src={producer.producerImage.exterior || "/placeholder.svg"}
+                    alt={producer.producerName}
+                    className="w-full h-48 object-cover rounded-t-2xl"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{producer.producerName}</h3>
