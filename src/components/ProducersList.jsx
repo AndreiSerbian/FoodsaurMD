@@ -2,6 +2,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "./ui/carousel";
 
 const ProducersList = ({ producers, categoryName }) => {
   const container = {
@@ -35,11 +42,26 @@ const ProducersList = ({ producers, categoryName }) => {
             <motion.div key={index} variants={item} className="producer-card">
               <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
                 <div className="relative">
-                  <img 
-                    src={producer.producerImage.exterior || "/placeholder.svg"}
-                    alt={producer.producerName}
-                    className="w-full h-48 object-cover rounded-t-2xl"
-                  />
+                  <Carousel className="w-full h-48">
+                    <CarouselContent>
+                      <CarouselItem>
+                        <img 
+                          src={producer.producerImage.exterior || "/placeholder.svg"}
+                          alt={`${producer.producerName} exterior`}
+                          className="w-full h-48 object-cover rounded-t-2xl"
+                        />
+                      </CarouselItem>
+                      <CarouselItem>
+                        <img 
+                          src={producer.producerImage.interior || "/placeholder.svg"}
+                          alt={`${producer.producerName} interior`}
+                          className="w-full h-48 object-cover rounded-t-2xl"
+                        />
+                      </CarouselItem>
+                    </CarouselContent>
+                    <CarouselPrevious className="absolute left-2 bg-white/80 hover:bg-white" />
+                    <CarouselNext className="absolute right-2 bg-white/80 hover:bg-white" />
+                  </Carousel>
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">{producer.producerName}</h3>
