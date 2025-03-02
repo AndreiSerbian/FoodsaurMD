@@ -4,13 +4,6 @@ import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from '../components/ui/carousel';
 
 const Products = () => {
   const { producerName } = useParams();
@@ -50,12 +43,6 @@ const Products = () => {
     );
   }
 
-  // Create an array of images to display in the carousel
-  const producerImages = [
-    { url: producer.producerImage.exterior || "/placeholder.svg", label: "Экстерьер" },
-    { url: producer.producerImage.interior || "/placeholder.svg", label: "Интерьер" },
-  ];
-
   return (
     <div className="min-h-screen pb-20">
       <div className="container mx-auto px-4 py-8">
@@ -77,33 +64,19 @@ const Products = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-8 relative rounded-3xl overflow-hidden"
+          className="mb-8 relative h-64 rounded-3xl overflow-hidden"
         >
-          <Carousel className="w-full">
-            <CarouselContent>
-              {producerImages.map((image, index) => (
-                <CarouselItem key={index} className="h-64">
-                  <div className="h-full relative">
-                    <img 
-                      src={image.url} 
-                      alt={`${producer.producerName} - ${image.label}`} 
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
-                      {index === 0 && (
-                        <div className="p-8 text-white">
-                          <h1 className="text-3xl font-bold mb-2">{producer.producerName}</h1>
-                          <p className="opacity-90">{producer.address}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-2" />
-            <CarouselNext className="right-2" />
-          </Carousel>
+          <img 
+            src={producer.producerImage.interior || "/placeholder.svg"} 
+            alt={producer.producerName} 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
+            <div className="p-8 text-white">
+              <h1 className="text-3xl font-bold mb-2">{producer.producerName}</h1>
+              <p className="opacity-90">{producer.address}</p>
+            </div>
+          </div>
         </motion.div>
         
         <ProductsList products={producer.products} producer={producer} />
