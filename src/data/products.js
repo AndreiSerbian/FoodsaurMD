@@ -1,3 +1,4 @@
+
 export const producersData = [
   {
     categoryName: "Молдавская",
@@ -6,7 +7,7 @@ export const producersData = [
     address: "ул. Штефан чел Маре 45, Кишинёв",
     producerImage: {
       exterior: "/lovable-uploads/f6f85f6c-245a-45be-b2b7-d8d10a1f1cf0.png",
-      interior: "/lovable-uploads/802c1aa1-033f-49b5-ad18-7ba95b4725f0.png"
+      interior: "/lovable-uploads/d3b415db-e14f-4f0c-812b-898a47f2a43e.png"
     },
     discountAvailableTime: "с 18:00 до 21:00",
     products: [
