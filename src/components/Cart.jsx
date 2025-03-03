@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
+import { toast } from '../components/ui/use-toast';
 
 const Cart = () => {
   const {
@@ -15,7 +14,6 @@ const Cart = () => {
   } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { toast } = useToast();
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -28,26 +26,24 @@ const Cart = () => {
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
     
+    // Блокируем кнопку
     setIsProcessing(true);
     
-    // Simulate order processing
+    // Показываем уведомление об успешном заказе
+    toast({
+      title: "Успешно!",
+      description: "Ваш заказ успешно отправлен!",
+      variant: "default",
+      duration: 4000,
+    });
+    
+    // Очищаем корзину
+    clearCart();
+    
+    // Разблокируем кнопку через 1.5 секунды
     setTimeout(() => {
-      // Show success toast
-      toast({
-        variant: "success",
-        title: "Успешно!",
-        description: "Ваш заказ успешно отправлен!",
-        duration: 4000, // 4 seconds
-      });
-      
-      // Clear cart
-      clearCart();
-      
-      // Enable button after delay
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 1500);
-    }, 500);
+      setIsProcessing(false);
+    }, 1500);
   };
 
   const cartVariants = {
@@ -95,7 +91,7 @@ const Cart = () => {
         {isOpen && <motion.div className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col" variants={cartVariants} initial="hidden" animate="visible" exit="hidden">
             <div className="p-6 border-b">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Корзина</h2>
+                <h2 className="text-xl font-bold text-green-900">Корзина</h2>
                 <button onClick={toggleCart} className="text-gray-500 hover:text-gray-700">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -114,9 +110,9 @@ const Cart = () => {
                   {cartItems.map((item, index) => <li key={index} className="border-b pb-4">
                       <div className="flex justify-between">
                         <div>
-                          <h3 className="font-medium">{item.productName}</h3>
+                          <h3 className="font-medium text-green-900">{item.productName}</h3>
                           <p className="text-sm text-gray-500">{item.producerName}</p>
-                          <p className="mt-1 font-semibold">{item.priceDiscount} MDL</p>
+                          <p className="mt-1 font-semibold text-green-600">{item.priceDiscount} MDL</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button onClick={() => handleQuantityChange(item.productName, item.producerName, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100">
@@ -144,16 +140,18 @@ const Cart = () => {
 
             {cartItems.length > 0 && <div className="p-6 border-t">
                 <div className="flex justify-between mb-4">
-                  <span className="font-medium">Итого:</span>
-                  <span className="font-bold">{cartTotal} MDL</span>
+                  <span className="font-medium text-green-900">Итого:</span>
+                  <span className="font-bold text-green-900">{cartTotal} MDL</span>
                 </div>
-                <Button
-                  disabled={isProcessing || cartItems.length === 0}
-                  onClick={handleCheckout}
-                  className="w-full bg-primary text-white py-3 rounded-lg hover:bg-opacity-90 transition duration-300 mb-2 flex items-center justify-center"
+                <button 
+                  onClick={handleCheckout} 
+                  disabled={isProcessing || cartItems.length === 0} 
+                  className={`w-full bg-green-900 text-white py-3 rounded-lg transition duration-300 mb-2 flex items-center justify-center ${
+                    isProcessing || cartItems.length === 0 ? 'opacity-70 cursor-not-allowed' : 'hover:bg-green-800'
+                  }`}
                 >
-                  {isProcessing ? "Обработка..." : "Оформить заказ"}
-                </Button>
+                  {isProcessing ? 'Обработка...' : 'Оформить заказ'}
+                </button>
                 <button onClick={clearCart} className="w-full text-red-500 py-2 rounded-lg border border-red-500 hover:bg-red-50 transition duration-300 flex items-center justify-center">
                   Очистить корзину
                 </button>
