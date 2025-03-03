@@ -1,4 +1,3 @@
-
 export const producersData = [
   {
     categoryName: "Молдавская",
@@ -6,7 +5,7 @@ export const producersData = [
     producerName: "Bucătăria Moldovenească",
     address: "ул. Штефан чел Маре 45, Кишинёв",
     producerImage: {
-      exterior: "/lovable-uploads/299fa24e-7a4a-4d37-b2da-545e7d217f25.png",
+      exterior: "/lovable-uploads/f6f85f6c-245a-45be-b2b7-d8d10a1f1cf0.png",
       interior: "/lovable-uploads/802c1aa1-033f-49b5-ad18-7ba95b4725f0.png"
     },
     discountAvailableTime: "с 18:00 до 21:00",
@@ -97,7 +96,7 @@ export const producersData = [
         image: "/placeholder.svg",
         priceRegular: 95,
         priceDiscount: 85,
-        description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и бекона."
+        description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и беко��а."
       },
       {
         productName: "Круассан",
