@@ -1,6 +1,10 @@
+
 import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+
 const Cart = () => {
   const {
     cartItems,
@@ -10,12 +14,42 @@ const Cart = () => {
     clearCart
   } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+
   const toggleCart = () => {
     setIsOpen(!isOpen);
   };
+
   const handleQuantityChange = (productName, producerName, newQuantity) => {
     updateQuantity(productName, producerName, Number(newQuantity));
   };
+
+  const handleCheckout = () => {
+    if (cartItems.length === 0) return;
+    
+    setIsProcessing(true);
+    
+    // Simulate order processing
+    setTimeout(() => {
+      // Show success toast
+      toast({
+        variant: "success",
+        title: "Успешно!",
+        description: "Ваш заказ успешно отправлен!",
+        duration: 4000, // 4 seconds
+      });
+      
+      // Clear cart
+      clearCart();
+      
+      // Enable button after delay
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1500);
+    }, 500);
+  };
+
   const cartVariants = {
     hidden: {
       opacity: 0,
@@ -31,6 +65,7 @@ const Cart = () => {
       }
     }
   };
+
   return <>
       {/* Cart Button */}
       <button onClick={toggleCart} className="fixed bottom-8 right-8 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center btn-hover z-50 bg-green-900 hover:bg-green-800">
@@ -112,9 +147,13 @@ const Cart = () => {
                   <span className="font-medium">Итого:</span>
                   <span className="font-bold">{cartTotal} MDL</span>
                 </div>
-                <button className="w-full bg-primary text-white py-3 rounded-lg hover:bg-opacity-90 transition duration-300 mb-2 flex items-center justify-center">
-                  Оформить заказ
-                </button>
+                <Button
+                  disabled={isProcessing || cartItems.length === 0}
+                  onClick={handleCheckout}
+                  className="w-full bg-primary text-white py-3 rounded-lg hover:bg-opacity-90 transition duration-300 mb-2 flex items-center justify-center"
+                >
+                  {isProcessing ? "Обработка..." : "Оформить заказ"}
+                </Button>
                 <button onClick={clearCart} className="w-full text-red-500 py-2 rounded-lg border border-red-500 hover:bg-red-50 transition duration-300 flex items-center justify-center">
                   Очистить корзину
                 </button>
