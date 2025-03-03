@@ -1,11 +1,13 @@
-
 import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const Cart = () => {
   const { cartItems, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const [showOrderAlert, setShowOrderAlert] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -15,13 +17,56 @@ const Cart = () => {
     updateQuantity(productName, producerName, Number(newQuantity));
   };
 
+  const handleCheckout = () => {
+    setIsProcessing(true);
+    
+    // Simulate order processing
+    setTimeout(() => {
+      setIsProcessing(false);
+      setShowOrderAlert(true);
+      clearCart();
+      setIsOpen(false);
+      
+      // Auto-hide the alert after 5 seconds
+      setTimeout(() => {
+        setShowOrderAlert(false);
+      }, 5000);
+    }, 1000);
+  };
+
   const cartVariants = {
     hidden: { opacity: 0, x: '100%' },
     visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } }
   };
 
+  const alertVariants = {
+    hidden: { opacity: 0, x: '-100%' },
+    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 30 } },
+    exit: { opacity: 0, x: '-100%', transition: { duration: 0.3 } }
+  };
+
   return (
     <>
+      {/* Order Success Alert */}
+      <AnimatePresence>
+        {showOrderAlert && (
+          <motion.div
+            className="fixed left-8 top-8 z-50 max-w-xs"
+            variants={alertVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Alert className="bg-green-50 border-green-600 text-green-900">
+              <AlertTitle className="text-green-800">Заказ оформлен!</AlertTitle>
+              <AlertDescription className="text-green-700">
+                Ваш заказ успешно оформлен и будет доставлен в ближайшее время.
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Cart Button */}
       <button 
         onClick={toggleCart}
@@ -138,8 +183,12 @@ const Cart = () => {
                   <span className="font-medium">Итого:</span>
                   <span className="font-bold">{cartTotal} MDL</span>
                 </div>
-                <button className="w-full bg-green-900 text-white py-3 rounded-lg hover:bg-green-800 transition duration-300 mb-2 flex items-center justify-center">
-                  Оформить заказ
+                <button 
+                  onClick={handleCheckout}
+                  disabled={isProcessing}
+                  className={`w-full bg-green-900 text-white py-3 rounded-lg ${isProcessing ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-800'} transition duration-300 mb-2 flex items-center justify-center`}
+                >
+                  {isProcessing ? 'Обработка...' : 'Оформить заказ'}
                 </button>
                 <button 
                   onClick={clearCart}
