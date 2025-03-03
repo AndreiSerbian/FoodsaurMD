@@ -1,10 +1,9 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 const Products = () => {
   const { producerName } = useParams();
@@ -94,22 +93,6 @@ const Products = () => {
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
             {images[currentImage].label}
           </div>
-          
-          <button 
-            onClick={handlePrevImage} 
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-2 backdrop-blur-sm transition-colors"
-            aria-label="Предыдущее фото"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          
-          <button 
-            onClick={handleNextImage} 
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-2 backdrop-blur-sm transition-colors"
-            aria-label="Следующее фото"
-          >
-            <ChevronRight size={24} />
-          </button>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
             <div className="p-8 text-white">
