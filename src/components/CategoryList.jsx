@@ -1,15 +1,12 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { producersData } from '../data/products';
-
 const CategoryList = ({
   categories
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [hoveredProducer, setHoveredProducer] = useState(null);
-  
   const container = {
     hidden: {
       opacity: 0
@@ -21,7 +18,6 @@ const CategoryList = ({
       }
     }
   };
-  
   const item = {
     hidden: {
       opacity: 0,
@@ -32,12 +28,10 @@ const CategoryList = ({
       y: 0
     }
   };
-  
   const handleMouseEnter = (category, producer) => {
     setHoveredCategory(category);
     setHoveredProducer(producer);
   };
-  
   const handleMouseLeave = () => {
     setHoveredCategory(null);
     setHoveredProducer(null);
@@ -56,7 +50,6 @@ const CategoryList = ({
   const getProducersForCategory = category => {
     return producersData.filter(p => p.categoryName === category).map(p => p.producerName);
   };
-  
   return <section className="py-12">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-8 text-center">Категории</h2>
@@ -72,19 +65,7 @@ const CategoryList = ({
                   
                   {/* Производители внутри категории */}
                   <div className="absolute top-0 right-0 p-2">
-                    <div className="flex flex-col gap-1">
-                      {getProducersForCategory(category).map((producer, idx) => (
-                        <button
-                          key={idx}
-                          className={`px-2 py-1 rounded text-xs ${
-                            hoveredProducer === producer ? 'bg-amber-500 text-white' : 'bg-white/80 text-black'
-                          }`}
-                          onMouseEnter={() => handleMouseEnter(category, producer)}
-                        >
-                          {producer}
-                        </button>
-                      ))}
-                    </div>
+                    
                   </div>
                 </div>
               </Link>
@@ -93,5 +74,4 @@ const CategoryList = ({
       </div>
     </section>;
 };
-
 export default CategoryList;
