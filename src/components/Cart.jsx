@@ -25,14 +25,14 @@ const Cart = () => {
       {/* Cart Button */}
       <button 
         onClick={toggleCart}
-        className="fixed bottom-8 right-8 bg-primary text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center btn-hover z-50"
+        className="fixed bottom-8 right-8 bg-green-900 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center btn-hover z-50"
       >
         <div className="relative">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+            <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
               {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
             </span>
           )}
@@ -138,7 +138,7 @@ const Cart = () => {
                   <span className="font-medium">Итого:</span>
                   <span className="font-bold">{cartTotal} MDL</span>
                 </div>
-                <button className="w-full bg-primary text-white py-3 rounded-lg hover:bg-opacity-90 transition duration-300 mb-2 flex items-center justify-center">
+                <button className="w-full bg-green-900 text-white py-3 rounded-lg hover:bg-green-800 transition duration-300 mb-2 flex items-center justify-center">
                   Оформить заказ
                 </button>
                 <button 
