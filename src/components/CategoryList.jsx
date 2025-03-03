@@ -1,13 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { producersData } from '../data/products';
 
 const CategoryList = ({ categories }) => {
-  const [hoveredCategory, setHoveredCategory] = useState(null);
-  const [hoveredProducer, setHoveredProducer] = useState(null);
-
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -23,34 +20,6 @@ const CategoryList = ({ categories }) => {
     show: { opacity: 1, y: 0 }
   };
 
-  const handleMouseEnter = (category, producer) => {
-    setHoveredCategory(category);
-    setHoveredProducer(producer);
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredCategory(null);
-    setHoveredProducer(null);
-  };
-
-  // Функция для получения изображения по категории и состоянию наведения
-  const getCategoryImage = (category) => {
-    const producer = producersData.find(p => p.categoryName === category && p.producerName === hoveredProducer);
-    
-    if (hoveredCategory === category && producer && producer.producerImage.interior) {
-      return producer.producerImage.interior;
-    }
-    
-    return producersData.find(p => p.categoryName === category)?.categoryImage || "/placeholder.svg";
-  };
-
-  // Получить список уникальных производителей для каждой категории
-  const getProducersForCategory = (category) => {
-    return producersData
-      .filter(p => p.categoryName === category)
-      .map(p => p.producerName);
-  };
-
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
@@ -63,42 +32,16 @@ const CategoryList = ({ categories }) => {
           animate="show"
         >
           {categories.map((category, index) => (
-            <motion.div 
-              key={index} 
-              variants={item} 
-              className="category-card relative overflow-hidden"
-            >
+            <motion.div key={index} variants={item} className="category-card">
               <Link to={`/category/${encodeURIComponent(category)}`} className="block">
-                <div 
-                  className="aspect-w-16 aspect-h-9 relative"
-                  onMouseLeave={handleMouseLeave}
-                >
+                <div className="aspect-w-16 aspect-h-9 relative">
                   <img 
-                    src={getCategoryImage(category)}
+                    src={producersData.find(p => p.categoryName === category)?.categoryImage || "/placeholder.svg"}
                     alt={category}
-                    className="w-full h-64 object-cover transition-transform duration-500"
+                    className="w-full h-64 object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                     <h3 className="text-white text-xl font-semibold p-4">{category}</h3>
-                  </div>
-                  
-                  {/* Производители внутри категории */}
-                  <div className="absolute top-0 right-0 p-2">
-                    <div className="flex flex-col gap-1">
-                      {getProducersForCategory(category).map((producer, idx) => (
-                        <div 
-                          key={idx}
-                          className={`px-2 py-1 text-xs font-medium rounded cursor-pointer ${
-                            hoveredProducer === producer 
-                              ? 'bg-primary text-white' 
-                              : 'bg-white/70 text-gray-800 hover:bg-white/90'
-                          }`}
-                          onMouseEnter={() => handleMouseEnter(category, producer)}
-                        >
-                          {producer}
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </Link>
