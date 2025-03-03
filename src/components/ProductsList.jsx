@@ -40,7 +40,7 @@ const ProductsList = ({
   return <section className="py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 text-center">{producer.producerName}</h2>
+          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producerName}</h2>
           <p className="text-gray-600 text-center">{producer.address}</p>
           <p className="text-gray-500 text-center mt-2">Скидки доступны {producer.discountAvailableTime}</p>
         </div>
