@@ -1,3 +1,4 @@
+
 export const producersData = [
   {
     categoryName: "Молдавская",
@@ -12,7 +13,7 @@ export const producersData = [
     products: [
       {
         productName: "Плацинда с брынзой",
-        image: "/placeholder.svg",
+        image: "/lovable-uploads/5b068ce0-0b02-49d9-aaa4-c125c0a049c0.png",
         priceRegular: 50,
         priceDiscount: 40,
         description: "Традиционная молдавская выпечка с брынзой, хрустящая снаружи и нежная внутри."
