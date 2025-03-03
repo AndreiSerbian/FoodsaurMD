@@ -60,7 +60,7 @@ const ProductsList = ({
                 <div className="flex justify-between items-center mb-4">
                   <div>
                     <span className="text-lg font-bold text-green-600">{product.priceDiscount} MDL</span>
-                    {product.priceDiscount < product.priceRegular && <span className="text-sm text-gray-500 line-through ml-2">{product.priceRegular} MDL</span>}
+                    {product.priceDiscount < product.priceRegular && <span className="text-sm text-green-900 line-through ml-2">{product.priceRegular} MDL</span>}
                   </div>
                 </div>
                 
