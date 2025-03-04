@@ -1,8 +1,7 @@
-
 export const producersData = [
   {
     categoryName: "Молдавская",
-    categoryImage: "/lovable-uploads/7c3e90f4-67d1-486c-9127-d445b9d67277.png",
+    categoryImage: "/lovable-uploads/59fa9bf0-792a-469f-9dfc-cd4992658411.png",
     producerName: "Bucătăria Moldovenească",
     address: "ул. Штефан чел Маре 45, Кишинёв",
     producerImage: {
@@ -29,7 +28,7 @@ export const producersData = [
   },
   {
     categoryName: "Молдавская",
-    categoryImage: "/lovable-uploads/7c3e90f4-67d1-486c-9127-d445b9d67277.png",
+    categoryImage: "/lovable-uploads/59fa9bf0-792a-469f-9dfc-cd4992658411.png",
     producerName: "Casa Mare",
     address: "ул. Пушкина 12, Бельцы",
     producerImage: {
@@ -97,7 +96,7 @@ export const producersData = [
         image: "/placeholder.svg",
         priceRegular: 95,
         priceDiscount: 85,
-        description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и беко��а."
+        description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и бекона."
       },
       {
         productName: "Круассан",
