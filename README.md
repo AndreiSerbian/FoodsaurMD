@@ -1,69 +1,143 @@
-# Welcome to your Lovable project
 
-## Project info
+# Foodsaur - Сервис доставки еды
 
-**URL**: https://lovable.dev/projects/f98df49f-f8eb-4d72-9d02-ae90bba39609
+Проект разработан в образовательных целях. Foodsaur - приложение для поиска и заказа еды из различных ресторанов с особым акцентом на снижение пищевых отходов.
 
-## How can I edit this code?
+![Foodsaur Preview](public/og-image.png)
 
-There are several ways of editing your application.
+## Содержание
 
-**Use Lovable**
+- [Описание проекта](#описание-проекта)
+- [Технологии](#технологии)
+- [Установка и запуск](#установка-и-запуск)
+- [Структура проекта](#структура-проекта)
+- [Возможные проблемы и их решение](#возможные-проблемы-и-их-решение)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f98df49f-f8eb-4d72-9d02-ae90bba39609) and start prompting.
+## Описание проекта
 
-Changes made via Lovable will be committed automatically to this repo.
+Foodsaur позволяет просматривать различные категории ресторанов, выбирать конкретные рестораны из категории и добавлять товары в корзину. Основная идея - предоставлять скидки на продукты питания, которые в противном случае могли бы стать пищевыми отходами.
 
-**Use your preferred IDE**
+## Технологии
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **React** - библиотека для создания пользовательского интерфейса
+- **React Router** - маршрутизация в приложении
+- **Tailwind CSS** - утилитарный CSS-фреймворк
+- **Framer Motion** - библиотека для анимаций
+- **Vite** - сборщик и сервер разработки
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Установка и запуск
 
-Follow these steps:
+### Предварительные требования
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Node.js (версия 14.x или выше)
+- npm или yarn
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Шаги для запуска
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. **Клонирование репозитория**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone https://github.com/ваш-логин/имя-репозитория.git
+cd имя-репозитория
 ```
 
-**Edit a file directly in GitHub**
+2. **Установка зависимостей**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+# Используя npm
+npm install
 
-**Use GitHub Codespaces**
+# Или используя yarn
+yarn install
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+3. **Запуск проекта в режиме разработки**
 
-## What technologies are used for this project?
+```bash
+# Используя npm
+npm run dev
 
-This project is built with .
+# Или используя yarn
+yarn dev
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+4. **Откройте браузер и перейдите по адресу**
+```
+http://localhost:8080
+```
 
-## How can I deploy this project?
+### Сборка для продакшена
 
-Simply open [Lovable](https://lovable.dev/projects/f98df49f-f8eb-4d72-9d02-ae90bba39609) and click on Share -> Publish.
+```bash
+# Используя npm
+npm run build
 
-## I want to use a custom domain - is that possible?
+# Или используя yarn
+yarn build
+```
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Структура проекта
+
+```
+foodsaur/
+├── public/             # Статические файлы
+│   ├── lovable-uploads/  # Загруженные изображения
+│   └── placeholder.svg   # Изображение-заглушка
+│
+├── src/                # Исходный код
+│   ├── components/     # React-компоненты
+│   │   ├── Layout.jsx               # Общий макет приложения
+│   │   ├── CategoryList.jsx         # Список категорий
+│   │   ├── HeroSection.jsx          # Главный блок с поиском
+│   │   ├── ProducersList.jsx        # Список ресторанов
+│   │   ├── ProductsList.jsx         # Список продуктов
+│   │   ├── Cart.jsx                 # Корзина покупок
+│   │   └── ui/                      # UI-компоненты (shadcn/ui)
+│   │
+│   ├── contexts/       # React-контексты
+│   │   └── CartContext.jsx          # Контекст корзины
+│   │
+│   ├── data/           # Данные
+│   │   └── products.js              # Данные о категориях, ресторанах и продуктах
+│   │
+│   ├── lib/            # Утилиты
+│   │   └── utils.ts                 # Вспомогательные функции
+│   │
+│   ├── pages/          # Страницы
+│   │   ├── Home.jsx                 # Главная страница
+│   │   ├── Producers.jsx            # Страница списка ресторанов
+│   │   ├── Products.jsx             # Страница продуктов ресторана
+│   │   └── NotFound.jsx             # Страница 404
+│   │
+│   ├── App.tsx         # Основной компонент приложения
+│   ├── main.tsx        # Точка входа
+│   └── index.css       # Глобальные стили (включая Tailwind)
+```
+
+## Возможные проблемы и их решение
+
+### Проблема с изображениями
+
+Если изображения не отображаются, проверьте пути к ним в файле `src/data/products.js`. Все изображения должны находиться в папке `public/`.
+
+### Конфликт между JavaScript и TypeScript
+
+Проект использует как JavaScript (.js/.jsx), так и TypeScript (.ts/.tsx) файлы:
+
+- **Решение**: Не удаляйте файлы конфигурации TypeScript. Они необходимы для корректной работы некоторых компонентов.
+
+### Проблемы с зависимостями
+
+Если при запуске возникают ошибки, связанные с отсутствующими зависимостями:
+
+```bash
+# Попробуйте выполнить чистую установку
+rm -rf node_modules
+npm install
+```
+
+### Проблемы с портом
+
+Если порт 8080 уже занят:
+
+- **Решение**: Измените порт в файле `vite.config.js`.
