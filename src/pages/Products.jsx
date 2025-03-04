@@ -1,9 +1,9 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
-import { ChevronLeft } from 'lucide-react';
 
 const Products = () => {
   const { producerName } = useParams();
@@ -11,11 +11,6 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   
-  const images = producer ? [
-    { url: producer.producerImage.exterior, label: 'Экстерьер' },
-    { url: producer.producerImage.interior, label: 'Интерьер' }
-  ] : [];
-
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
@@ -25,6 +20,34 @@ const Products = () => {
       setLoading(false);
     }, 500);
   }, [producerName]);
+
+  // Функция для получения пути к изображениям
+  const getProducerImages = (producer) => {
+    if (!producer) return [];
+    
+    try {
+      const normalizedCategory = producer.categoryName.toLowerCase().replace(/\s+/g, '-');
+      const normalizedProducer = producer.producerName.toLowerCase().replace(/\s+/g, '-');
+      
+      return [
+        { 
+          url: `/assets/images/producers/${normalizedCategory}/${normalizedProducer}-exterior.jpg`, 
+          label: 'Экстерьер' 
+        },
+        { 
+          url: `/assets/images/producers/${normalizedCategory}/${normalizedProducer}-interior.jpg`, 
+          label: 'Интерьер' 
+        }
+      ];
+    } catch (error) {
+      console.error('Ошибка при получении путей к изображениям:', error);
+      return [
+        { url: "/placeholder.svg", label: 'Изображение недоступно' }
+      ];
+    }
+  };
+  
+  const images = getProducerImages(producer);
 
   const handleNextImage = (e) => {
     e.preventDefault();
@@ -39,35 +62,37 @@ const Products = () => {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">
+    return (
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-gray-600">Загрузка...</p>
         </div>
-      </div>;
+      </div>
+    );
   }
 
   if (!producer) {
-    return <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <h2 className="text-2xl font-bold mb-4">Ресторан не найден</h2>
         <p className="text-gray-600 mb-8">К сожалению, такого ресторана нет в нашей базе.</p>
         <Link to="/" className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition duration-300">
           Вернуться на главную
         </Link>
-      </div>;
+      </div>
+    );
   }
 
-  return <div className="min-h-screen pb-20">
+  return (
+    <div className="min-h-screen pb-20">
       <div className="container mx-auto px-4 py-8">
-        <motion.div initial={{
-          opacity: 0,
-          y: -20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.5
-        }} className="mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
           <Link to={`/category/${encodeURIComponent(producer.categoryName)}`} className="inline-flex items-center text-green-600 hover:text-primary transition duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -76,18 +101,17 @@ const Products = () => {
           </Link>
         </motion.div>
         
-        <motion.div initial={{
-          opacity: 0
-        }} animate={{
-          opacity: 1
-        }} transition={{
-          duration: 0.5,
-          delay: 0.2
-        }} className="mb-8 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mb-8 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden"
+        >
           <img 
-            src={images[currentImage].url || "/placeholder.svg"} 
+            src={images[currentImage].url} 
             alt={`${producer.producerName} - ${images[currentImage].label}`} 
             className="w-full h-full object-cover"
+            onError={(e) => {e.target.src = "/placeholder.svg"}}
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
@@ -100,11 +124,34 @@ const Products = () => {
               <p className="opacity-90">{producer.address}</p>
             </div>
           </div>
+          
+          {images.length > 1 && (
+            <>
+              <button 
+                onClick={handlePrevImage}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-2 backdrop-blur-sm transition-colors z-10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <button 
+                onClick={handleNextImage}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-2 backdrop-blur-sm transition-colors z-10"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
         </motion.div>
         
         <ProductsList products={producer.products} producer={producer} />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Products;
