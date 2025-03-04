@@ -52,7 +52,7 @@ const CategoryList = ({
   };
   return <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center">Категории</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center text-green-900">Категории</h2>
         
         <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" variants={container} initial="hidden" animate="show">
           {categories.map((category, index) => <motion.div key={index} variants={item} className="category-card relative overflow-hidden">
