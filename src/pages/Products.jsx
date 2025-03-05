@@ -1,9 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
+import { getProducerImagePath, handleImageError } from '../utils/imageUtils';
 
 const Products = () => {
   const { producerName } = useParams();
@@ -11,11 +13,6 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   
-  const images = producer ? [
-    { url: producer.producerImage.exterior, label: 'Экстерьер' },
-    { url: producer.producerImage.interior, label: 'Интерьер' }
-  ] : [];
-
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
@@ -25,6 +22,26 @@ const Products = () => {
       setLoading(false);
     }, 500);
   }, [producerName]);
+
+  // Получаем изображения для производителя
+  const getImages = () => {
+    if (!producer) return [];
+    
+    // Пытаемся использовать новую систему путей изображений, если не получается - используем старую
+    try {
+      return [
+        { url: getProducerImagePath(producer.producerName, 'exterior'), label: 'Экстерьер' },
+        { url: getProducerImagePath(producer.producerName, 'interior'), label: 'Интерьер' }
+      ];
+    } catch (error) {
+      return [
+        { url: producer.producerImage.exterior, label: 'Экстерьер' },
+        { url: producer.producerImage.interior, label: 'Интерьер' }
+      ];
+    }
+  };
+  
+  const images = producer ? getImages() : [];
 
   const handleNextImage = (e) => {
     e.preventDefault();
@@ -85,13 +102,14 @@ const Products = () => {
           delay: 0.2
         }} className="mb-8 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden">
           <img 
-            src={images[currentImage].url || "/placeholder.svg"} 
-            alt={`${producer.producerName} - ${images[currentImage].label}`} 
+            src={images[currentImage]?.url || "/placeholder.svg"} 
+            alt={`${producer.producerName} - ${images[currentImage]?.label}`} 
             className="w-full h-full object-cover"
+            onError={handleImageError}
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-            {images[currentImage].label}
+            {images[currentImage]?.label}
           </div>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">

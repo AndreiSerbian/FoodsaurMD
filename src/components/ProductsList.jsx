@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
+import { getProductImagePath, handleImageError } from '../utils/imageUtils';
+
 const ProductsList = ({
   products,
   producer
@@ -8,6 +10,7 @@ const ProductsList = ({
   const {
     addToCart
   } = useCart();
+  
   const container = {
     hidden: {
       opacity: 0
@@ -19,6 +22,7 @@ const ProductsList = ({
       }
     }
   };
+  
   const item = {
     hidden: {
       opacity: 0,
@@ -29,14 +33,23 @@ const ProductsList = ({
       y: 0
     }
   };
+
   const handleAddToCart = product => {
     addToCart(product, producer.producerName);
   };
 
-  // Calculate discount percentage
   const calculateDiscount = (regular, discounted) => {
     return Math.round((1 - discounted / regular) * 100);
   };
+
+  const getProductImage = (product) => {
+    try {
+      return getProductImagePath(product.productName);
+    } catch (error) {
+      return product.image || "/placeholder.svg";
+    }
+  };
+
   return <section className="py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
@@ -48,7 +61,12 @@ const ProductsList = ({
         <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" variants={container} initial="hidden" animate="show">
           {products.map((product, index) => <motion.div key={index} variants={item} className="product-card">
               <div className="relative">
-                <img src={product.image} alt={product.productName} className="w-full h-48 object-cover rounded-t-2xl" />
+                <img 
+                  src={getProductImage(product)} 
+                  alt={product.productName} 
+                  className="w-full h-48 object-cover rounded-t-2xl"
+                  onError={handleImageError}
+                />
                 {product.priceDiscount < product.priceRegular && <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
                     -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
                   </div>}
@@ -76,4 +94,5 @@ const ProductsList = ({
       </div>
     </section>;
 };
+
 export default ProductsList;
