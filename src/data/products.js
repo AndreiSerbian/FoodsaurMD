@@ -1,3 +1,4 @@
+
 import { getCategoryImage, getProducerImage, getProductImage } from '../utils/imageUtils';
 
 export const producersData = [
@@ -95,22 +96,22 @@ export const producersData = [
     address: "ул. Эминеску 9, Кагул",
     get producerImage() { 
       return {
-        exterior: getProducerImage("bistro-frances", "exterior"),
-        interior: getProducerImage("bistro-frances", "interior")
+        exterior: getProducerImage("bistro-francais", "exterior"),
+        interior: getProducerImage("bistro-francais", "interior")
       };
     },
     discountAvailableTime: "с 16:00 до 19:00",
     products: [
       {
         productName: "Киш Лорен",
-        get image() { return getProductImage("kish-loren"); },
+        get image() { return getProductImage("quiche-lorraine"); },
         priceRegular: 95,
         priceDiscount: 85,
-        description: "Французский открытый пирог с хрустящим тес��ом и начинкой из яиц, сливок и бекона."
+        description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и бекона."
       },
       {
         productName: "Круассан",
-        get image() { return getProductImage("kruassan"); },
+        get image() { return getProductImage("croissant"); },
         priceRegular: 40,
         priceDiscount: 35,
         description: "Классический французский слойный круассан с хрустящей корочкой и нежным тестом."
@@ -132,14 +133,14 @@ export const producersData = [
     products: [
       {
         productName: "Филадельфия ролл",
-        get image() { return getProductImage("filadelfia-roll"); },
+        get image() { return getProductImage("philadelphia-roll"); },
         priceRegular: 150,
         priceDiscount: 130,
         description: "Популярные роллы с нежным лососем, сливочным сыром и авокадо."
       },
       {
         productName: "Сяке маки",
-        get image() { return getProductImage("sake-maki"); },
+        get image() { return getProductImage("salmon-maki"); },
         priceRegular: 90,
         priceDiscount: 75,
         description: "Классические японские роллы с лососем, рисом и нори."
@@ -168,7 +169,7 @@ export const producersData = [
       },
       {
         productName: "Лапша Рамен",
-        get image() { return getProductImage("ramen-lash"); },
+        get image() { return getProductImage("ramen"); },
         priceRegular: 140,
         priceDiscount: 120,
         description: "Пряный бульон с яичной лапшой, говядиной, яйцом и овощами."
@@ -190,7 +191,7 @@ export const producersData = [
     products: [
       {
         productName: "Чизкейк Нью-Йорк",
-        get image() { return getProductImage("chickie-kake-new-york"); },
+        get image() { return getProductImage("new-york-cheesecake"); },
         priceRegular: 80,
         priceDiscount: 70,
         description: "Классический американский чизкейк с нежной текстурой и сливочным вкусом."
@@ -219,14 +220,14 @@ export const producersData = [
     products: [
       {
         productName: "Круассан",
-        get image() { return getProductImage("kruassan"); },
+        get image() { return getProductImage("croissant-2"); },
         priceRegular: 40,
         priceDiscount: 25,
         description: "Воздушный французский круассан с хрустящей корочкой."
       },
       {
         productName: "Капучино",
-        get image() { return getProductImage("capuchino"); },
+        get image() { return getProductImage("cappuccino"); },
         priceRegular: 45,
         priceDiscount: 20,
         description: "Ароматный итальянский капучино с молочной пеной."
@@ -248,14 +249,14 @@ export const producersData = [
     products: [
       {
         productName: "Фреш апельсиновый",
-        get image() { return getProductImage("fresh-orange"); },
+        get image() { return getProductImage("fresh-orange-juice"); },
         priceRegular: 35,
         priceDiscount: 30,
         description: "Свежевыжатый апельсиновый сок без добавления сахара."
       },
       {
         productName: "Кофе Латте",
-        get image() { return getProductImage("latte-coffee"); },
+        get image() { return getProductImage("latte"); },
         priceRegular: 50,
         priceDiscount: 45,
         description: "Нежный кофейный напиток с молоком и легкой пенкой."
@@ -277,7 +278,7 @@ export const producersData = [
     products: [
       {
         productName: "Совиньон Блан (Новая Зеландия)",
-        get image() { return getProductImage("savinon-blanc-new-zealand"); },
+        get image() { return getProductImage("sauvignon-blanc-new-zealand"); },
         priceRegular: 120,
         priceDiscount: 110,
         description: "Освежающее белое вино с цитрусовыми нотками и легким послевкусием."
