@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProducerByName } from '../data/products';
+import { getProducerByName } from '../data';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';

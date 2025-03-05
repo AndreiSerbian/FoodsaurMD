@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProducersByCategory, producersData } from '../data/products';
+import { getProducersByCategory } from '../data';
 import ProducersList from '../components/ProducersList';
 import { motion } from 'framer-motion';
+
 const Producers = () => {
   const {
     categoryName
   } = useParams();
   const [producers, setProducers] = useState([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
@@ -18,6 +20,7 @@ const Producers = () => {
       setLoading(false);
     }, 500);
   }, [categoryName]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -26,6 +29,7 @@ const Producers = () => {
         </div>
       </div>;
   }
+
   if (producers.length === 0) {
     return <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <h2 className="text-2xl font-bold mb-4">Категория не найдена</h2>
@@ -35,6 +39,7 @@ const Producers = () => {
         </Link>
       </div>;
   }
+
   return <div className="min-h-screen pb-20">
       <div className="container mx-auto px-4 py-8">
         <motion.div initial={{
@@ -58,4 +63,5 @@ const Producers = () => {
       </div>
     </div>;
 };
+
 export default Producers;
