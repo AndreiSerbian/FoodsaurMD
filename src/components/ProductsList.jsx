@@ -69,7 +69,7 @@ const ProductsList = ({
                   src={product.image} 
                   alt={product.productName} 
                   className="w-full h-48 object-cover rounded-t-2xl"
-                  onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+                  onError={(e) => {e.target.src = "/placeholder.svg"}}
                 />
                 {product.priceDiscount < product.priceRegular && (
                   <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
