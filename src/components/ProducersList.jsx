@@ -2,51 +2,35 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-import { getProducerImagePath, handleImageError } from '../utils/imageUtils';
-
 const ProducerCard = ({
   producer
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
-  const getImages = () => {
-    try {
-      return [
-        { url: getProducerImagePath(producer.producerName, 'exterior'), label: 'Экстерьер' },
-        { url: getProducerImagePath(producer.producerName, 'interior'), label: 'Интерьер' }
-      ];
-    } catch (error) {
-      return [
-        { url: producer.producerImage.exterior, label: 'Экстерьер' },
-        { url: producer.producerImage.interior, label: 'Интерьер' }
-      ];
-    }
-  };
-  
-  const images = getImages();
-  
+  const images = [{
+    url: producer.producerImage.exterior,
+    label: 'Экстерьер'
+  }, {
+    url: producer.producerImage.interior,
+    label: 'Интерьер'
+  }];
   const handleNextImage = e => {
     e.preventDefault();
     e.stopPropagation();
     setCurrentImageIndex(prev => (prev + 1) % images.length);
   };
-  
   const handlePrevImage = e => {
     e.preventDefault();
     e.stopPropagation();
     setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
   };
-
+  const handleImageError = e => {
+    e.target.src = "/placeholder.svg";
+  };
   return <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
       <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full flex flex-col">
         <div className="relative">
           <div className="w-full h-48 relative overflow-hidden">
-            <img 
-              src={images[currentImageIndex].url || "/placeholder.svg"} 
-              alt={`${producer.producerName} - ${images[currentImageIndex].label}`} 
-              className="w-full h-full object-cover transition-transform duration-300" 
-              onError={handleImageError} 
-            />
+            <img src={images[currentImageIndex].url || "/placeholder.svg"} alt={`${producer.producerName} - ${images[currentImageIndex].label}`} className="w-full h-full object-cover transition-transform duration-300" onError={handleImageError} />
             
             <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
               {images[currentImageIndex].label}
@@ -86,7 +70,6 @@ const ProducerCard = ({
       </div>
     </Link>;
 };
-
 const ProducersList = ({
   producers,
   categoryName
@@ -125,5 +108,4 @@ const ProducersList = ({
       </div>
     </section>;
 };
-
 export default ProducersList;
