@@ -1,126 +1,64 @@
 
 /**
- * Утилиты для динамической загрузки изображений из локальных папок
+ * Утилиты для импорта изображений из локальных папок
  */
 
 // Импортируем все изображения категорий
-function importCategoryImages() {
-  const categoryImages = {};
+const categoryImages = import.meta.glob('/src/assets/images/categories/*.{jpg,png,jpeg}', { eager: true });
+const producerImages = import.meta.glob('/src/assets/images/producers/*.{jpg,png,jpeg}', { eager: true });
+const productImages = import.meta.glob('/src/assets/images/products/*.{jpg,png,jpeg}', { eager: true });
+
+/**
+ * Получает изображение по относительному пути
+ * @param {string} path - Относительный путь к изображению
+ * @returns {string} URL изображения или placeholder
+ */
+export const getImage = (path) => {
+  if (!path) return "/placeholder.svg";
   
-  try {
-    // Динамический импорт всех jpg/png файлов из categories
-    const categoryImagesContext = import.meta.glob('/src/assets/images/categories/*.{jpg,png,jpeg}', { eager: true });
-    
-    // Формируем объект с ключами - названиями категорий, значениями - путями к изображениям
-    Object.keys(categoryImagesContext).forEach(path => {
-      const fileName = path.split('/').pop().split('.')[0];
-      categoryImages[fileName] = categoryImagesContext[path].default;
-    });
-  } catch (error) {
-    console.error("Ошибка при импорте изображений категорий:", error);
+  let importPath = `/src/assets/images/${path}`;
+  
+  if (path.startsWith('categories/')) {
+    const imagePath = Object.keys(categoryImages).find(key => key.includes(path));
+    return imagePath ? categoryImages[imagePath].default : "/placeholder.svg";
   }
   
-  return categoryImages;
-}
-
-// Импортируем все изображения производителей
-function importProducerImages() {
-  const producerImages = {};
-  
-  try {
-    // Динамический импорт всех jpg/png файлов из producers
-    const producerImagesContext = import.meta.glob('/src/assets/images/producers/*.{jpg,png,jpeg}', { eager: true });
-    
-    // Формируем объект с ключами - названиями производителей и типом (interior/exterior), значениями - путями к изображениям
-    Object.keys(producerImagesContext).forEach(path => {
-      const fullFileName = path.split('/').pop();
-      const [producerWithType] = fullFileName.split('.');
-      
-      // Определяем тип изображения (interior/exterior)
-      if (producerWithType.endsWith('-interior')) {
-        const producerName = producerWithType.replace('-interior', '');
-        if (!producerImages[producerName]) producerImages[producerName] = {};
-        producerImages[producerName].interior = producerImagesContext[path].default;
-      } else if (producerWithType.endsWith('-exterior')) {
-        const producerName = producerWithType.replace('-exterior', '');
-        if (!producerImages[producerName]) producerImages[producerName] = {};
-        producerImages[producerName].exterior = producerImagesContext[path].default;
-      }
-    });
-  } catch (error) {
-    console.error("Ошибка при импорте изображений производителей:", error);
+  if (path.startsWith('producers/')) {
+    const imagePath = Object.keys(producerImages).find(key => key.includes(path));
+    return imagePath ? producerImages[imagePath].default : "/placeholder.svg";
   }
   
-  return producerImages;
-}
-
-// Импортируем все изображения продуктов
-function importProductImages() {
-  const productImages = {};
-  
-  try {
-    // Динамический импорт всех jpg/png файлов из products
-    const productImagesContext = import.meta.glob('/src/assets/images/products/*.{jpg,png,jpeg}', { eager: true });
-    
-    // Формируем объект с ключами - названиями продуктов, значениями - путями к изображениям
-    Object.keys(productImagesContext).forEach(path => {
-      const fileName = path.split('/').pop().split('.')[0];
-      productImages[fileName] = productImagesContext[path].default;
-    });
-  } catch (error) {
-    console.error("Ошибка при импорте изображений продуктов:", error);
+  if (path.startsWith('products/')) {
+    const imagePath = Object.keys(productImages).find(key => key.includes(path));
+    return imagePath ? productImages[imagePath].default : "/placeholder.svg";
   }
   
-  return productImages;
-}
-
-// Кеширование изображений для повторного использования
-const CATEGORY_IMAGES = importCategoryImages();
-const PRODUCER_IMAGES = importProducerImages();
-const PRODUCT_IMAGES = importProductImages();
+  return "/placeholder.svg";
+};
 
 /**
  * Получает путь к изображению категории
- * @param {string} categoryName - Название категории
- * @returns {string} Путь к изображению категории или путь к placeholder
+ * @param {string} path - Путь к изображению категории
+ * @returns {string} URL изображения категории или placeholder
  */
-export const getCategoryImage = (categoryName) => {
-  if (!categoryName) return "/placeholder.svg";
-  
-  const formattedName = categoryName.toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]/g, "");
-  
-  return CATEGORY_IMAGES[formattedName] || "/placeholder.svg";
+export const getCategoryImage = (path) => {
+  return getImage(`categories/${path}`);
 };
 
 /**
  * Получает путь к изображению производителя
- * @param {string} producerName - Название производителя
- * @param {string} type - Тип изображения (interior или exterior)
- * @returns {string} Путь к изображению производителя или путь к placeholder
+ * @param {string} path - Путь к изображению производителя
+ * @returns {string} URL изображения производителя или placeholder
  */
-export const getProducerImage = (producerName, type) => {
-  if (!producerName || !type) return "/placeholder.svg";
-  
-  const formattedName = producerName.toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]/g, "");
-  
-  return PRODUCER_IMAGES[formattedName]?.[type] || "/placeholder.svg";
+export const getProducerImage = (path) => {
+  return getImage(`producers/${path}`);
 };
 
 /**
  * Получает путь к изображению продукта
- * @param {string} productName - Название продукта
- * @returns {string} Путь к изображению продукта или путь к placeholder
+ * @param {string} path - Путь к изображению продукта
+ * @returns {string} URL изображения продукта или placeholder
  */
-export const getProductImage = (productName) => {
-  if (!productName) return "/placeholder.svg";
-  
-  const formattedName = productName.toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w-]/g, "");
-  
-  return PRODUCT_IMAGES[formattedName] || "/placeholder.svg";
+export const getProductImage = (path) => {
+  return getImage(`products/${path}`);
 };
