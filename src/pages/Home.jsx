@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { producersData, categories } from '../data';
+import { producersData, categories } from '../data/products';
 import HeroSection from '../components/HeroSection';
 import CategoryList from '../components/CategoryList';
 import { motion } from 'framer-motion';

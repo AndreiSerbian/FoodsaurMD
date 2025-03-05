@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { producersData } from '../data';
+import { producersData } from '../data/products';
 
 const CategoryList = ({
   categories
@@ -42,6 +43,7 @@ const CategoryList = ({
     setHoveredProducer(null);
   };
 
+  // Функция для получения изображения по категории и состоянию наведения
   const getCategoryImage = category => {
     const producer = producersData.find(p => p.categoryName === category && p.producerName === hoveredProducer);
     if (hoveredCategory === category && producer && producer.producerImage.interior) {
@@ -50,6 +52,7 @@ const CategoryList = ({
     return producersData.find(p => p.categoryName === category)?.categoryImage || "/placeholder.svg";
   };
 
+  // Получить список уникальных производителей для каждой категории
   const getProducersForCategory = category => {
     return producersData.filter(p => p.categoryName === category).map(p => p.producerName);
   };
@@ -86,6 +89,7 @@ const CategoryList = ({
                     <h3 className="text-white text-xl font-semibold p-4">{category}</h3>
                   </div>
                   
+                  {/* Производители внутри категории */}
                   <div className="absolute top-0 right-0 p-2">
                     
                   </div>
