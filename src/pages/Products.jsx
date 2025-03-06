@@ -5,6 +5,7 @@ import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
+import { getProducerImage } from '../utils/imageUtils';
 
 const Products = () => {
   const { producerName } = useParams();
@@ -41,21 +42,29 @@ const Products = () => {
       </div>;
   }
 
-  const images = [
-    { url: producer.producerImage.exterior, label: 'Экстерьер' },
-    { url: producer.producerImage.interior, label: 'Интерьер' }
-  ];
+  const imageTypes = ['exterior', 'interior'];
+  const imageLabels = {
+    'exterior': 'Экстерьер',
+    'interior': 'Интерьер'
+  };
 
   const handleNextImage = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImage((prev) => (prev + 1) % images.length);
+    setCurrentImage((prev) => (prev + 1) % imageTypes.length);
   };
 
   const handlePrevImage = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentImage((prev) => (prev - 1 + imageTypes.length) % imageTypes.length);
+  };
+
+  // Функция для получения изображения производителя
+  const getProducerImagePath = (producer, type) => {
+    return producer.producerImage && producer.producerImage[type]
+      ? getProducerImage(producer.producerImage[type])
+      : "/placeholder.svg";
   };
 
   return <div className="min-h-screen pb-20">
@@ -86,14 +95,14 @@ const Products = () => {
           delay: 0.2
         }} className="mb-8 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden">
           <img 
-            src={images[currentImage].url || "/placeholder.svg"} 
-            alt={`${producer.producerName} - ${images[currentImage].label}`} 
+            src={getProducerImagePath(producer, imageTypes[currentImage])} 
+            alt={`${producer.producerName} - ${imageLabels[imageTypes[currentImage]]}`} 
             className="w-full h-full object-cover"
             onError={(e) => {e.target.src = "/placeholder.svg"}}
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-            {images[currentImage].label}
+            {imageLabels[imageTypes[currentImage]]}
           </div>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">

@@ -3,32 +3,31 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { getProducerImage } from '../utils/imageUtils';
 
 const ProducerCard = ({
   producer
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = [
-    {
-      url: producer.producerImage.exterior,
-      label: 'Экстерьер'
-    }, 
-    {
-      url: producer.producerImage.interior,
-      label: 'Интерьер'
-    }
-  ];
+  const imageTypes = ['exterior', 'interior'];
   
   const handleNextImage = e => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImageIndex(prev => (prev + 1) % images.length);
+    setCurrentImageIndex(prev => (prev + 1) % imageTypes.length);
   };
   
   const handlePrevImage = e => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
+    setCurrentImageIndex(prev => (prev - 1 + imageTypes.length) % imageTypes.length);
+  };
+
+  // Функция для получения изображения производителя
+  const getProducerImagePath = (producer, type) => {
+    return producer.producerImage && producer.producerImage[type]
+      ? getProducerImage(producer.producerImage[type])
+      : "/placeholder.svg";
   };
   
   return (
@@ -37,14 +36,14 @@ const ProducerCard = ({
         <div className="relative">
           <div className="w-full h-48 relative overflow-hidden">
             <img 
-              src={images[currentImageIndex].url} 
-              alt={`${producer.producerName} - ${images[currentImageIndex].label}`} 
+              src={getProducerImagePath(producer, imageTypes[currentImageIndex])} 
+              alt={`${producer.producerName} - ${imageTypes[currentImageIndex]}`} 
               className="w-full h-full object-cover transition-transform duration-300" 
               onError={(e) => {e.target.src = "/placeholder.svg"}} 
             />
             
             <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-              {images[currentImageIndex].label}
+              {imageTypes[currentImageIndex] === 'exterior' ? 'Экстерьер' : 'Интерьер'}
             </div>
             
             <button 

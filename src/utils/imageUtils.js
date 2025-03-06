@@ -11,12 +11,8 @@
 export const getImage = (path) => {
   if (!path) return "/placeholder.svg";
   
-  // Проверяем, начинается ли путь с src/
-  if (path.startsWith('src/')) {
-    return path;
-  }
-  
-  return "/placeholder.svg";
+  // Возвращаем путь как есть, предполагая что он уже корректный
+  return path;
 };
 
 /**
@@ -27,13 +23,13 @@ export const getImage = (path) => {
 export const getCategoryImage = (filename) => {
   if (!filename) return "/placeholder.svg";
   
-  // Если путь уже полный, включая директорию src/
-  if (filename.startsWith('src/')) {
+  // Если путь уже содержит /assets/Images/
+  if (filename.includes('/assets/Images/')) {
     return filename;
   }
   
-  // Добавляем путь к директории категорий
-  return `src/assets/Images/categories/${filename}`;
+  // Обработка для относительных путей
+  return `/assets/Images/categories/${filename.split('/').pop()}`;
 };
 
 /**
@@ -44,13 +40,13 @@ export const getCategoryImage = (filename) => {
 export const getProducerImage = (filename) => {
   if (!filename) return "/placeholder.svg";
   
-  // Если путь уже полный, включая директорию src/
-  if (filename.startsWith('src/')) {
+  // Если путь уже содержит /assets/Images/
+  if (filename.includes('/assets/Images/')) {
     return filename;
   }
   
-  // Добавляем путь к директории производителей
-  return `src/assets/Images/producers/${filename}`;
+  // Обработка для относительных путей
+  return `/assets/Images/producers/${filename.split('/').pop()}`;
 };
 
 /**
@@ -61,11 +57,11 @@ export const getProducerImage = (filename) => {
 export const getProductImage = (filename) => {
   if (!filename) return "/placeholder.svg";
   
-  // Если путь уже полный, включая директорию src/
-  if (filename.startsWith('src/')) {
+  // Если путь уже содержит /assets/Images/
+  if (filename.includes('/assets/Images/')) {
     return filename;
   }
   
-  // Добавляем путь к директории продуктов
-  return `src/assets/Images/products/${filename}`;
+  // Обработка для относительных путей
+  return `/assets/Images/products/${filename.split('/').pop()}`;
 };

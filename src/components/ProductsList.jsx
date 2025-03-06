@@ -1,20 +1,35 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useCart } from '../contexts/CartContext';
+import { MinusCircle, PlusCircle, ShoppingCart } from 'lucide-react';
+import { getProductImage } from '../utils/imageUtils';
 
-const ProductsList = ({
-  products,
-  producer
-}) => {
-  const {
-    addToCart
-  } = useCart();
+const ProductsList = ({ products, producer }) => {
+  const [cartItems, setCartItems] = useState({});
+  
+  const addToCart = (productName) => {
+    setCartItems(prev => ({
+      ...prev,
+      [productName]: (prev[productName] || 0) + 1
+    }));
+  };
+  
+  const removeFromCart = (productName) => {
+    setCartItems(prev => {
+      const updatedCart = { ...prev };
+      if (updatedCart[productName] > 0) {
+        updatedCart[productName] -= 1;
+      }
+      if (updatedCart[productName] === 0) {
+        delete updatedCart[productName];
+      }
+      return updatedCart;
+    });
+  };
   
   const container = {
-    hidden: {
-      opacity: 0
-    },
+    hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
@@ -24,86 +39,98 @@ const ProductsList = ({
   };
   
   const item = {
-    hidden: {
-      opacity: 0,
-      y: 20
-    },
-    show: {
-      opacity: 1,
-      y: 0
-    }
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
   };
   
-  const handleAddToCart = product => {
-    addToCart(product, producer.producerName);
+  // Функция для получения изображения продукта
+  const getProductImagePath = (product) => {
+    return product.image
+      ? getProductImage(product.image)
+      : "/placeholder.svg";
   };
 
-  // Calculate discount percentage
-  const calculateDiscount = (regular, discounted) => {
-    return Math.round((1 - discounted / regular) * 100);
-  };
-  
   return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producerName}</h2>
-          <p className="text-gray-600 text-center">{producer.address}</p>
-          <p className="text-gray-500 text-center mt-2">Скидки доступны {producer.discountAvailableTime}</p>
-        </div>
-        
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" 
-          variants={container} 
-          initial="hidden" 
-          animate="show"
-        >
-          {products.map((product, index) => (
-            <motion.div 
-              key={index} 
-              variants={item} 
-              className="product-card"
-            >
-              <div className="relative">
-                <img 
-                  src={product.image} 
-                  alt={product.productName} 
-                  className="w-full h-48 object-cover rounded-t-2xl"
-                  onError={(e) => {e.target.src = "/placeholder.svg"}}
-                />
-                {product.priceDiscount < product.priceRegular && (
-                  <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
-                    -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
-                  </div>
-                )}
+    <section>
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Меню</h2>
+        <p className="text-gray-600">
+          Товары со скидкой доступны {producer.discountAvailableTime}
+        </p>
+      </div>
+      
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+      >
+        {products.map((product, index) => (
+          <motion.div 
+            key={index}
+            variants={item}
+            className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col md:flex-row"
+          >
+            <div className="md:w-1/3 h-48 md:h-auto overflow-hidden relative">
+              <img 
+                src={getProductImagePath(product)} 
+                alt={product.productName} 
+                className="w-full h-full object-cover"
+                onError={(e) => {e.target.src = "/placeholder.svg"}} 
+              />
+              
+              <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-md text-sm font-medium">
+                -{Math.round((1 - product.priceDiscount / product.priceRegular) * 100)}%
               </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{product.productName}</h3>
-                <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">{product.description}</p>
-                
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <span className="text-lg font-bold text-green-600">{product.priceDiscount} MDL</span>
-                    {product.priceDiscount < product.priceRegular && (
-                      <span className="text-sm text-green-900 line-through ml-2">{product.priceRegular} MDL</span>
-                    )}
-                  </div>
+            </div>
+            
+            <div className="p-6 flex-1 flex flex-col">
+              <h3 className="text-xl font-bold mb-2">{product.productName}</h3>
+              
+              <p className="text-gray-600 mb-4 flex-grow">{product.description}</p>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400 line-through">{product.priceRegular} MDL</span>
+                  <span className="text-xl font-bold text-green-600">{product.priceDiscount} MDL</span>
                 </div>
                 
-                <button 
-                  onClick={() => handleAddToCart(product)} 
-                  className="w-full text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 flex items-center justify-center btn-hover bg-green-900 hover:bg-green-800"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Добавить в корзину
-                </button>
+                <div className="flex items-center">
+                  {cartItems[product.productName] ? (
+                    <>
+                      <button 
+                        onClick={() => removeFromCart(product.productName)}
+                        className="text-gray-600 hover:text-red-500 transition-colors"
+                        aria-label="Убрать из корзины"
+                      >
+                        <MinusCircle size={20} />
+                      </button>
+                      
+                      <span className="mx-2 font-medium">{cartItems[product.productName]}</span>
+                      
+                      <button 
+                        onClick={() => addToCart(product.productName)}
+                        className="text-gray-600 hover:text-green-500 transition-colors"
+                        aria-label="Добавить в корзину"
+                      >
+                        <PlusCircle size={20} />
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={() => addToCart(product.productName)}
+                      className="bg-green-500 text-white px-3 py-1 rounded-full flex items-center text-sm hover:bg-green-600 transition-colors"
+                    >
+                      <ShoppingCart size={16} className="mr-1" />
+                      В корзину
+                    </button>
+                  )}
+                </div>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
     </section>
   );
 };

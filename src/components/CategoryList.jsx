@@ -47,10 +47,13 @@ const CategoryList = ({
   // Функция для получения изображения по категории и состоянию наведения
   const getCategoryImagePath = category => {
     const producer = producersData.find(p => p.categoryName === category && p.producerName === hoveredProducer);
+    
     if (hoveredCategory === category && producer && producer.producerImage.interior) {
-      return producer.producerImage.interior;
+      return getProducerImage(producer.producerImage.interior);
     }
-    return producersData.find(p => p.categoryName === category)?.categoryImage || "/placeholder.svg";
+    
+    const foundProducer = producersData.find(p => p.categoryName === category);
+    return foundProducer ? getCategoryImage(foundProducer.categoryImage) : "/placeholder.svg";
   };
 
   // Получить список уникальных производителей для каждой категории
@@ -83,7 +86,7 @@ const CategoryList = ({
                   <img 
                     src={getCategoryImagePath(category)} 
                     alt={category} 
-                    className="w-full h-64 object-cover transition-transform duration-500"
+                    className="w-full h-64 object-cover transition-transform duration-300"
                     onError={(e) => {e.target.src = "/placeholder.svg"}}  
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
