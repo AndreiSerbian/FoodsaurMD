@@ -9,7 +9,7 @@ function importCategoryImages() {
   
   try {
     // Динамический импорт всех jpg/png файлов из categories
-    const categoryImagesContext = import.meta.glob('/src/assets/images/categories/*.{jpg,png,jpeg}', { eager: true });
+    const categoryImagesContext = import.meta.glob('../assets/Images/categories/*.{jpg,png,jpeg}', { eager: true });
     
     // Формируем объект с ключами - названиями категорий, значениями - путями к изображениям
     Object.keys(categoryImagesContext).forEach(path => {
@@ -29,7 +29,7 @@ function importProducerImages() {
   
   try {
     // Динамический импорт всех jpg/png файлов из producers
-    const producerImagesContext = import.meta.glob('/src/assets/images/producers/*.{jpg,png,jpeg}', { eager: true });
+    const producerImagesContext = import.meta.glob('../assets/Images/producers/*.{jpg,png,jpeg}', { eager: true });
     
     // Формируем объект с ключами - названиями производителей и типом (interior/exterior), значениями - путями к изображениям
     Object.keys(producerImagesContext).forEach(path => {
@@ -60,7 +60,7 @@ function importProductImages() {
   
   try {
     // Динамический импорт всех jpg/png файлов из products
-    const productImagesContext = import.meta.glob('/src/assets/images/products/*.{jpg,png,jpeg}', { eager: true });
+    const productImagesContext = import.meta.glob('../assets/Images/products/*.{jpg,png,jpeg}', { eager: true });
     
     // Формируем объект с ключами - названиями продуктов, значениями - путями к изображениям
     Object.keys(productImagesContext).forEach(path => {

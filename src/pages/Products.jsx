@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
@@ -88,6 +89,7 @@ const Products = () => {
             src={images[currentImage].url || "/placeholder.svg"} 
             alt={`${producer.producerName} - ${images[currentImage].label}`} 
             className="w-full h-full object-cover"
+            onError={(e) => {e.currentTarget.src = "/placeholder.svg"}}
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
