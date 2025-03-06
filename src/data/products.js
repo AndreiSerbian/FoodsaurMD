@@ -1,28 +1,25 @@
-
-import { getCategoryImage, getProducerImage, getProductImage } from '../utils/imageUtils';
-
 export const producersData = [
   {
     categoryName: "Молдавская",
-    categoryImage: "public/assets/Images/categories/moldavian.jpg",
+    categoryImage: "/lovable-uploads/59fa9bf0-792a-469f-9dfc-cd4992658411.png",
     producerName: "Bucătăria Moldovenească",
     address: "ул. Штефан чел Маре 45, Кишинёв",
     producerImage: {
-      exterior: "public/assets/Images/producers/bucataria-moldoveneasca-exterior.jpg",
-      interior: "public/assets/Images/producers/bucataria-moldoveneasca-interior.jpg"
+      exterior: "/lovable-uploads/f6f85f6c-245a-45be-b2b7-d8d10a1f1cf0.png",
+      interior: "/lovable-uploads/c8bc5155-5a5c-44d7-8241-537dd107a59c.png"
     },
     discountAvailableTime: "с 18:00 до 21:00",
     products: [
       {
         productName: "Плацинда с брынзой",
-        image: "public/assets/Images/products/placinta-with-brynza.jpg",
+        image: "/lovable-uploads/5b068ce0-0b02-49d9-aaa4-c125c0a049c0.png",
         priceRegular: 50,
         priceDiscount: 40,
         description: "Традиционная молдавская выпечка с брынзой, хрустящая снаружи и нежная внутри."
       },
       {
         productName: "Мамалыга с брынзой",
-        image: "public/assets/Images/products/mamaliga-with-brynza.jpg",
+        image: "/placeholder.svg",
         priceRegular: 60,
         priceDiscount: 55,
         description: "Классическая молдавская кукурузная каша, подаётся с брынзой и сметаной."
@@ -31,25 +28,25 @@ export const producersData = [
   },
   {
     categoryName: "Молдавская",
-    categoryImage: "public/assets/Images/categories/moldavian.jpg",
+    categoryImage: "/lovable-uploads/59fa9bf0-792a-469f-9dfc-cd4992658411.png",
     producerName: "Casa Mare",
     address: "ул. Пушкина 12, Бельцы",
     producerImage: {
-      exterior: "public/assets/Images/producers/casa-mare-exterior.jpg",
-      interior: "public/assets/Images/producers/casa-mare-interior.jpg"
+      exterior: "/lovable-uploads/b23af8db-2f25-48b3-8388-d1d30c0b3476.png",
+      interior: "/lovable-uploads/9781be38-3dd8-49ee-86e3-267d7f2c48ec.png"
     },
     discountAvailableTime: "с 17:00 до 20:00",
     products: [
       {
         productName: "Сарма",
-        image: "public/assets/Images/products/sarma.jpg",
+        image: "/placeholder.svg",
         priceRegular: 70,
         priceDiscount: 65,
         description: "Молдавские голубцы, приготовленные с мясным фаршем, рисом и специями, завернутые в капустные листья."
       },
       {
         productName: "Зама",
-        image: "public/assets/Images/products/zama.jpg",
+        image: "/placeholder.svg",
         priceRegular: 55,
         priceDiscount: 50,
         description: "Традиционный молдавский куриный суп с домашней лапшой и зеленью."
@@ -58,25 +55,25 @@ export const producersData = [
   },
   {
     categoryName: "Европейская",
-    categoryImage: "public/assets/Images/categories/european.jpg",
+    categoryImage: "/Img/european.jpg",
     producerName: "La Cucina Italiana",
     address: "ул. Роз 23, Кишинёв",
     producerImage: {
-      exterior: "public/assets/Images/producers/la-cucina-italiana-exterior.jpg",
-      interior: "public/assets/Images/producers/la-cucina-italiana-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 17:00 до 20:00",
     products: [
       {
         productName: "Пицца Маргарита",
-        image: "public/assets/Images/products/pizza-margherita.jpg",
+        image: "/placeholder.svg",
         priceRegular: 120,
         priceDiscount: 100,
         description: "Классическая итальянская пицца с томатным соусом, моцареллой и свежим базиликом."
       },
       {
         productName: "Паста Карбонара",
-        image: "public/assets/Images/products/pasta-carbonara.jpg",
+        image: "/placeholder.svg",
         priceRegular: 110,
         priceDiscount: 90,
         description: "Паста с беконом, пармезаном и соусом на основе яиц и сливок."
@@ -85,25 +82,25 @@ export const producersData = [
   },
   {
     categoryName: "Европейская",
-    categoryImage: "public/assets/Images/categories/european.jpg",
+    categoryImage: "/Img/european.jpg",
     producerName: "Bistro Français",
     address: "ул. Эминеску 9, Кагул",
     producerImage: {
-      exterior: "public/assets/Images/producers/bistro-francais-exterior.jpg",
-      interior: "public/assets/Images/producers/bistro-francais-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 16:00 до 19:00",
     products: [
       {
         productName: "Киш Лорен",
-        image: "public/assets/Images/products/quiche-lorraine.jpg",
+        image: "/placeholder.svg",
         priceRegular: 95,
         priceDiscount: 85,
         description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и бекона."
       },
       {
         productName: "Круассан",
-        image: "public/assets/Images/products/croissant.jpg",
+        image: "/placeholder.svg",
         priceRegular: 40,
         priceDiscount: 35,
         description: "Классический французский слойный круассан с хрустящей корочкой и нежным тестом."
@@ -112,25 +109,25 @@ export const producersData = [
   },
   {
     categoryName: "Паназиатская",
-    categoryImage: "public/assets/Images/categories/panasian.jpg",
+    categoryImage: "/Img/panasian.jpg",
     producerName: "Sushi Time",
     address: "ул. Вероники 17, Кишинёв",
     producerImage: {
-      exterior: "public/assets/Images/producers/sushi-time-exterior.jpg",
-      interior: "public/assets/Images/producers/sushi-time-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 19:00 до 22:00",
     products: [
       {
         productName: "Филадельфия ролл",
-        image: "public/assets/Images/products/philadelphia-roll.jpg",
+        image: "/placeholder.svg",
         priceRegular: 150,
         priceDiscount: 130,
         description: "Популярные роллы с нежным лососем, сливочным сыром и авокадо."
       },
       {
         productName: "Сяке маки",
-        image: "public/assets/Images/products/salmon-maki.jpg",
+        image: "/placeholder.svg",
         priceRegular: 90,
         priceDiscount: 75,
         description: "Классические японские роллы с лососем, рисом и нори."
@@ -139,25 +136,25 @@ export const producersData = [
   },
   {
     categoryName: "Паназиатская",
-    categoryImage: "public/assets/Images/categories/panasian.jpg",
+    categoryImage: "/Img/panasian.jpg",
     producerName: "Wok House",
     address: "ул. Каля Басарабяска 3, Бельцы",
     producerImage: {
-      exterior: "public/assets/Images/producers/wok-house-exterior.jpg",
-      interior: "public/assets/Images/producers/wok-house-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 20:00 до 23:00",
     products: [
       {
         productName: "Удон с курицей",
-        image: "public/assets/Images/products/udon-with-chicken.jpg",
+        image: "/placeholder.svg",
         priceRegular: 130,
         priceDiscount: 110,
         description: "Японская лапша удон с жареной курицей, овощами и соевым соусом."
       },
       {
         productName: "Лапша Рамен",
-        image: "public/assets/Images/products/ramen.jpg",
+        image: "/placeholder.svg",
         priceRegular: 140,
         priceDiscount: 120,
         description: "Пряный бульон с яичной лапшой, говядиной, яйцом и овощами."
@@ -166,25 +163,25 @@ export const producersData = [
   },
   {
     categoryName: "Десерты",
-    categoryImage: "public/assets/Images/categories/desserts.jpg",
+    categoryImage: "/lovable-uploads/a4606b35-dfd5-4c80-97a2-a09aeb73ba21.png",
     producerName: "Sweet Corner",
     address: "ул. Дачия 50, Кишинёв",
     producerImage: {
-      exterior: "public/assets/Images/producers/sweet-corner-exterior.jpg",
-      interior: "public/assets/Images/producers/sweet-corner-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 18:00 до 21:00",
     products: [
       {
         productName: "Чизкейк Нью-Йорк",
-        image: "public/assets/Images/products/new-york-cheesecake.jpg",
+        image: "/placeholder.svg",
         priceRegular: 80,
         priceDiscount: 70,
         description: "Классический американский чизкейк с нежной текстурой и сливочным вкусом."
       },
       {
         productName: "Макарон",
-        image: "public/assets/Images/products/macaron.jpg",
+        image: "/placeholder.svg",
         priceRegular: 45,
         priceDiscount: 40,
         description: "Французские миндальные пирожные с различными вкусами."
@@ -193,25 +190,25 @@ export const producersData = [
   },
   {
     categoryName: "Десерты",
-    categoryImage: "public/assets/Images/categories/desserts.jpg",
+    categoryImage: "/lovable-uploads/a4606b35-dfd5-4c80-97a2-a09aeb73ba21.png",
     producerName: "Coffee Point",
     address: "ул. Когэлничану 32, Кишинёв",
     producerImage: {
-      exterior: "public/assets/Images/producers/coffee-point-exterior.jpg",
-      interior: "public/assets/Images/producers/coffee-point-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 17:00 до 20:00",
     products: [
       {
         productName: "Круассан",
-        image: "public/assets/Images/products/croissant-2.jpg",
+        image: "/placeholder.svg",
         priceRegular: 40,
         priceDiscount: 25,
         description: "Воздушный французский круассан с хрустящей корочкой."
       },
       {
         productName: "Капучино",
-        image: "public/assets/Images/products/cappuccino.jpg",
+        image: "/placeholder.svg",
         priceRegular: 45,
         priceDiscount: 20,
         description: "Ароматный итальянский капучино с молочной пеной."
@@ -220,25 +217,25 @@ export const producersData = [
   },
   {
     categoryName: "Напитки",
-    categoryImage: "public/assets/Images/categories/drinks.jpg",
+    categoryImage: "/Img/drinks.jpg",
     producerName: "Fresh Drinks",
     address: "ул. Александри 21, Кагул",
     producerImage: {
-      exterior: "public/assets/Images/producers/fresh-drinks-exterior.jpg",
-      interior: "public/assets/Images/producers/fresh-drinks-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 15:00 до 18:00",
     products: [
       {
         productName: "Фреш апельсиновый",
-        image: "public/assets/Images/products/fresh-orange-juice.jpg",
+        image: "/placeholder.svg",
         priceRegular: 35,
         priceDiscount: 30,
         description: "Свежевыжатый апельсиновый сок без добавления сахара."
       },
       {
         productName: "Кофе Латте",
-        image: "public/assets/Images/products/latte.jpg",
+        image: "/placeholder.svg",
         priceRegular: 50,
         priceDiscount: 45,
         description: "Нежный кофейный напиток с молоком и легкой пенкой."
@@ -247,25 +244,25 @@ export const producersData = [
   },
   {
     categoryName: "Напитки",
-    categoryImage: "public/assets/Images/categories/drinks.jpg",
+    categoryImage: "/placeholder.svg",
     producerName: "Wine Café",
     address: "ул. Киевская 16, Кишинёв",
     producerImage: {
-      exterior: "public/assets/Images/producers/wine-cafe-exterior.jpg",
-      interior: "public/assets/Images/producers/wine-cafe-interior.jpg"
+      exterior: "/placeholder.svg",
+      interior: "/placeholder.svg"
     },
     discountAvailableTime: "с 20:00 до 23:00",
     products: [
       {
         productName: "Совиньон Блан (Новая Зеландия)",
-        image: "public/assets/Images/products/sauvignon-blanc-new-zealand.jpg",
+        image: "/placeholder.svg",
         priceRegular: 120,
         priceDiscount: 110,
         description: "Освежающее белое вино с цитрусовыми нотками и легким послевкусием."
       },
       {
         productName: "Арманьяк (Франция)",
-        image: "public/assets/Images/products/armagnac-france.jpg",
+        image: "/placeholder.svg",
         priceRegular: 250,
         priceDiscount: 230,
         description: "Французский крепкий напиток с насыщенным вкусом и ароматом выдержанного дуба."

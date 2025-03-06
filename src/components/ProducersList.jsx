@@ -1,64 +1,46 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-import { getProducerImage } from '../utils/imageUtils';
-
 const ProducerCard = ({
   producer
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const imageTypes = ['exterior', 'interior'];
-  
+  const images = [{
+    url: producer.producerImage.exterior,
+    label: 'Экстерьер'
+  }, {
+    url: producer.producerImage.interior,
+    label: 'Интерьер'
+  }];
   const handleNextImage = e => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImageIndex(prev => (prev + 1) % imageTypes.length);
+    setCurrentImageIndex(prev => (prev + 1) % images.length);
   };
-  
   const handlePrevImage = e => {
     e.preventDefault();
     e.stopPropagation();
-    setCurrentImageIndex(prev => (prev - 1 + imageTypes.length) % imageTypes.length);
+    setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
   };
-
-  // Функция для получения изображения производителя
-  const getProducerImagePath = (producer, type) => {
-    return producer.producerImage && producer.producerImage[type]
-      ? getProducerImage(producer.producerImage[type])
-      : "/placeholder.svg";
+  const handleImageError = e => {
+    e.target.src = "/placeholder.svg";
   };
-  
-  return (
-    <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
+  return <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
       <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full flex flex-col">
         <div className="relative">
           <div className="w-full h-48 relative overflow-hidden">
-            <img 
-              src={getProducerImagePath(producer, imageTypes[currentImageIndex])} 
-              alt={`${producer.producerName} - ${imageTypes[currentImageIndex]}`} 
-              className="w-full h-full object-cover transition-transform duration-300" 
-              onError={(e) => {e.target.src = "/placeholder.svg"}} 
-            />
+            <img src={images[currentImageIndex].url || "/placeholder.svg"} alt={`${producer.producerName} - ${images[currentImageIndex].label}`} className="w-full h-full object-cover transition-transform duration-300" onError={handleImageError} />
             
             <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-              {imageTypes[currentImageIndex] === 'exterior' ? 'Экстерьер' : 'Интерьер'}
+              {images[currentImageIndex].label}
             </div>
             
-            <button 
-              onClick={handlePrevImage} 
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 backdrop-blur-sm transition-colors" 
-              aria-label="Предыдущее фото"
-            >
+            <button onClick={handlePrevImage} className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 backdrop-blur-sm transition-colors" aria-label="Предыдущее фото">
               <ChevronLeft size={20} />
             </button>
             
-            <button 
-              onClick={handleNextImage} 
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 backdrop-blur-sm transition-colors" 
-              aria-label="Следующее фото"
-            >
+            <button onClick={handleNextImage} className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 backdrop-blur-sm transition-colors" aria-label="Следующее фото">
               <ChevronRight size={20} />
             </button>
           </div>
@@ -86,10 +68,8 @@ const ProducerCard = ({
           </div>
         </div>
       </div>
-    </Link>
-  );
+    </Link>;
 };
-
 const ProducersList = ({
   producers,
   categoryName
@@ -105,7 +85,6 @@ const ProducersList = ({
       }
     }
   };
-  
   const item = {
     hidden: {
       opacity: 0,
@@ -116,32 +95,17 @@ const ProducersList = ({
       y: 0
     }
   };
-  
-  return (
-    <section className="py-12">
+  return <section className="py-12">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{categoryName}</h2>
         <p className="text-green-600 text-center mb-8">Выберите ресторан с уцененными товарами</p>
         
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" 
-          variants={container} 
-          initial="hidden" 
-          animate="show"
-        >
-          {producers.map((producer, index) => (
-            <motion.div 
-              key={index} 
-              variants={item} 
-              className="producer-card h-full"
-            >
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" variants={container} initial="hidden" animate="show">
+          {producers.map((producer, index) => <motion.div key={index} variants={item} className="producer-card h-full">
               <ProducerCard producer={producer} />
-            </motion.div>
-          ))}
+            </motion.div>)}
         </motion.div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default ProducersList;
