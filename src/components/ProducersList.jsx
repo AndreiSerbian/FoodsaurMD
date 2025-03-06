@@ -31,6 +31,10 @@ const ProducerCard = ({
     setCurrentImageIndex(prev => (prev - 1 + images.length) % images.length);
   };
   
+  const handleImageError = e => {
+    e.target.src = "/placeholder.svg";
+  };
+  
   return (
     <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
       <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full flex flex-col">
@@ -40,7 +44,7 @@ const ProducerCard = ({
               src={images[currentImageIndex].url} 
               alt={`${producer.producerName} - ${images[currentImageIndex].label}`} 
               className="w-full h-full object-cover transition-transform duration-300" 
-              onError={(e) => {e.target.src = "/placeholder.svg"}} 
+              onError={handleImageError} 
             />
             
             <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">

@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { producersData } from '../data/products';
-import { getCategoryImage, getProducerImage } from '../utils/imageUtils';
 
 const CategoryList = ({
   categories
@@ -45,7 +44,7 @@ const CategoryList = ({
   };
 
   // Функция для получения изображения по категории и состоянию наведения
-  const getCategoryImagePath = category => {
+  const getCategoryImage = category => {
     const producer = producersData.find(p => p.categoryName === category && p.producerName === hoveredProducer);
     if (hoveredCategory === category && producer && producer.producerImage.interior) {
       return producer.producerImage.interior;
@@ -81,10 +80,10 @@ const CategoryList = ({
                   onMouseLeave={handleMouseLeave}
                 >
                   <img 
-                    src={getCategoryImagePath(category)} 
+                    src={getCategoryImage(category)} 
                     alt={category} 
                     className="w-full h-64 object-cover transition-transform duration-500"
-                    onError={(e) => {e.target.src = "/placeholder.svg"}}  
+                    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}  
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
                     <h3 className="text-white text-xl font-semibold p-4">{category}</h3>

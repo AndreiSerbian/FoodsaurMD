@@ -12,6 +12,11 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   
+  const images = producer ? [
+    { url: producer.producerImage.exterior, label: 'Экстерьер' },
+    { url: producer.producerImage.interior, label: 'Интерьер' }
+  ] : [];
+
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
@@ -21,6 +26,18 @@ const Products = () => {
       setLoading(false);
     }, 500);
   }, [producerName]);
+
+  const handleNextImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrevImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+  };
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -40,23 +57,6 @@ const Products = () => {
         </Link>
       </div>;
   }
-
-  const images = [
-    { url: producer.producerImage.exterior, label: 'Экстерьер' },
-    { url: producer.producerImage.interior, label: 'Интерьер' }
-  ];
-
-  const handleNextImage = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImage((prev) => (prev + 1) % images.length);
-  };
-
-  const handlePrevImage = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
-  };
 
   return <div className="min-h-screen pb-20">
       <div className="container mx-auto px-4 py-8">
@@ -89,7 +89,7 @@ const Products = () => {
             src={images[currentImage].url || "/placeholder.svg"} 
             alt={`${producer.producerName} - ${images[currentImage].label}`} 
             className="w-full h-full object-cover"
-            onError={(e) => {e.target.src = "/placeholder.svg"}}
+            onError={(e) => {e.currentTarget.src = "/placeholder.svg"}}
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
