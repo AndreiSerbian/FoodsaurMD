@@ -66,7 +66,7 @@ const ProductsList = ({
             >
               <div className="relative">
                 <img 
-                  src={product.image} 
+                  src={typeof product.image === 'function' ? product.image() : product.image} 
                   alt={product.productName} 
                   className="w-full h-48 object-cover rounded-t-2xl"
                   onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
@@ -74,6 +74,11 @@ const ProductsList = ({
                 {product.priceDiscount < product.priceRegular && (
                   <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
                     -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
+                  </div>
+                )}
+                {product.quantity !== undefined && product.quantity <= 0 && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-t-2xl">
+                    <span className="text-white font-bold text-xl">Нет в наличии</span>
                   </div>
                 )}
               </div>
@@ -93,11 +98,12 @@ const ProductsList = ({
                 <button 
                   onClick={() => handleAddToCart(product)} 
                   className="w-full text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 flex items-center justify-center btn-hover bg-green-900 hover:bg-green-800"
+                  disabled={product.quantity !== undefined && product.quantity <= 0}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Добавить в корзину
+                  {product.quantity !== undefined && product.quantity <= 0 ? 'Нет в наличии' : 'Добавить в корзину'}
                 </button>
               </div>
             </motion.div>
