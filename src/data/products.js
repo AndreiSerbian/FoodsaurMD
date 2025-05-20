@@ -183,7 +183,8 @@ export const producersData = [
     get producerImage() { 
       return {
         exterior: getProducerImage("retro-bakery", "exterior"),
-        interior: getProducerImage("retro-bakery", "interior")
+        interior: getProducerImage("retro-bakery", "interior"),
+        logo: getProducerImage("retro-bakery", "logo")
       };
     },
     discountAvailableTime: "с 17:00 до 19:30",

@@ -7,6 +7,7 @@ import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import ProductManagement from '../components/ProductManagement';
 import { useToast } from '../components/ui/use-toast';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 
 const ProducerDashboard = () => {
   const { currentProducer, logout } = useProducerAuth();
@@ -59,7 +60,14 @@ const ProducerDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <div className="flex-shrink-0 flex items-center">
+              <div className="flex-shrink-0 flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage 
+                    src={producer.producerImage.logo} 
+                    alt={producer.producerName} 
+                  />
+                  <AvatarFallback>{producer.producerName.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <h1 className="text-xl font-bold text-green-600">{producer.producerName}</h1>
               </div>
               <div className="ml-6 flex space-x-8">
