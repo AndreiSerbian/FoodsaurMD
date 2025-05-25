@@ -1,36 +1,40 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  updateProduct, 
-  addProduct, 
-  deleteProduct, 
-  updateProducerDiscountTime 
-} from '../data/products';
 import { useToast } from '../components/ui/use-toast';
+import { useProducerProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../hooks/useProducerProducts';
+import { useUpdateProducerProfile } from '../hooks/useProducerProfile';
 
 const ProductManagement = ({ producer }) => {
   const { toast } = useToast();
   const [editingProduct, setEditingProduct] = useState(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
-  const [discountTime, setDiscountTime] = useState(producer.discountAvailableTime);
+  const [discountTime, setDiscountTime] = useState(producer?.discount_available_time || '');
+  
+  const { data: products = [], isLoading } = useProducerProducts(producer?.id);
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
+  const deleteProduct = useDeleteProduct();
+  const updateProfile = useUpdateProducerProfile();
   
   // Состояние для нового или редактируемого продукта
   const [formData, setFormData] = useState({
-    productName: '',
+    name: '',
     description: '',
-    priceRegular: 0,
-    priceDiscount: 0,
-    image: null
+    price_regular: 0,
+    price_discount: 0,
+    quantity: 0,
+    image_url: ''
   });
   
   const resetForm = () => {
     setFormData({
-      productName: '',
+      name: '',
       description: '',
-      priceRegular: 0,
-      priceDiscount: 0,
-      image: null
+      price_regular: 0,
+      price_discount: 0,
+      quantity: 0,
+      image_url: ''
     });
     setEditingProduct(null);
     setIsAddingNew(false);
@@ -38,11 +42,12 @@ const ProductManagement = ({ producer }) => {
   
   const startEditing = (product) => {
     setFormData({
-      productName: product.productName,
-      description: product.description,
-      priceRegular: product.priceRegular,
-      priceDiscount: product.priceDiscount,
-      image: null
+      name: product.name,
+      description: product.description || '',
+      price_regular: product.price_regular,
+      price_discount: product.price_discount || 0,
+      quantity: product.quantity,
+      image_url: product.image_url || ''
     });
     setEditingProduct(product);
     setIsAddingNew(false);
@@ -56,12 +61,7 @@ const ProductManagement = ({ producer }) => {
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
     
-    if (type === 'file') {
-      setFormData({
-        ...formData,
-        image: e.target.files[0]
-      });
-    } else if (name === 'priceRegular' || name === 'priceDiscount') {
+    if (name === 'price_regular' || name === 'price_discount' || name === 'quantity') {
       setFormData({
         ...formData,
         [name]: Number(value)
@@ -74,20 +74,30 @@ const ProductManagement = ({ producer }) => {
     }
   };
   
-  const handleDiscountTimeUpdate = () => {
-    updateProducerDiscountTime(producer.producerName, discountTime);
-    toast({
-      title: "Успешно обновлено",
-      description: "Время действия скидок обновлено.",
-      variant: "success"
-    });
+  const handleDiscountTimeUpdate = async () => {
+    try {
+      await updateProfile.mutateAsync({
+        discount_available_time: discountTime
+      });
+      
+      toast({
+        title: "Успешно обновлено",
+        description: "Время действия скидок обновлено.",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить время действия скидок.",
+        variant: "destructive"
+      });
+    }
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Проверим валидность данных
-    if (!formData.productName || !formData.description || formData.priceRegular <= 0) {
+    if (!formData.name || !formData.description || formData.price_regular <= 0) {
       toast({
         title: "Ошибка валидации",
         description: "Пожалуйста, заполните все обязательные поля.",
@@ -99,39 +109,35 @@ const ProductManagement = ({ producer }) => {
     try {
       if (editingProduct) {
         // Обновляем существующий продукт
-        updateProduct(
-          producer.producerName,
-          editingProduct.productName,
-          {
-            productName: formData.productName,
-            description: formData.description,
-            priceRegular: formData.priceRegular,
-            priceDiscount: formData.priceDiscount
-          }
-        );
+        await updateProduct.mutateAsync({
+          id: editingProduct.id,
+          name: formData.name,
+          description: formData.description,
+          price_regular: formData.price_regular,
+          price_discount: formData.price_discount || null,
+          quantity: formData.quantity,
+          image_url: formData.image_url || null
+        });
         
         toast({
           title: "Успешно обновлено",
-          description: `Товар "${formData.productName}" обновлен.`,
-          variant: "success"
+          description: `Товар "${formData.name}" обновлен.`,
         });
       } else if (isAddingNew) {
         // Добавляем новый продукт
-        addProduct(
-          producer.producerName,
-          {
-            productName: formData.productName,
-            description: formData.description,
-            priceRegular: formData.priceRegular,
-            priceDiscount: formData.priceDiscount,
-            get image() { return "/placeholder.svg"; } // В реальном приложении загружали бы изображение
-          }
-        );
+        await createProduct.mutateAsync({
+          producer_id: producer.id,
+          name: formData.name,
+          description: formData.description,
+          price_regular: formData.price_regular,
+          price_discount: formData.price_discount || null,
+          quantity: formData.quantity,
+          image_url: formData.image_url || "/placeholder.svg"
+        });
         
         toast({
           title: "Успешно добавлено",
-          description: `Товар "${formData.productName}" добавлен.`,
-          variant: "success"
+          description: `Товар "${formData.name}" добавлен.`,
         });
       }
       
@@ -146,17 +152,16 @@ const ProductManagement = ({ producer }) => {
     }
   };
   
-  const handleDelete = (productName) => {
-    if (window.confirm(`Вы уверены, что хотите удалить товар "${productName}"?`)) {
-      const success = deleteProduct(producer.producerName, productName);
-      
-      if (success) {
+  const handleDelete = async (product) => {
+    if (window.confirm(`Вы уверены, что хотите удалить товар "${product.name}"?`)) {
+      try {
+        await deleteProduct.mutateAsync(product.id);
+        
         toast({
           title: "Успешно удалено",
-          description: `Товар "${productName}" удален.`,
-          variant: "success"
+          description: `Товар "${product.name}" удален.`,
         });
-      } else {
+      } catch (error) {
         toast({
           title: "Ошибка",
           description: "Товар не может быть удален.",
@@ -165,6 +170,12 @@ const ProductManagement = ({ producer }) => {
       }
     }
   };
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center py-8">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+    </div>;
+  }
   
   return (
     <div className="space-y-8">
@@ -180,9 +191,10 @@ const ProductManagement = ({ producer }) => {
           />
           <button
             onClick={handleDiscountTimeUpdate}
-            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            disabled={updateProfile.isPending}
+            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
           >
-            Обновить
+            {updateProfile.isPending ? 'Обновление...' : 'Обновить'}
           </button>
         </div>
       </section>
@@ -191,7 +203,7 @@ const ProductManagement = ({ producer }) => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-medium text-gray-900">
             {editingProduct 
-              ? `Редактирование товара: ${editingProduct.productName}`
+              ? `Редактирование товара: ${editingProduct.name}`
               : isAddingNew 
                 ? "Добавление нового товара" 
                 : "Управление товарами"
@@ -211,14 +223,14 @@ const ProductManagement = ({ producer }) => {
         {(editingProduct || isAddingNew) ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="productName" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Название товара *
               </label>
               <input
                 type="text"
-                name="productName"
-                id="productName"
-                value={formData.productName}
+                name="name"
+                id="name"
+                value={formData.name}
                 onChange={handleInputChange}
                 required
                 className="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -240,18 +252,18 @@ const ProductManagement = ({ producer }) => {
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="priceRegular" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="price_regular" className="block text-sm font-medium text-gray-700">
                   Обычная цена (MDL) *
                 </label>
                 <input
                   type="number"
-                  name="priceRegular"
-                  id="priceRegular"
+                  name="price_regular"
+                  id="price_regular"
                   min="0"
                   step="0.01"
-                  value={formData.priceRegular}
+                  value={formData.price_regular}
                   onChange={handleInputChange}
                   required
                   className="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -259,16 +271,31 @@ const ProductManagement = ({ producer }) => {
               </div>
               
               <div>
-                <label htmlFor="priceDiscount" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="price_discount" className="block text-sm font-medium text-gray-700">
                   Цена со скидкой (MDL)
                 </label>
                 <input
                   type="number"
-                  name="priceDiscount"
-                  id="priceDiscount"
+                  name="price_discount"
+                  id="price_discount"
                   min="0"
                   step="0.01"
-                  value={formData.priceDiscount}
+                  value={formData.price_discount}
+                  onChange={handleInputChange}
+                  className="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                  Количество
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  id="quantity"
+                  min="0"
+                  value={formData.quantity}
                   onChange={handleInputChange}
                   className="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 />
@@ -276,22 +303,17 @@ const ProductManagement = ({ producer }) => {
             </div>
             
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700">
-                Изображение товара
+              <label htmlFor="image_url" className="block text-sm font-medium text-gray-700">
+                URL изображения товара
               </label>
               <input
-                type="file"
-                name="image"
-                id="image"
-                accept="image/*"
+                type="url"
+                name="image_url"
+                id="image_url"
+                value={formData.image_url}
                 onChange={handleInputChange}
-                className="mt-1 block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-green-50 file:text-green-700
-                  hover:file:bg-green-100
-                "
+                placeholder="https://example.com/image.jpg"
+                className="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
               />
               <p className="mt-1 text-sm text-gray-500">
                 Рекомендуемый размер: 800x600 пикселей
@@ -309,9 +331,13 @@ const ProductManagement = ({ producer }) => {
               
               <button
                 type="submit"
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                disabled={createProduct.isPending || updateProduct.isPending}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
               >
-                {editingProduct ? "Обновить товар" : "Добавить товар"}
+                {createProduct.isPending || updateProduct.isPending 
+                  ? 'Сохранение...' 
+                  : editingProduct ? "Обновить товар" : "Добавить товар"
+                }
               </button>
             </div>
           </form>
@@ -322,31 +348,33 @@ const ProductManagement = ({ producer }) => {
             animate={{ opacity: 1 }}
             transition={{ staggerChildren: 0.05 }}
           >
-            {producer.products.map((product, index) => (
+            {products.map((product) => (
               <motion.div 
-                key={index}
+                key={product.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-gray-50 rounded-lg overflow-hidden shadow"
               >
                 <div className="h-40 overflow-hidden">
                   <img
-                    src={typeof product.image === 'function' ? product.image() : product.image}
-                    alt={product.productName}
+                    src={product.image_url || "/placeholder.svg"}
+                    alt={product.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {e.target.src = "/placeholder.svg"}}
                   />
                 </div>
                 
                 <div className="p-4">
-                  <h4 className="text-lg font-medium text-gray-900">{product.productName}</h4>
+                  <h4 className="text-lg font-medium text-gray-900">{product.name}</h4>
                   <p className="mt-1 text-sm text-gray-500 line-clamp-2">{product.description}</p>
                   
                   <div className="mt-2 flex justify-between items-center">
                     <div className="text-sm">
-                      <span className="font-medium text-green-600">{product.priceDiscount} MDL</span>
-                      {product.priceDiscount < product.priceRegular && (
-                        <span className="ml-2 line-through text-gray-400">{product.priceRegular} MDL</span>
+                      <span className="font-medium text-green-600">
+                        {product.price_discount || product.price_regular} MDL
+                      </span>
+                      {product.price_discount && product.price_discount < product.price_regular && (
+                        <span className="ml-2 line-through text-gray-400">{product.price_regular} MDL</span>
                       )}
                     </div>
                     
@@ -362,8 +390,9 @@ const ProductManagement = ({ producer }) => {
                         </svg>
                       </button>
                       <button
-                        onClick={() => handleDelete(product.productName)}
-                        className="p-1 rounded-md hover:bg-gray-200"
+                        onClick={() => handleDelete(product)}
+                        disabled={deleteProduct.isPending}
+                        className="p-1 rounded-md hover:bg-gray-200 disabled:opacity-50"
                         title="Удалить"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
@@ -371,6 +400,10 @@ const ProductManagement = ({ producer }) => {
                         </svg>
                       </button>
                     </div>
+                  </div>
+                  
+                  <div className="mt-2 text-sm text-gray-500">
+                    Количество: {product.quantity}
                   </div>
                 </div>
               </motion.div>

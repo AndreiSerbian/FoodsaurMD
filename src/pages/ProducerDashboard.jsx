@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useProducerAuth } from '../contexts/ProducerAuthContext';
-import { getProducerByName } from '../data/products';
+import { useProducerProfile } from '../hooks/useProducerProfile';
 import ProductsList from '../components/ProductsList';
 import ProductManagement from '../components/ProductManagement';
 import { useToast } from '../components/ui/use-toast';
@@ -14,6 +14,8 @@ const ProducerDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('products');
+  
+  const { data: producerProfile, isLoading } = useProducerProfile();
   
   // Перенаправление на страницу входа, если не авторизован
   React.useEffect(() => {
@@ -27,12 +29,16 @@ const ProducerDashboard = () => {
       <p className="text-gray-500">Загрузка...</p>
     </div>;
   }
-  
-  const producer = getProducerByName(currentProducer.producerName);
-  
-  if (!producer) {
+
+  if (isLoading) {
+    return <div className="h-screen flex justify-center items-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-500"></div>
+    </div>;
+  }
+
+  if (!producerProfile) {
     return <div className="h-screen flex flex-col justify-center items-center">
-      <p className="text-gray-500">Производитель не найден</p>
+      <p className="text-gray-500">Профиль производителя не найден</p>
       <button 
         onClick={() => {
           logout();
@@ -63,12 +69,12 @@ const ProducerDashboard = () => {
               <div className="flex-shrink-0 flex items-center gap-3">
                 <Avatar className="h-10 w-10">
                   <AvatarImage 
-                    src={producer.producerImage.logo} 
-                    alt={producer.producerName} 
+                    src={producerProfile.logo_url || "/placeholder.svg"} 
+                    alt={producerProfile.producer_name} 
                   />
-                  <AvatarFallback>{producer.producerName.charAt(0)}</AvatarFallback>
+                  <AvatarFallback>{producerProfile.producer_name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <h1 className="text-xl font-bold text-green-600">{producer.producerName}</h1>
+                <h1 className="text-xl font-bold text-green-600">{producerProfile.producer_name}</h1>
               </div>
               <div className="ml-6 flex space-x-8">
                 <button
@@ -106,10 +112,10 @@ const ProducerDashboard = () => {
         {activeTab === 'products' ? (
           <div>
             <h2 className="text-2xl font-bold mb-4">Ваши товары</h2>
-            <ProductsList products={producer.products} producer={producer} />
+            <ProductsList producer={producerProfile} />
           </div>
         ) : (
-          <ProductManagement producer={producer} />
+          <ProductManagement producer={producerProfile} />
         )}
       </motion.main>
     </div>

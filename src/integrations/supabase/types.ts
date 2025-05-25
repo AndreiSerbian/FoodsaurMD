@@ -9,7 +9,95 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      producer_products: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price_discount: number | null
+          price_regular: number
+          producer_id: string
+          quantity: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price_discount?: number | null
+          price_regular: number
+          producer_id: string
+          quantity?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price_discount?: number | null
+          price_regular?: number
+          producer_id?: string
+          quantity?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producer_products_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      producer_profiles: {
+        Row: {
+          address: string | null
+          category_name: string | null
+          created_at: string | null
+          discount_available_time: string | null
+          exterior_image_url: string | null
+          id: string
+          interior_image_url: string | null
+          logo_url: string | null
+          producer_name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          category_name?: string | null
+          created_at?: string | null
+          discount_available_time?: string | null
+          exterior_image_url?: string | null
+          id?: string
+          interior_image_url?: string | null
+          logo_url?: string | null
+          producer_name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          category_name?: string | null
+          created_at?: string | null
+          discount_available_time?: string | null
+          exterior_image_url?: string | null
+          id?: string
+          interior_image_url?: string | null
+          logo_url?: string | null
+          producer_name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
