@@ -22,9 +22,7 @@ const Layout = ({ children }) => {
             </Link>
           </nav>
           <div className="flex items-center space-x-4">
-            <div className="md:hidden">
-              <BurgerMenu />
-            </div>
+            <BurgerMenu />
           </div>
         </div>
       </header>
