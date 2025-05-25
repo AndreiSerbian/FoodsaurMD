@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useProducerAuth } from '../contexts/ProducerAuthContext';
+import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
 import { useProducerProfile } from '../hooks/useProducerProfile';
 import ProductsList from '../components/ProductsList';
 import ProductManagement from '../components/ProductManagement';
@@ -10,21 +11,38 @@ import { useToast } from '../components/ui/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/avatar';
 
 const ProducerDashboard = () => {
-  const { currentProducer, logout } = useProducerAuth();
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('products');
   
   const { data: producerProfile, isLoading } = useProducerProfile();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth/login');
+      } else {
+        setUser(user);
+      }
+    };
+    
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/auth/login');
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
   
-  // Перенаправление на страницу входа, если не авторизован
-  React.useEffect(() => {
-    if (!currentProducer) {
-      navigate('/producer/login');
-    }
-  }, [currentProducer, navigate]);
-  
-  if (!currentProducer) {
+  if (!user) {
     return <div className="h-screen flex justify-center items-center">
       <p className="text-gray-500">Загрузка...</p>
     </div>;
@@ -40,9 +58,9 @@ const ProducerDashboard = () => {
     return <div className="h-screen flex flex-col justify-center items-center">
       <p className="text-gray-500">Профиль производителя не найден</p>
       <button 
-        onClick={() => {
-          logout();
-          navigate('/producer/login');
+        onClick={async () => {
+          await supabase.auth.signOut();
+          navigate('/auth/login');
         }}
         className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
       >
@@ -51,13 +69,13 @@ const ProducerDashboard = () => {
     </div>;
   }
   
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     toast({
       title: "Выход выполнен",
       description: "Вы успешно вышли из системы.",
     });
-    navigate('/producer/login');
+    navigate('/auth/login');
   };
   
   return (
@@ -81,7 +99,7 @@ const ProducerDashboard = () => {
                   onClick={() => setActiveTab('products')}
                   className={`border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${activeTab === 'products' ? 'border-green-500 text-gray-900' : ''}`}
                 >
-                  Товары
+                  {t('products')}
                 </button>
                 <button
                   onClick={() => setActiveTab('manage')}
@@ -96,7 +114,7 @@ const ProducerDashboard = () => {
                 onClick={handleLogout}
                 className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700"
               >
-                Выйти
+                {t('logout')}
               </button>
             </div>
           </div>

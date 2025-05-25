@@ -1,17 +1,31 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Cart from './Cart';
-const Layout = ({
-  children
-}) => {
-  return <div className="min-h-screen flex flex-col bg-background">
+import BurgerMenu from './BurgerMenu';
+
+const Layout = ({ children }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold text-green-900">Foodsaur</Link>
           <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-green-600 hover:text-green-900 transition duration-200">Главная</Link>
-            
+            <Link to="/" className="text-green-600 hover:text-green-900 transition duration-200">
+              {t('home')}
+            </Link>
+            <Link to="/map" className="text-green-600 hover:text-green-900 transition duration-200">
+              {t('producersMap')}
+            </Link>
           </nav>
+          <div className="flex items-center space-x-4">
+            <div className="md:hidden">
+              <BurgerMenu />
+            </div>
+          </div>
         </div>
       </header>
       
@@ -29,6 +43,8 @@ const Layout = ({
       </footer>
       
       <Cart />
-    </div>;
+    </div>
+  );
 };
+
 export default Layout;

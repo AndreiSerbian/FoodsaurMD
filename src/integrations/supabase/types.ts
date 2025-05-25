@@ -62,10 +62,12 @@ export type Database = {
           category_name: string | null
           created_at: string | null
           discount_available_time: string | null
+          email_verified: boolean | null
           exterior_image_url: string | null
           id: string
           interior_image_url: string | null
           logo_url: string | null
+          phone: string | null
           producer_name: string
           updated_at: string | null
           user_id: string
@@ -75,10 +77,12 @@ export type Database = {
           category_name?: string | null
           created_at?: string | null
           discount_available_time?: string | null
+          email_verified?: boolean | null
           exterior_image_url?: string | null
           id?: string
           interior_image_url?: string | null
           logo_url?: string | null
+          phone?: string | null
           producer_name: string
           updated_at?: string | null
           user_id: string
@@ -88,10 +92,12 @@ export type Database = {
           category_name?: string | null
           created_at?: string | null
           discount_available_time?: string | null
+          email_verified?: boolean | null
           exterior_image_url?: string | null
           id?: string
           interior_image_url?: string | null
           logo_url?: string | null
+          phone?: string | null
           producer_name?: string
           updated_at?: string | null
           user_id?: string
