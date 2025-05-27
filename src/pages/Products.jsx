@@ -11,9 +11,10 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   
+  // Безопасно получаем изображения
   const images = producer ? [
-    { url: producer.producerImage.exterior, label: 'Экстерьер' },
-    { url: producer.producerImage.interior, label: 'Интерьер' }
+    { url: producer.producerImage?.exterior || "/placeholder.svg", label: 'Экстерьер' },
+    { url: producer.producerImage?.interior || "/placeholder.svg", label: 'Интерьер' }
   ] : [];
 
   useEffect(() => {
@@ -22,9 +23,27 @@ const Products = () => {
       const decodedProducerName = decodeURIComponent(producerName);
       console.log('Looking for producer:', decodedProducerName);
       const foundProducer = getProducerByName(decodedProducerName);
-      console.log('Found producer:', foundProducer);
-      console.log('Producer products:', foundProducer?.products);
-      setProducer(foundProducer);
+      
+      if (foundProducer) {
+        // Создаем безопасную копию данных производителя
+        const safeProducer = {
+          ...foundProducer,
+          producerImage: {
+            exterior: foundProducer.producerImage?.exterior || "/placeholder.svg",
+            interior: foundProducer.producerImage?.interior || "/placeholder.svg"
+          },
+          products: foundProducer.products?.map(product => ({
+            ...product,
+            image: product.image || "/placeholder.svg"
+          })) || []
+        };
+        
+        console.log('Safe producer data:', safeProducer);
+        setProducer(safeProducer);
+      } else {
+        console.log('Producer not found');
+        setProducer(null);
+      }
       setLoading(false);
     }, 500);
   }, [producerName]);

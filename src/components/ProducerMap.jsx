@@ -16,6 +16,11 @@ const ProducerMap = ({ producer }) => {
   const [coordinates, setCoordinates] = useState(null);
 
   useEffect(() => {
+    if (!producer || !producer.address) {
+      console.log('No producer or address provided to map');
+      return;
+    }
+
     // For demo purposes, generate coordinates based on address
     // In real app, you'd geocode the address
     const getCoordinatesFromAddress = (address) => {
@@ -29,12 +34,17 @@ const ProducerMap = ({ producer }) => {
       ];
     };
 
-    if (producer && producer.address) {
-      setCoordinates(getCoordinatesFromAddress(producer.address));
+    try {
+      const coords = getCoordinatesFromAddress(producer.address);
+      console.log('Generated coordinates for producer:', producer.producerName, coords);
+      setCoordinates(coords);
+    } catch (error) {
+      console.error('Error generating coordinates:', error);
     }
   }, [producer]);
 
   if (!coordinates || !producer) {
+    console.log('Map not rendering - missing coordinates or producer');
     return null;
   }
 
@@ -54,8 +64,8 @@ const ProducerMap = ({ producer }) => {
           <Marker position={coordinates}>
             <Popup>
               <div className="p-2">
-                <h4 className="font-bold text-lg">{producer.producerName || producer.producer_name}</h4>
-                <p className="text-sm text-gray-600">{producer.address}</p>
+                <h4 className="font-bold text-lg">{producer.producerName || 'Производитель'}</h4>
+                <p className="text-sm text-gray-600">{producer.address || 'Адрес не указан'}</p>
                 {producer.phone && (
                   <p className="text-sm text-gray-600">
                     <strong>Телефон:</strong> {producer.phone}
