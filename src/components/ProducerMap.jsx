@@ -16,7 +16,7 @@ const ProducerMap = ({ producer }) => {
   const [coordinates, setCoordinates] = useState(null);
 
   useEffect(() => {
-    if (!producer || !producer.address) {
+    if (!producer?.address) {
       console.log('No producer or address provided to map');
       return;
     }

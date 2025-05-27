@@ -37,11 +37,11 @@ const ProducersMap = () => {
 
       // For demo purposes, we'll add some mock coordinates
       // In real app, you'd geocode the addresses
-      const producersWithCoords = data.map((producer, index) => ({
+      const producersWithCoords = data?.map((producer, index) => ({
         ...producer,
         lat: 47.0105 + (Math.random() - 0.5) * 0.1, // Chisinau area
         lng: 28.8638 + (Math.random() - 0.5) * 0.1,
-      }));
+      })) || [];
 
       setProducers(producersWithCoords);
     } catch (error) {
