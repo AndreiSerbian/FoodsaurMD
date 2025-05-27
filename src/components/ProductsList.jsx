@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useProducerProducts } from '../hooks/useProducerProducts';
+import ProducerMap from './ProducerMap';
 
 const ProductsList = ({ producer }) => {
   const { data: products = [], isLoading } = useProducerProducts(producer?.id);
@@ -41,6 +42,8 @@ const ProductsList = ({ producer }) => {
             Скидки доступны {producer?.discount_available_time || 'уточните время'}
           </p>
         </div>
+        
+        <ProducerMap producer={producer} />
         
         {products.length === 0 ? (
           <div className="text-center py-12">

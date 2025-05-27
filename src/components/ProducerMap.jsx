@@ -1,0 +1,73 @@
+
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default markers in react-leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const ProducerMap = ({ producer }) => {
+  const [coordinates, setCoordinates] = useState(null);
+
+  useEffect(() => {
+    // For demo purposes, generate coordinates based on address
+    // In real app, you'd geocode the address
+    const getCoordinatesFromAddress = (address) => {
+      // Mock coordinates around Chisinau area
+      const baseCoords = [47.0105, 28.8638];
+      const randomOffset = () => (Math.random() - 0.5) * 0.05;
+      
+      return [
+        baseCoords[0] + randomOffset(),
+        baseCoords[1] + randomOffset()
+      ];
+    };
+
+    if (producer && producer.address) {
+      setCoordinates(getCoordinatesFromAddress(producer.address));
+    }
+  }, [producer]);
+
+  if (!coordinates || !producer) {
+    return null;
+  }
+
+  return (
+    <div className="mb-8">
+      <h3 className="text-xl font-semibold mb-4 text-green-900">Местоположение</h3>
+      <div className="h-64 rounded-lg overflow-hidden shadow-lg">
+        <MapContainer
+          center={coordinates}
+          zoom={15}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <Marker position={coordinates}>
+            <Popup>
+              <div className="p-2">
+                <h4 className="font-bold text-lg">{producer.producerName || producer.producer_name}</h4>
+                <p className="text-sm text-gray-600">{producer.address}</p>
+                {producer.phone && (
+                  <p className="text-sm text-gray-600">
+                    <strong>Телефон:</strong> {producer.phone}
+                  </p>
+                )}
+              </div>
+            </Popup>
+          </Marker>
+        </MapContainer>
+      </div>
+    </div>
+  );
+};
+
+export default ProducerMap;

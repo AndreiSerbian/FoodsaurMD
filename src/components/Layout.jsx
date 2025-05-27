@@ -17,9 +17,6 @@ const Layout = ({ children }) => {
             <Link to="/" className="text-green-600 hover:text-green-900 transition duration-200">
               {t('home')}
             </Link>
-            <Link to="/map" className="text-green-600 hover:text-green-900 transition duration-200">
-              {t('producersMap')}
-            </Link>
           </nav>
           <div className="flex items-center space-x-4">
             <BurgerMenu />
