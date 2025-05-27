@@ -20,8 +20,10 @@ const Products = () => {
     // Simulate API call
     setTimeout(() => {
       const decodedProducerName = decodeURIComponent(producerName);
+      console.log('Looking for producer:', decodedProducerName);
       const foundProducer = getProducerByName(decodedProducerName);
       console.log('Found producer:', foundProducer);
+      console.log('Producer products:', foundProducer?.products);
       setProducer(foundProducer);
       setLoading(false);
     }, 500);

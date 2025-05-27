@@ -24,6 +24,7 @@ const ProductsList = ({ producer }) => {
   };
 
   console.log('ProductsList producer:', producer);
+  console.log('Producer products:', producer?.products);
   
   return (
     <section className="py-12">
@@ -49,53 +50,59 @@ const ProductsList = ({ producer }) => {
             initial="hidden" 
             animate="show"
           >
-            {producer.products.map((product, index) => (
-              <motion.div 
-                key={index} 
-                variants={item} 
-                className="product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-              >
-                <div className="relative">
-                  <img 
-                    src={product.image || "/placeholder.svg"} 
-                    alt={product.productName} 
-                    className="w-full h-48 object-cover"
-                    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-                  />
-                  {product.priceDiscount && product.priceDiscount < product.priceRegular && (
-                    <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
-                      -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
-                    </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2">{product.productName}</h3>
-                  <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">{product.description}</p>
-                  
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <span className="text-lg font-bold text-green-600">
-                        {product.priceDiscount || product.priceRegular} MDL
-                      </span>
-                      {product.priceDiscount && product.priceDiscount < product.priceRegular && (
-                        <span className="text-sm text-gray-500 line-through ml-2">
-                          {product.priceRegular} MDL
-                        </span>
-                      )}
-                    </div>
+            {producer.products.map((product, index) => {
+              console.log('Rendering product:', product);
+              return (
+                <motion.div 
+                  key={index} 
+                  variants={item} 
+                  className="product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                >
+                  <div className="relative">
+                    <img 
+                      src={product.image || "/placeholder.svg"} 
+                      alt={product.productName} 
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        console.log('Image error for product:', product.productName);
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
+                    {product.priceDiscount && product.priceDiscount < product.priceRegular && (
+                      <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
+                        -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
+                      </div>
+                    )}
                   </div>
-                  
-                  <button 
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Добавить в корзину
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold mb-2">{product.productName}</h3>
+                    <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">{product.description}</p>
+                    
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <span className="text-lg font-bold text-green-600">
+                          {product.priceDiscount || product.priceRegular} MDL
+                        </span>
+                        {product.priceDiscount && product.priceDiscount < product.priceRegular && (
+                          <span className="text-sm text-gray-500 line-through ml-2">
+                            {product.priceRegular} MDL
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <button 
+                      className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Добавить в корзину
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         )}
       </div>
