@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
+import L, { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { ProducerWithProducts } from '../hooks/useProducersWithProducts';
 
@@ -18,7 +18,7 @@ interface ProducerMapProps {
 }
 
 const ProducerMap: React.FC<ProducerMapProps> = ({ producer }) => {
-  const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
+  const [coordinates, setCoordinates] = useState<LatLngExpression | null>(null);
 
   useEffect(() => {
     if (!producer?.address) {
@@ -28,7 +28,7 @@ const ProducerMap: React.FC<ProducerMapProps> = ({ producer }) => {
 
     // For demo purposes, generate coordinates based on address
     // In real app, you'd geocode the address
-    const getCoordinatesFromAddress = (address: string): [number, number] => {
+    const getCoordinatesFromAddress = (address: string): LatLngExpression => {
       // Mock coordinates around Chisinau area
       const baseCoords: [number, number] = [47.0105, 28.8638];
       const randomOffset = () => (Math.random() - 0.5) * 0.05;
@@ -60,7 +60,8 @@ const ProducerMap: React.FC<ProducerMapProps> = ({ producer }) => {
         <MapContainer
           center={coordinates}
           zoom={15}
-          style={{ height: '100%', width: '100%' } as React.CSSProperties}
+          style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={false}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

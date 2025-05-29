@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import L, { LatLngExpression } from 'leaflet';
 import type { Tables } from '@/integrations/supabase/types';
 
 // Fix for default markers in react-leaflet
@@ -65,6 +65,8 @@ const ProducersMap = () => {
     );
   }
 
+  const mapCenter: LatLngExpression = [47.0105, 28.8638];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -72,36 +74,40 @@ const ProducersMap = () => {
         
         <div className="h-96 md:h-[600px] rounded-lg overflow-hidden shadow-lg">
           <MapContainer
-            center={[47.0105, 28.8638] as [number, number]}
+            center={mapCenter}
             zoom={12}
-            style={{ height: '100%', width: '100%' } as React.CSSProperties}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            {producers.map((producer) => (
-              <Marker
-                key={producer.id}
-                position={[producer.lat, producer.lng] as [number, number]}
-              >
-                <Popup>
-                  <div className="p-2">
-                    <h3 className="font-bold text-lg">{producer.producer_name}</h3>
-                    {producer.phone && (
-                      <p className="text-sm text-gray-600">
-                        <strong>{t('phone')}:</strong> {producer.phone}
-                      </p>
-                    )}
-                    {producer.address && (
-                      <p className="text-sm text-gray-600">
-                        <strong>{t('address')}:</strong> {producer.address}
-                      </p>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+            {producers.map((producer) => {
+              const position: LatLngExpression = [producer.lat, producer.lng];
+              return (
+                <Marker
+                  key={producer.id}
+                  position={position}
+                >
+                  <Popup>
+                    <div className="p-2">
+                      <h3 className="font-bold text-lg">{producer.producer_name}</h3>
+                      {producer.phone && (
+                        <p className="text-sm text-gray-600">
+                          <strong>{t('phone')}:</strong> {producer.phone}
+                        </p>
+                      )}
+                      {producer.address && (
+                        <p className="text-sm text-gray-600">
+                          <strong>{t('address')}:</strong> {producer.address}
+                        </p>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
           </MapContainer>
         </div>
       </div>
