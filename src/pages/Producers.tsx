@@ -7,11 +7,11 @@ import { useCategoryBySlug } from '../hooks/useCategories';
 import ProducersList from '../components/ProducersList';
 
 const Producers = () => {
-  const { categoryName } = useParams<{ categoryName: string }>();
-  const decodedCategoryName = categoryName ? decodeURIComponent(categoryName) : '';
+  const { categorySlug } = useParams<{ categorySlug: string }>();
+  const decodedCategorySlug = categorySlug ? decodeURIComponent(categorySlug) : '';
   
-  const { data: category, isLoading: categoryLoading } = useCategoryBySlug(decodedCategoryName);
-  const { data: producers = [], isLoading: producersLoading, error } = useProducersByCategory(decodedCategoryName);
+  const { data: category, isLoading: categoryLoading } = useCategoryBySlug(decodedCategorySlug);
+  const { data: producers = [], isLoading: producersLoading, error } = useProducersByCategory(decodedCategorySlug);
 
   const loading = categoryLoading || producersLoading;
 

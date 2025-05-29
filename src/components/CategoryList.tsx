@@ -63,7 +63,7 @@ const CategoryList: React.FC = () => {
               className="category-card"
             >
               <Link 
-                to={`/producers/${encodeURIComponent(category.slug)}`}
+                to={`/category/${category.slug}`}
                 className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-105"
               >
                 <div className="relative h-48 overflow-hidden">

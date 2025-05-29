@@ -31,7 +31,7 @@ const App = () => (
                 <Home />
               </Layout>
             } />
-            <Route path="/producers/:categorySlug" element={
+            <Route path="/category/:categorySlug" element={
               <Layout>
                 <Producers />
               </Layout>
