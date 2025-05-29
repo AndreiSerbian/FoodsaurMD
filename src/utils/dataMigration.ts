@@ -31,6 +31,9 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
     let migratedCount = 0;
     const errors: string[] = [];
 
+    // Очищаем существующие демо-данные перед миграцией
+    await clearDemoData();
+
     for (const producer of producersData) {
       try {
         // Определяем category_id на основе названия категории
@@ -79,30 +82,15 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
           }
           producerId = updatedProducer.id;
         } else {
-          // Создаем нового производителя (требует user_id, используем временный UUID)
-          const tempUserId = crypto.randomUUID();
-          
-          const { data: newProducer, error: insertError } = await supabase
-            .from('producer_profiles')
-            .insert({
-              producer_name: producer.producerName,
-              category_id: categoryId,
-              address: producer.address,
-              phone: producer.phone,
-              discount_available_time: producer.discountAvailableTime,
-              exterior_image_url: producer.producerImage?.exterior,
-              interior_image_url: producer.producerImage?.interior,
-              user_id: tempUserId, // Временный ID, потребует обновления при регистрации
-              is_demo: isDemo,
-              is_verified: isVerified
-            })
-            .select('id')
-            .single();
-
-          if (insertError) {
-            throw new Error(`Failed to insert producer: ${insertError.message}`);
-          }
-          producerId = newProducer.id;
+          // Создаем нового производителя - требует настройки аутентификации
+          const result: MigrationResult = {
+            success: false,
+            message: 'Для создания новых производителей необходимо настроить систему аутентификации. Используйте SQL-миграцию в админ-панели Supabase.',
+            details: {
+              note: 'В данный момент можно только обновлять существующих производителей'
+            }
+          };
+          return result;
         }
 
         // Мигрируем продукты этого производителя
@@ -181,7 +169,7 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
   }
 };
 
-// Новая функция для очистки демо-данных
+// Функция для очистки демо-данных
 export const clearDemoData = async (): Promise<MigrationResult> => {
   try {
     console.log('Starting demo data cleanup...');
