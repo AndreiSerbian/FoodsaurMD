@@ -9,8 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       producer_products: {
         Row: {
+          category_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -23,6 +54,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -35,6 +67,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -48,6 +81,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "producer_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "producer_products_producer_id_fkey"
             columns: ["producer_id"]
             isOneToOne: false
@@ -59,6 +99,7 @@ export type Database = {
       producer_profiles: {
         Row: {
           address: string | null
+          category_id: string | null
           category_name: string | null
           created_at: string | null
           discount_available_time: string | null
@@ -74,6 +115,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          category_id?: string | null
           category_name?: string | null
           created_at?: string | null
           discount_available_time?: string | null
@@ -89,6 +131,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          category_id?: string | null
           category_name?: string | null
           created_at?: string | null
           discount_available_time?: string | null
@@ -102,7 +145,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "producer_profiles_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
