@@ -2,7 +2,8 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useProducersByCategory, useCategoryBySlug } from '../hooks/useProducersWithProducts';
+import { useProducersByCategory } from '../hooks/useProducersWithProducts';
+import { useCategoryBySlug } from '../hooks/useCategories';
 import ProducersList from '../components/ProducersList';
 
 const Producers = () => {

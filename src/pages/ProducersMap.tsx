@@ -8,7 +8,7 @@ import L from 'leaflet';
 import type { Tables } from '@/integrations/supabase/types';
 
 // Fix for default markers in react-leaflet
-delete L.Icon.Default.prototype._getIconUrl;
+delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -72,7 +72,7 @@ const ProducersMap = () => {
         
         <div className="h-96 md:h-[600px] rounded-lg overflow-hidden shadow-lg">
           <MapContainer
-            center={[47.0105, 28.8638]} // Chisinau coordinates
+            center={[47.0105, 28.8638] as [number, number]}
             zoom={12}
             style={{ height: '100%', width: '100%' }}
           >
