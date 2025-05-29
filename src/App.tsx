@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import ProducerAuth from "./pages/ProducerAuth";
 import ProducerDashboard from "./pages/ProducerDashboard";
 import ProducersMap from "./pages/ProducersMap";
+import AdminMigration from "./pages/AdminMigration";
 import "./i18n";
 
 const queryClient = new QueryClient();
@@ -30,7 +31,7 @@ const App = () => (
                 <Home />
               </Layout>
             } />
-            <Route path="/category/:categoryName" element={
+            <Route path="/producers/:categorySlug" element={
               <Layout>
                 <Producers />
               </Layout>
@@ -47,6 +48,7 @@ const App = () => (
             } />
             <Route path="/auth" element={<ProducerAuth />} />
             <Route path="/producer/dashboard" element={<ProducerDashboard />} />
+            <Route path="/admin-migration" element={<AdminMigration />} />
             <Route path="*" element={
               <Layout>
                 <NotFound />

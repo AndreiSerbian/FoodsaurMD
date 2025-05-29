@@ -42,6 +42,11 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
           }
         }
 
+        // Определяем флаги для маркировки данных
+        const isRetro = producer.producerName === 'Retro Bakery';
+        const isDemo = !isRetro; // Все кроме Retro Bakery - демо данные
+        const isVerified = isRetro; // Только Retro Bakery верифицирована
+
         // Проверяем, существует ли уже этот производитель
         const { data: existingProducer } = await supabase
           .from('producer_profiles')
@@ -61,7 +66,9 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
               phone: producer.phone,
               discount_available_time: producer.discountAvailableTime,
               exterior_image_url: producer.producerImage?.exterior,
-              interior_image_url: producer.producerImage?.interior
+              interior_image_url: producer.producerImage?.interior,
+              is_demo: isDemo,
+              is_verified: isVerified
             })
             .eq('id', existingProducer.id)
             .select('id')
@@ -85,7 +92,9 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
               discount_available_time: producer.discountAvailableTime,
               exterior_image_url: producer.producerImage?.exterior,
               interior_image_url: producer.producerImage?.interior,
-              user_id: tempUserId // Временный ID, потребует обновления при регистрации
+              user_id: tempUserId, // Временный ID, потребует обновления при регистрации
+              is_demo: isDemo,
+              is_verified: isVerified
             })
             .select('id')
             .single();
@@ -115,7 +124,8 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
               price_discount: product.priceDiscount ? Number(product.priceDiscount) : null,
               image_url: product.image,
               quantity: product.quantity || 0,
-              category_id: categoryId
+              category_id: categoryId,
+              is_demo: isDemo // Товары наследуют статус производителя
             };
 
             if (existingProduct) {
@@ -142,7 +152,7 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
         }
 
         migratedCount++;
-        console.log(`Migrated producer: ${producer.producerName}`);
+        console.log(`Migrated producer: ${producer.producerName} (demo: ${isDemo}, verified: ${isVerified})`);
       } catch (error) {
         const errorMsg = `Failed to migrate producer ${producer.producerName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         errors.push(errorMsg);
@@ -152,7 +162,7 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
 
     const result: MigrationResult = {
       success: errors.length === 0,
-      message: `Migration completed. ${migratedCount} producers processed.`,
+      message: `Migration completed. ${migratedCount} producers processed. Retro Bakery verified, others marked as demo.`,
       details: {
         migratedCount,
         errors: errors.length > 0 ? errors : undefined
@@ -163,6 +173,48 @@ export const migrateProducersToSupabase = async (): Promise<MigrationResult> => 
     return result;
   } catch (error) {
     const errorMsg = `Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    console.error(errorMsg);
+    return {
+      success: false,
+      message: errorMsg
+    };
+  }
+};
+
+// Новая функция для очистки демо-данных
+export const clearDemoData = async (): Promise<MigrationResult> => {
+  try {
+    console.log('Starting demo data cleanup...');
+
+    // Удаляем демо-продукты
+    const { error: productsError } = await supabase
+      .from('producer_products')
+      .delete()
+      .eq('is_demo', true);
+
+    if (productsError) {
+      throw new Error(`Failed to delete demo products: ${productsError.message}`);
+    }
+
+    // Удаляем демо-производителей
+    const { error: producersError } = await supabase
+      .from('producer_profiles')
+      .delete()
+      .eq('is_demo', true);
+
+    if (producersError) {
+      throw new Error(`Failed to delete demo producers: ${producersError.message}`);
+    }
+
+    const result: MigrationResult = {
+      success: true,
+      message: 'Demo data cleared successfully. Only verified producers remain.'
+    };
+
+    console.log('Demo cleanup result:', result);
+    return result;
+  } catch (error) {
+    const errorMsg = `Demo cleanup failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
     console.error(errorMsg);
     return {
       success: false,

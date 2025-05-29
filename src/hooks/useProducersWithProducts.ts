@@ -11,24 +11,37 @@ export interface ProducerWithProducts extends ProducerProfile {
   category?: Tables<'categories'>;
 }
 
-export const useProducersWithProducts = () => {
+export const useProducersWithProducts = (includeDemoData: boolean = false) => {
   return useQuery({
-    queryKey: ['producers-with-products'],
+    queryKey: ['producers-with-products', includeDemoData],
     queryFn: async () => {
       // Получаем производителей с их категориями
-      const { data: producers, error: producersError } = await supabase
+      let query = supabase
         .from('producer_profiles')
         .select(`
           *,
           category:categories(*)
         `);
 
+      // Фильтруем демо-данные если не нужны
+      if (!includeDemoData) {
+        query = query.eq('is_demo', false);
+      }
+
+      const { data: producers, error: producersError } = await query;
+
       if (producersError) throw producersError;
 
-      // Получаем все продукты
-      const { data: products, error: productsError } = await supabase
+      // Получаем продукты с учетом фильтра демо-данных
+      let productsQuery = supabase
         .from('producer_products')
         .select('*');
+
+      if (!includeDemoData) {
+        productsQuery = productsQuery.eq('is_demo', false);
+      }
+
+      const { data: products, error: productsError } = await productsQuery;
 
       if (productsError) throw productsError;
 
@@ -44,9 +57,9 @@ export const useProducersWithProducts = () => {
   });
 };
 
-export const useProducersByCategory = (categorySlug: string) => {
+export const useProducersByCategory = (categorySlug: string, includeDemoData: boolean = false) => {
   return useQuery({
-    queryKey: ['producers-by-category', categorySlug],
+    queryKey: ['producers-by-category', categorySlug, includeDemoData],
     queryFn: async () => {
       // Сначала получаем категорию по slug
       const { data: category, error: categoryError } = await supabase
@@ -58,7 +71,7 @@ export const useProducersByCategory = (categorySlug: string) => {
       if (categoryError) throw categoryError;
 
       // Затем получаем производителей этой категории с их товарами
-      const { data: producers, error: producersError } = await supabase
+      let query = supabase
         .from('producer_profiles')
         .select(`
           *,
@@ -66,13 +79,26 @@ export const useProducersByCategory = (categorySlug: string) => {
         `)
         .eq('category_id', category.id);
 
+      // Фильтруем демо-данные если не нужны
+      if (!includeDemoData) {
+        query = query.eq('is_demo', false);
+      }
+
+      const { data: producers, error: producersError } = await query;
+
       if (producersError) throw producersError;
 
       // Получаем продукты для этих производителей
-      const { data: products, error: productsError } = await supabase
+      let productsQuery = supabase
         .from('producer_products')
         .select('*')
         .in('producer_id', producers.map(p => p.id));
+
+      if (!includeDemoData) {
+        productsQuery = productsQuery.eq('is_demo', false);
+      }
+
+      const { data: products, error: productsError } = await productsQuery;
 
       if (productsError) throw productsError;
 
@@ -89,26 +115,38 @@ export const useProducersByCategory = (categorySlug: string) => {
   });
 };
 
-export const useProducerByName = (producerName: string) => {
+export const useProducerByName = (producerName: string, includeDemoData: boolean = false) => {
   return useQuery({
-    queryKey: ['producer-by-name', producerName],
+    queryKey: ['producer-by-name', producerName, includeDemoData],
     queryFn: async () => {
-      const { data: producer, error: producerError } = await supabase
+      let query = supabase
         .from('producer_profiles')
         .select(`
           *,
           category:categories(*)
         `)
-        .eq('producer_name', producerName)
-        .single();
+        .eq('producer_name', producerName);
+
+      // Фильтруем демо-данные если не нужны
+      if (!includeDemoData) {
+        query = query.eq('is_demo', false);
+      }
+
+      const { data: producer, error: producerError } = await query.single();
 
       if (producerError) throw producerError;
 
       // Получаем продукты производителя
-      const { data: products, error: productsError } = await supabase
+      let productsQuery = supabase
         .from('producer_products')
         .select('*')
         .eq('producer_id', producer.id);
+
+      if (!includeDemoData) {
+        productsQuery = productsQuery.eq('is_demo', false);
+      }
+
+      const { data: products, error: productsError } = await productsQuery;
 
       if (productsError) throw productsError;
 
