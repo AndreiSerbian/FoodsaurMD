@@ -45,8 +45,7 @@ const App = () => (
                 <ProducersMap />
               </Layout>
             } />
-            <Route path="/auth/login" element={<ProducerAuth />} />
-            <Route path="/auth/register" element={<ProducerAuth />} />
+            <Route path="/auth" element={<ProducerAuth />} />
             <Route path="/producer/dashboard" element={<ProducerDashboard />} />
             <Route path="*" element={
               <Layout>

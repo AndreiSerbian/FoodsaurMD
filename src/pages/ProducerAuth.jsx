@@ -13,7 +13,6 @@ const ProducerAuth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { toast } = useToast();
 
   useEffect(() => {
     const type = searchParams.get('type');
