@@ -4,38 +4,26 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCategories } from '../hooks/useCategories';
 
-const CategoryList = () => {
+const CategoryList: React.FC = () => {
   const { data: categories = [], isLoading, error } = useCategories();
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-green-900">
-            Категории товаров
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="animate-pulse">
-                <div className="bg-gray-300 h-48 rounded-2xl mb-4"></div>
-                <div className="h-6 bg-gray-300 rounded mb-2"></div>
-                <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-              </div>
-            ))}
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600">Загрузка категорий...</p>
         </div>
-      </section>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4 text-red-600">Ошибка загрузки</h2>
-          <p className="text-gray-600">Не удалось загрузить категории товаров</p>
-        </div>
-      </section>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold mb-4">Ошибка загрузки</h2>
+        <p className="text-gray-600 mb-8">Не удалось загрузить категории.</p>
+      </div>
     );
   }
 
@@ -53,11 +41,14 @@ const CategoryList = () => {
   };
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-green-900">
-          Категории товаров
+        <h2 className="text-3xl font-bold mb-2 text-center text-green-900">
+          Выберите категорию
         </h2>
+        <p className="text-green-600 text-center mb-8">
+          Найдите рестораны с уцененными товарами
+        </p>
         
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -66,31 +57,34 @@ const CategoryList = () => {
           animate="show"
         >
           {categories.map((category) => (
-            <motion.div key={category.id} variants={item}>
+            <motion.div 
+              key={category.id} 
+              variants={item}
+              className="category-card"
+            >
               <Link 
-                to={`/category/${category.slug}`}
-                className="group block"
+                to={`/producers/${encodeURIComponent(category.slug)}`}
+                className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-105"
               >
-                <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
-                  <div className="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                    {category.image_url ? (
-                      <img 
-                        src={category.image_url} 
-                        alt={category.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-white text-6xl">🍽️</div>
-                    )}
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 group-hover:text-green-600 transition-colors">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={category.image_url || "/placeholder.svg"} 
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-xl font-bold text-white mb-1">
                       {category.name}
                     </h3>
-                    <p className="text-gray-600 text-sm">
-                      {category.description || 'Откройте для себя вкусные предложения'}
-                    </p>
+                    {category.description && (
+                      <p className="text-white/80 text-sm">
+                        {category.description}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Link>
