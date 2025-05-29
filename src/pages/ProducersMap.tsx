@@ -72,9 +72,9 @@ const ProducersMap = () => {
         
         <div className="h-96 md:h-[600px] rounded-lg overflow-hidden shadow-lg">
           <MapContainer
-            center={[47.0105, 28.8638]}
+            center={[47.0105, 28.8638] as [number, number]}
             zoom={12}
-            style={{ height: '100%', width: '100%' }}
+            style={{ height: '100%', width: '100%' } as React.CSSProperties}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -83,7 +83,7 @@ const ProducersMap = () => {
             {producers.map((producer) => (
               <Marker
                 key={producer.id}
-                position={[producer.lat, producer.lng]}
+                position={[producer.lat, producer.lng] as [number, number]}
               >
                 <Popup>
                   <div className="p-2">
