@@ -72,7 +72,7 @@ const ProducersMap = () => {
         
         <div className="h-96 md:h-[600px] rounded-lg overflow-hidden shadow-lg">
           <MapContainer
-            center={[47.0105, 28.8638] as [number, number]}
+            center={[47.0105, 28.8638]}
             zoom={12}
             style={{ height: '100%', width: '100%' }}
           >
