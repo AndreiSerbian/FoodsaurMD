@@ -20,7 +20,7 @@ export const getProducerImages = async (producerSlug) => {
     // Проверяем наличие логотипа
     const logoPath = `${folderSlug}/logo.png`;
     const { data: logoData } = supabase.storage
-      .from('producer-images')
+      .from('produsers')
       .getPublicUrl(logoPath);
     
     if (logoData?.publicUrl) {
@@ -33,7 +33,7 @@ export const getProducerImages = async (producerSlug) => {
     // Проверяем наличие экстерьера
     const exteriorPath = `${folderSlug}/exterior.jpg`;
     const { data: exteriorData } = supabase.storage
-      .from('producer-images')
+      .from('produsers')
       .getPublicUrl(exteriorPath);
     
     if (exteriorData?.publicUrl) {
@@ -77,7 +77,7 @@ export const getProducerImagesSync = (producerSlug) => {
 
   // Логотип
   const { data: logoData } = supabase.storage
-    .from('producer-images')
+    .from('produsers')
     .getPublicUrl(`${folderSlug}/logo.png`);
   
   if (logoData?.publicUrl) {
@@ -89,7 +89,7 @@ export const getProducerImagesSync = (producerSlug) => {
 
   // Экстерьер
   const { data: exteriorData } = supabase.storage
-    .from('producer-images')
+    .from('produsers')
     .getPublicUrl(`${folderSlug}/exterior.jpg`);
   
   if (exteriorData?.publicUrl) {
