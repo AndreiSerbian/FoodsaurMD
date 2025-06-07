@@ -11,10 +11,7 @@ export const useUserRoles = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          user:auth.users(email)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

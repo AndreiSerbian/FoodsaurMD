@@ -66,7 +66,7 @@ const AdminPanel: React.FC = () => {
                   {userRoles?.map((userRole) => (
                     <div key={userRole.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <p className="font-medium">{userRole.user?.email || 'Неизвестный пользователь'}</p>
+                        <p className="font-medium">User ID: {userRole.user_id}</p>
                         <Badge variant={userRole.role === 'admin' ? 'default' : 'secondary'}>
                           {userRole.role === 'admin' ? 'Администратор' : 'Производитель'}
                         </Badge>
@@ -146,7 +146,7 @@ const AdminPanel: React.FC = () => {
           <AlertDescription>
             <strong>Инструкция:</strong> Для создания нового администратора или производителя, 
             пользователь должен сначала зарегистрироваться через страницу /auth, а затем вы можете 
-            изменить его роль здесь.
+            изменить его роль здесь. User ID отображается вместо email по соображениям безопасности.
           </AlertDescription>
         </Alert>
       </div>
