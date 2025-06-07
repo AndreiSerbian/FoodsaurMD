@@ -2,9 +2,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useCategories } from '../hooks/useCategories';
 
 const CategoryList: React.FC = () => {
+  const { t } = useTranslation();
   const { data: categories = [], isLoading, error } = useCategories();
 
   if (isLoading) {
@@ -12,7 +14,7 @@ const CategoryList: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600">Загрузка категорий...</p>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -21,8 +23,8 @@ const CategoryList: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold mb-4">Ошибка загрузки</h2>
-        <p className="text-gray-600 mb-8">Не удалось загрузить категории.</p>
+        <h2 className="text-2xl font-bold mb-4">{t('common.error')}</h2>
+        <p className="text-gray-600 mb-8">{t('categories.notFoundMessage')}</p>
       </div>
     );
   }
@@ -40,15 +42,28 @@ const CategoryList: React.FC = () => {
     show: { opacity: 1, y: 0 }
   };
 
+  // Function to get translated category name
+  const getCategoryName = (categorySlug: string) => {
+    const translationKey = `categories.${categorySlug}`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : categorySlug;
+  };
+
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-2 text-center text-green-900">
-          Выберите категорию
-        </h2>
-        <p className="text-green-600 text-center mb-8">
-          Найдите рестораны с уцененными товарами
-        </p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">
+            {t('categories.title')}
+          </h2>
+          <p className="text-green-600 text-center mb-8">
+            {t('categories.subtitle')}
+          </p>
+        </motion.div>
         
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
@@ -69,7 +84,7 @@ const CategoryList: React.FC = () => {
                 <div className="relative h-48 overflow-hidden">
                   <img 
                     src={category.image_url || "/placeholder.svg"} 
-                    alt={category.name}
+                    alt={getCategoryName(category.slug)}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder.svg";
@@ -78,7 +93,7 @@ const CategoryList: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   <div className="absolute bottom-4 left-4 right-4">
                     <h3 className="text-xl font-bold text-white mb-1">
-                      {category.name}
+                      {getCategoryName(category.slug)}
                     </h3>
                     {category.description && (
                       <p className="text-white/80 text-sm">

@@ -2,10 +2,13 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft } from 'lucide-react';
 import { useProducerByName } from '../hooks/useProducersWithProducts';
 import ProductsList from '../components/ProductsList';
 
 const Products = () => {
+  const { t } = useTranslation();
   const { producerName } = useParams<{ producerName: string }>();
   const decodedProducerName = producerName ? decodeURIComponent(producerName) : '';
   
@@ -14,8 +17,8 @@ const Products = () => {
   
   // Безопасно получаем изображения
   const images = producer ? [
-    { url: producer.exterior_image_url || "/placeholder.svg", label: 'Экстерьер' },
-    { url: producer.interior_image_url || "/placeholder.svg", label: 'Интерьер' }
+    { url: producer.exterior_image_url || "/placeholder.svg", label: t('products.exteriorImage') },
+    { url: producer.interior_image_url || "/placeholder.svg", label: t('products.interiorImage') }
   ] : [];
 
   if (isLoading) {
@@ -23,7 +26,7 @@ const Products = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600">Загрузка...</p>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -32,10 +35,10 @@ const Products = () => {
   if (error || !producer) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold mb-4">Ресторан не найден</h2>
-        <p className="text-gray-600 mb-8">К сожалению, такого ресторана нет в нашей базе.</p>
+        <h2 className="text-2xl font-bold mb-4">{t('products.notFound')}</h2>
+        <p className="text-gray-600 mb-8">{t('products.notFoundMessage')}</p>
         <Link to="/" className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300">
-          Вернуться на главную
+          {t('common.back')}
         </Link>
       </div>
     );
@@ -54,10 +57,8 @@ const Products = () => {
             to={producer.category ? `/category/${producer.category.slug}` : '/'} 
             className="inline-flex items-center text-green-600 hover:text-green-700 transition duration-200"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Назад к ресторанам
+            <ArrowLeft size={20} className="mr-1" />
+            {t('producers.backToRestaurants')}
           </Link>
         </motion.div>
         
@@ -75,7 +76,7 @@ const Products = () => {
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-            {images[currentImage]?.label || 'Изображение'}
+            {images[currentImage]?.label || t('products.exteriorImage')}
           </div>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">

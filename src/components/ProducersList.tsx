@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { ChevronLeft, ChevronRight, MapPin, Clock } from 'lucide-react';
 import type { ProducerWithProducts } from '../hooks/useProducersWithProducts';
 
 interface ProducerCardProps {
@@ -10,15 +11,16 @@ interface ProducerCardProps {
 }
 
 const ProducerCard: React.FC<ProducerCardProps> = ({ producer }) => {
+  const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = [
     {
       url: producer.exterior_image_url || "/placeholder.svg",
-      label: 'Экстерьер'
+      label: t('products.exteriorImage')
     }, 
     {
       url: producer.interior_image_url || "/placeholder.svg",
-      label: 'Интерьер'
+      label: t('products.interiorImage')
     }
   ];
   
@@ -57,7 +59,7 @@ const ProducerCard: React.FC<ProducerCardProps> = ({ producer }) => {
             <button 
               onClick={handlePrevImage} 
               className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white/90 rounded-full p-1.5 backdrop-blur-sm transition-colors" 
-              aria-label="Предыдущее фото"
+              aria-label={t('common.back')}
             >
               <ChevronLeft size={20} />
             </button>
@@ -82,14 +84,12 @@ const ProducerCard: React.FC<ProducerCardProps> = ({ producer }) => {
           
           <div className="mt-auto flex flex-col gap-2">
             <div className="text-sm text-gray-600">
-              <span className="font-medium">{producer.products.length}</span> позиций в меню
+              <span className="font-medium">{producer.products.length}</span> {t('producers.menuItems')}
             </div>
             
             <div className="flex items-center text-sm text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Скидки доступны {producer.discount_available_time || 'уточните время'}</span>
+              <Clock size={16} className="mr-1" />
+              <span>{t('producers.discountsAvailable')} {producer.discount_available_time || t('producers.clarifyTime')}</span>
             </div>
           </div>
         </div>
@@ -104,6 +104,8 @@ interface ProducersListProps {
 }
 
 const ProducersList: React.FC<ProducersListProps> = ({ producers, categoryName }) => {
+  const { t } = useTranslation();
+  
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -120,8 +122,14 @@ const ProducersList: React.FC<ProducersListProps> = ({ producers, categoryName }
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{categoryName}</h2>
-        <p className="text-green-600 text-center mb-8">Выберите ресторан с уцененными товарами</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{categoryName}</h2>
+          <p className="text-green-600 text-center mb-8">{t('producers.subtitle')}</p>
+        </motion.div>
         
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" 
