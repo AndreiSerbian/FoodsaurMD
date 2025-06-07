@@ -96,13 +96,18 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, getCategoryName, item }) => {
-  const { data: producers = [] } = useProducersByCategory(category.slug);
+  // Получаем производителей только для этой конкретной категории
+  const { data: producers = [], isLoading: producersLoading } = useProducersByCategory(category.slug);
   
-  // Получаем первого производителя для отображения его изображений
-  const firstProducer = producers[0];
+  // Показываем изображения только если есть производители и они загружены
+  const firstProducer = !producersLoading && producers.length > 0 ? producers[0] : null;
   const producerImages = firstProducer 
     ? getProducerImagesSync(firstProducer.producer_name)
     : [];
+
+  // Проверяем, что у нас есть валидные изображения производителя
+  const hasValidProducerImages = producerImages.length > 0 && 
+    producerImages.some(img => img.url && img.url !== "/placeholder.svg");
 
   return (
     <motion.div 
@@ -114,8 +119,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, getCategoryName, 
         className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-105"
       >
         <div className="relative">
-          {/* Если есть производители в категории и есть их изображения - показываем слайдер */}
-          {firstProducer && producerImages.length > 0 ? (
+          {/* Показываем слайдер изображений производителя, если есть валидные изображения */}
+          {!producersLoading && firstProducer && hasValidProducerImages ? (
             <ProducerImageSlider images={producerImages} />
           ) : (
             /* Иначе показываем изображение категории */
@@ -141,10 +146,16 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, getCategoryName, 
                 {category.description}
               </p>
             )}
-            {/* Показываем информацию о производителе, если есть */}
-            {firstProducer && (
+            {/* Показываем информацию о производителе, если есть и загрузка завершена */}
+            {!producersLoading && firstProducer && (
               <p className="text-white/70 text-xs mt-1">
                 {firstProducer.producer_name}
+              </p>
+            )}
+            {/* Показываем количество производителей, если есть */}
+            {!producersLoading && producers.length > 0 && (
+              <p className="text-white/60 text-xs">
+                {producers.length} {producers.length === 1 ? 'производитель' : 'производителей'}
               </p>
             )}
           </div>

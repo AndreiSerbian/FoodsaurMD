@@ -32,10 +32,16 @@ export const useProducersWithProducts = (includeDemoData: boolean = false) => {
 
       if (producersError) throw producersError;
 
+      // Если нет производителей, возвращаем пустой массив
+      if (!producers || producers.length === 0) {
+        return [];
+      }
+
       // Получаем продукты с учетом фильтра демо-данных
       let productsQuery = supabase
         .from('producer_products')
-        .select('*');
+        .select('*')
+        .in('producer_id', producers.map(p => p.id));
 
       if (!includeDemoData) {
         productsQuery = productsQuery.eq('is_demo', false);
@@ -48,7 +54,7 @@ export const useProducersWithProducts = (includeDemoData: boolean = false) => {
       // Объединяем данные
       const producersWithProducts: ProducerWithProducts[] = producers.map(producer => ({
         ...producer,
-        products: products.filter(product => product.producer_id === producer.id),
+        products: products?.filter(product => product.producer_id === producer.id) || [],
         category: Array.isArray(producer.category) ? producer.category[0] : producer.category
       }));
 
@@ -61,6 +67,10 @@ export const useProducersByCategory = (categorySlug: string, includeDemoData: bo
   return useQuery({
     queryKey: ['producers-by-category', categorySlug, includeDemoData],
     queryFn: async () => {
+      if (!categorySlug) {
+        return [];
+      }
+
       // Сначала получаем категорию по slug
       const { data: category, error: categoryError } = await supabase
         .from('categories')
@@ -88,6 +98,11 @@ export const useProducersByCategory = (categorySlug: string, includeDemoData: bo
 
       if (producersError) throw producersError;
 
+      // Если нет производителей, возвращаем пустой массив
+      if (!producers || producers.length === 0) {
+        return [];
+      }
+
       // Получаем продукты для этих производителей
       let productsQuery = supabase
         .from('producer_products')
@@ -105,7 +120,7 @@ export const useProducersByCategory = (categorySlug: string, includeDemoData: bo
       // Объединяем данные
       const producersWithProducts: ProducerWithProducts[] = producers.map(producer => ({
         ...producer,
-        products: products.filter(product => product.producer_id === producer.id),
+        products: products?.filter(product => product.producer_id === producer.id) || [],
         category: Array.isArray(producer.category) ? producer.category[0] : producer.category
       }));
 
@@ -119,6 +134,10 @@ export const useProducerByName = (producerName: string, includeDemoData: boolean
   return useQuery({
     queryKey: ['producer-by-name', producerName, includeDemoData],
     queryFn: async () => {
+      if (!producerName) {
+        throw new Error('Producer name is required');
+      }
+
       let query = supabase
         .from('producer_profiles')
         .select(`
