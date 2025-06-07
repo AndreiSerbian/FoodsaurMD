@@ -1,97 +1,105 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { producersData } from '../data/products';
+import { useTranslation } from 'react-i18next';
+import { useCategories } from '../hooks/useCategories';
 
-const CategoryList = ({
-  categories
-}) => {
-  const [hoveredCategory, setHoveredCategory] = useState(null);
-  const [hoveredProducer, setHoveredProducer] = useState(null);
-  
+const CategoryList = () => {
+  const { t } = useTranslation();
+  const { data: categories = [], isLoading, error } = useCategories();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold mb-4">{t('common.error')}</h2>
+        <p className="text-gray-600 mb-8">{t('categories.notFoundMessage')}</p>
+      </div>
+    );
+  }
+
   const container = {
-    hidden: {
-      opacity: 0
-    },
+    hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+      transition: { staggerChildren: 0.1 }
     }
   };
-  
+
   const item = {
-    hidden: {
-      opacity: 0,
-      y: 20
-    },
-    show: {
-      opacity: 1,
-      y: 0
-    }
-  };
-  
-  const handleMouseEnter = (category, producer) => {
-    setHoveredCategory(category);
-    setHoveredProducer(producer);
-  };
-  
-  const handleMouseLeave = () => {
-    setHoveredCategory(null);
-    setHoveredProducer(null);
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
   };
 
-  // Функция для получения изображения по категории и состоянию наведения
-  const getCategoryImage = category => {
-    const producer = producersData.find(p => p.categoryName === category && p.producerName === hoveredProducer);
-    if (hoveredCategory === category && producer && producer.producerImage.interior) {
-      return producer.producerImage.interior;
-    }
-    return producersData.find(p => p.categoryName === category)?.categoryImage || "/placeholder.svg";
+  // Function to get translated category name
+  const getCategoryName = (categorySlug) => {
+    const translationKey = `categories.${categorySlug}`;
+    const translated = t(translationKey);
+    return translated !== translationKey ? translated : categorySlug;
   };
 
-  // Получить список уникальных производителей для каждой категории
-  const getProducersForCategory = category => {
-    return producersData.filter(p => p.categoryName === category).map(p => p.producerName);
-  };
-  
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-8 text-center text-green-900">Категории</h2>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">
+            {t('categories.title')}
+          </h2>
+          <p className="text-green-600 text-center mb-8">
+            {t('categories.subtitle')}
+          </p>
+        </motion.div>
         
         <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" 
-          variants={container} 
-          initial="hidden" 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={container}
+          initial="hidden"
           animate="show"
         >
-          {categories.map((category, index) => (
+          {categories.map((category) => (
             <motion.div 
-              key={index} 
-              variants={item} 
-              className="category-card relative overflow-hidden"
+              key={category.id} 
+              variants={item}
+              className="category-card"
             >
-              <Link to={`/category/${encodeURIComponent(category)}`} className="block">
-                <div 
-                  className="aspect-w-16 aspect-h-9 relative" 
-                  onMouseLeave={handleMouseLeave}
-                >
+              <Link 
+                to={`/category/${category.slug}`}
+                className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-105"
+              >
+                <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={getCategoryImage(category)} 
-                    alt={category} 
-                    className="w-full h-64 object-cover transition-transform duration-500"
-                    onError={(e) => (e.currentTarget.src = "/placeholder.svg")}  
+                    src={category.image_url || "/placeholder.svg"} 
+                    alt={getCategoryName(category.slug)}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-                    <h3 className="text-white text-xl font-semibold p-4">{category}</h3>
-                  </div>
-                  
-                  {/* Производители внутри категории */}
-                  <div className="absolute top-0 right-0 p-2">
-                    
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      {getCategoryName(category.slug)}
+                    </h3>
+                    {category.description && (
+                      <p className="text-white/80 text-sm">
+                        {category.description}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Link>
