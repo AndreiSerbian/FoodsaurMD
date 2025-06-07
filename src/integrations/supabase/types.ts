@@ -115,6 +115,7 @@ export type Database = {
           logo_url: string | null
           phone: string | null
           producer_name: string
+          slug: string | null
           updated_at: string | null
           user_id: string
         }
@@ -133,6 +134,7 @@ export type Database = {
           logo_url?: string | null
           phone?: string | null
           producer_name: string
+          slug?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -151,6 +153,7 @@ export type Database = {
           logo_url?: string | null
           phone?: string | null
           producer_name?: string
+          slug?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -164,15 +167,50 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_slug: {
+        Args: { input_text: string }
+        Returns: string
+      }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "producer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -287,6 +325,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "producer"],
+    },
   },
 } as const

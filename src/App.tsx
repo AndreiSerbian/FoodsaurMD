@@ -1,63 +1,55 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Suspense } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./hooks/useAuth";
 import { CartProvider } from "./contexts/CartContext";
 import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Producers from "./pages/Producers";
-import Products from "./pages/Products";
-import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import ProducerDetail from "./pages/ProducerDetail";
+import AdminPanel from "./pages/AdminPanel";
 import ProducerAuth from "./pages/ProducerAuth";
 import ProducerDashboard from "./pages/ProducerDashboard";
 import ProducersMap from "./pages/ProducersMap";
-import AdminMigration from "./pages/AdminMigration";
-import "./i18n";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+    <AuthProvider>
       <CartProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={
-              <Layout>
-                <Home />
-              </Layout>
-            } />
-            <Route path="/category/:categorySlug" element={
-              <Layout>
-                <Producers />
-              </Layout>
-            } />
-            <Route path="/producer/:producerName" element={
-              <Layout>
-                <Products />
-              </Layout>
-            } />
-            <Route path="/map" element={
-              <Layout>
-                <ProducersMap />
-              </Layout>
-            } />
-            <Route path="/auth" element={<ProducerAuth />} />
-            <Route path="/producer/dashboard" element={<ProducerDashboard />} />
-            <Route path="/admin-migration" element={<AdminMigration />} />
-            <Route path="*" element={
-              <Layout>
-                <NotFound />
-              </Layout>
-            } />
-          </Routes>
-        </BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/producer-auth" element={<ProducerAuth />} />
+              <Route 
+                path="/*" 
+                element={
+                  <Layout>
+                    <Suspense fallback={<div>Loading...</div>}>
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/producer/:producerSlug" element={<ProducerDetail />} />
+                        <Route path="/admin" element={<AdminPanel />} />
+                        <Route path="/dashboard" element={<ProducerDashboard />} />
+                        <Route path="/map" element={<ProducersMap />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </Layout>
+                } 
+              />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
       </CartProvider>
-    </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -97,7 +97,7 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, getCategoryName, item }) => {
   // Получаем производителей только для этой конкретной категории
-  const { data: producers = [], isLoading: producersLoading } = useProducersByCategory(category.slug);
+  const { data: producers = [], isLoading: producersLoading } = useProducersByCategory(category.slug, false);
   
   // Показываем изображения только если есть производители и они загружены
   const firstProducer = !producersLoading && producers.length > 0 ? producers[0] : null;
