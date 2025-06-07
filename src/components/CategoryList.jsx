@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCategories } from '../hooks/useCategories';
+import { getCategoryImage } from '../utils/imageUtils';
 
 const CategoryList = () => {
   const { t } = useTranslation();
@@ -83,7 +84,7 @@ const CategoryList = () => {
               >
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={category.image_url || "/placeholder.svg"} 
+                    src={getCategoryImage(category.slug)} 
                     alt={getCategoryName(category.slug)}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                     onError={(e) => {
