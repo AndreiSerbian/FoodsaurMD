@@ -124,5 +124,13 @@
   "backToCategories": "Înapoi la categorii",
   "categoryNotFound": "Categoria nu a fost găsită",
   "noCategoriesText": "Din păcate, această categorie nu există sau nu conține restaurante.",
-  "returnToHome": "Întoarce-te la pagina principală"
+  "returnToHome": "Întoarce-te la pagina principală",
+  "backToRestaurants": "Înapoi la restaurante",
+  "discountsAvailableFrom": "Reduceri disponibile din",
+  "cartEmpty": "Coșul tău este gol",
+  "orderPlaced": "Comanda a fost plasată!",
+  "orderSuccess": "Comanda ta a fost plasată cu succes și va fi livrată în scurt timp.",
+  "processing": "Se procesează...",
+  "clearCart": "Golește coșul",
+  "remove": "Elimină"
 }

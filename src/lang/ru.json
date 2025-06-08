@@ -124,5 +124,13 @@
   "backToCategories": "Назад к категориям",
   "categoryNotFound": "Категория не найдена",
   "noCategoriesText": "К сожалению, такой категории нет либо в ней нет ресторанов.",
-  "returnToHome": "Вернуться на главную"
+  "returnToHome": "Вернуться на главную",
+  "backToRestaurants": "Назад к ресторанам",
+  "discountsAvailableFrom": "Скидки доступны с",
+  "cartEmpty": "Ваша корзина пуста",
+  "orderPlaced": "Заказ оформлен!",
+  "orderSuccess": "Ваш заказ успешно оформлен и будет доставлен в ближайшее время.",
+  "processing": "Обработка...",
+  "clearCart": "Очистить корзину",
+  "remove": "Удалить"
 }

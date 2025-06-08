@@ -1,10 +1,13 @@
+
 import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Cart = () => {
   const { cartItems, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -58,9 +61,9 @@ const Cart = () => {
             exit="exit"
           >
             <Alert className="bg-green-50 border-green-600 text-green-900">
-              <AlertTitle className="text-green-800">Заказ оформлен!</AlertTitle>
+              <AlertTitle className="text-green-800">{t('orderPlaced')}</AlertTitle>
               <AlertDescription className="text-green-700">
-                Ваш заказ успешно оформлен и будет доставлен в ближайшее время.
+                {t('orderSuccess')}
               </AlertDescription>
             </Alert>
           </motion.div>
@@ -109,7 +112,7 @@ const Cart = () => {
           >
             <div className="p-6 border-b">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Корзина</h2>
+                <h2 className="text-xl font-bold">{t('cart')}</h2>
                 <button onClick={toggleCart} className="text-gray-500 hover:text-gray-700">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -124,7 +127,7 @@ const Cart = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  <p className="mt-4 text-gray-500">Ваша корзина пуста</p>
+                  <p className="mt-4 text-gray-500">{t('cartEmpty')}</p>
                 </div>
               ) : (
                 <ul className="space-y-4">
@@ -169,7 +172,7 @@ const Cart = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Удалить
+                        {t('remove')}
                       </button>
                     </li>
                   ))}
@@ -180,7 +183,7 @@ const Cart = () => {
             {cartItems.length > 0 && (
               <div className="p-6 border-t">
                 <div className="flex justify-between mb-4">
-                  <span className="font-medium">Итого:</span>
+                  <span className="font-medium">{t('total')}:</span>
                   <span className="font-bold">{cartTotal} MDL</span>
                 </div>
                 <button 
@@ -188,13 +191,13 @@ const Cart = () => {
                   disabled={isProcessing}
                   className={`w-full bg-green-900 text-white py-3 rounded-lg ${isProcessing ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-800'} transition duration-300 mb-2 flex items-center justify-center`}
                 >
-                  {isProcessing ? 'Обработка...' : 'Оформить заказ'}
+                  {isProcessing ? t('processing') : t('checkout')}
                 </button>
                 <button 
                   onClick={clearCart}
                   className="w-full text-red-500 py-2 rounded-lg border border-red-500 hover:bg-red-50 transition duration-300 flex items-center justify-center"
                 >
-                  Очистить корзину
+                  {t('clearCart')}
                 </button>
               </div>
             )}
