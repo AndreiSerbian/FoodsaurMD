@@ -3,9 +3,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { useAuth } from '../hooks/useAuth';
 import Cart from './Cart';
 import BurgerMenu from './BurgerMenu';
 import LanguageSwitcher from './LanguageSwitcher';
+import { Button } from './ui/button';
+import { LogOut, Shield, User } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,6 +16,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useTranslation();
+  const { user, userRole, signOut } = useAuth();
   
   return (
     <motion.div 
@@ -33,9 +37,41 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Link to="/map" className="text-green-600 hover:text-green-900 transition duration-200">
               {t('navigation.map')}
             </Link>
+            {userRole === 'admin' && (
+              <Link to="/admin" className="text-blue-600 hover:text-blue-900 transition duration-200 flex items-center">
+                <Shield className="h-4 w-4 mr-1" />
+                Админ
+              </Link>
+            )}
+            {user && userRole === 'producer' && (
+              <Link to="/dashboard" className="text-purple-600 hover:text-purple-900 transition duration-200 flex items-center">
+                <User className="h-4 w-4 mr-1" />
+                Кабинет
+              </Link>
+            )}
           </nav>
           <div className="flex items-center space-x-4">
             <LanguageSwitcher />
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">{user.email}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={signOut}
+                  className="flex items-center"
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  Выйти
+                </Button>
+              </div>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline" size="sm">
+                  Войти
+                </Button>
+              </Link>
+            )}
             <BurgerMenu />
           </div>
         </div>
