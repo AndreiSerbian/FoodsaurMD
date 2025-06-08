@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
@@ -54,7 +53,7 @@ const ProductsList = ({
     }
     
     // Fallback to original format if parsing fails
-    return `${t('discountsAvailableFrom')} ${timeString}`;
+    return timeString;
   };
   
   return (

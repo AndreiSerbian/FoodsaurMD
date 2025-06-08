@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -56,7 +55,7 @@ const CategoryList = ({
     }
     
     // Fallback to original format if parsing fails
-    return `${t('discountsAvailableFrom')} ${timeString}`;
+    return timeString;
   };
 
   // Функция для получения изображения по категории и состоянию наведения

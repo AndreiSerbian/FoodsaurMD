@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -48,7 +47,7 @@ const ProducerCard = ({
     }
     
     // Fallback to original format if parsing fails
-    return `${t('discountsAvailableFrom')} ${timeString}`;
+    return timeString;
   };
   
   return (
