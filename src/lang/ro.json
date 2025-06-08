@@ -120,5 +120,9 @@
   "nextPhoto": "Fotografia următoare",
   "exterior": "Exterior",
   "interior": "Interior",
-  "chooseRestaurant": "Alegeți restaurantul cu produse reduse"
+  "chooseRestaurant": "Alegeți restaurantul cu produse reduse",
+  "backToCategories": "Înapoi la categorii",
+  "categoryNotFound": "Categoria nu a fost găsită",
+  "noCategoriesText": "Din păcate, această categorie nu există sau nu conține restaurante.",
+  "returnToHome": "Întoarce-te la pagina principală"
 }
