@@ -134,5 +134,8 @@
   "clearCart": "Golește coșul",
   "remove": "Elimină",
   "discountAvailableTimePrefix": "Reducere disponibilă de la",
-  "discountAvailableTimeConnector": "până la"
+  "discountAvailableTimeConnector": "până la",
+  "discountPrefix": "Reduceri disponibile",
+  "discountFrom": "de la",
+  "discountTo": "până la"
 }

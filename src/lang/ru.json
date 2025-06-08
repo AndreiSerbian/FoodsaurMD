@@ -134,5 +134,8 @@
   "clearCart": "Очистить корзину",
   "remove": "Удалить",
   "discountAvailableTimePrefix": "Скидки действуют с",
-  "discountAvailableTimeConnector": "до"
+  "discountAvailableTimeConnector": "до",
+  "discountPrefix": "Скидки доступны",
+  "discountFrom": "с",
+  "discountTo": "до"
 }
