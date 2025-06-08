@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -61,7 +62,7 @@ const CategoryList = ({
                 <div className="aspect-w-16 aspect-h-9 relative" onMouseLeave={handleMouseLeave}>
                   <img src={getCategoryImage(category)} alt={category} className="w-full h-64 object-cover transition-transform duration-500" onError={e => e.currentTarget.src = "/placeholder.svg"} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-center justify-center">
-                    <h3 className="text-white text-xl font-semibold p-4">{category}</h3>
+                    <h3 className="text-white text-xl font-semibold p-4 text-center">{category}</h3>
                   </div>
                   
                   {/* Производители внутри категории */}
