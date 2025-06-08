@@ -115,7 +115,6 @@
   "heroSlogan": "Gustos • Avantajos • Ecologic",
   "searchPlaceholder": "Caută restaurant...",
   "menuItemsCount": "poziții în meniu",
-  "discountsAvailable": "Reduceri disponibile",
   "previousPhoto": "Fotografia anterioară",
   "nextPhoto": "Fotografia următoare",
   "exterior": "Exterior",
@@ -127,15 +126,11 @@
   "returnToHome": "Întoarce-te la pagina principală",
   "backToRestaurants": "Înapoi la restaurante",
   "discountsAvailableFrom": "Reduceri disponibile din",
+  "discountAvailableTill": "până la",
   "cartEmpty": "Coșul tău este gol",
   "orderPlaced": "Comanda a fost plasată!",
   "orderSuccess": "Comanda ta a fost plasată cu succes și va fi livrată în scurt timp.",
   "processing": "Se procesează...",
   "clearCart": "Golește coșul",
-  "remove": "Elimină",
-  "discountAvailableTimePrefix": "Reducere disponibilă de la",
-  "discountAvailableTimeConnector": "până la",
-  "discountPrefix": "Reduceri disponibile",
-  "discountFrom": "de la",
-  "discountTo": "până la"
+  "remove": "Elimină"
 }

@@ -115,7 +115,6 @@
   "heroSlogan": "Вкусно • Выгодно • Экологично",
   "searchPlaceholder": "Найти ресторан...",
   "menuItemsCount": "позиций в меню",
-  "discountsAvailable": "Скидки доступны",
   "previousPhoto": "Предыдущее фото",
   "nextPhoto": "Следующее фото",
   "exterior": "Экстерьер",
@@ -127,15 +126,11 @@
   "returnToHome": "Вернуться на главную",
   "backToRestaurants": "Назад к ресторанам",
   "discountsAvailableFrom": "Скидки доступны с",
+  "discountAvailableTill": "до",
   "cartEmpty": "Ваша корзина пуста",
   "orderPlaced": "Заказ оформлен!",
   "orderSuccess": "Ваш заказ успешно оформлен и будет доставлен в ближайшее время.",
   "processing": "Обработка...",
   "clearCart": "Очистить корзину",
-  "remove": "Удалить",
-  "discountAvailableTimePrefix": "Скидки действуют с",
-  "discountAvailableTimeConnector": "до",
-  "discountPrefix": "Скидки доступны",
-  "discountFrom": "с",
-  "discountTo": "до"
+  "remove": "Удалить"
 }
