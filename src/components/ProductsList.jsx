@@ -1,9 +1,13 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import { ShoppingCart } from 'lucide-react';
 import ProducerMap from './ProducerMap';
 
 const ProductsList = ({ producer }) => {
+  const { t } = useTranslation();
+  
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -19,7 +23,7 @@ const ProductsList = ({ producer }) => {
 
   // Calculate discount percentage safely
   const calculateDiscount = (regular, discounted) => {
-    if (!discounted || !regular || discounted >= regular) return 0;
+    if (!discounted || discounted >= regular) return 0;
     return Math.round((1 - discounted / regular) * 100);
   };
 
@@ -29,7 +33,7 @@ const ProductsList = ({ producer }) => {
     console.log('No producer data provided');
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">Данные производителя не найдены</p>
+        <p className="text-gray-500 text-lg">{t('products.notFoundMessage')}</p>
       </div>
     );
   }
@@ -37,19 +41,25 @@ const ProductsList = ({ producer }) => {
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producerName}</h2>
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producer_name}</h2>
           <p className="text-gray-600 text-center">{producer.address}</p>
           <p className="text-gray-500 text-center mt-2">
-            Скидки доступны {producer.discountAvailableTime || 'уточните время'}
+            {t('producers.discountsAvailable')} {producer.discount_available_time || t('producers.clarifyTime')}
           </p>
-        </div>
+        </motion.div>
         
         <ProducerMap producer={producer} />
         
         {!producer.products || producer.products.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Товары пока не добавлены</p>
+            <p className="text-gray-500 text-lg">{t('products.noProducts')}</p>
+            <p className="text-gray-400 mt-2">{t('products.noProductsMessage')}</p>
           </div>
         ) : (
           <motion.div 
@@ -62,37 +72,37 @@ const ProductsList = ({ producer }) => {
               console.log('Rendering product:', product);
               
               // Безопасно получаем цены
-              const regularPrice = Number(product.priceRegular) || 0;
-              const discountPrice = Number(product.priceDiscount) || 0;
-              const hasDiscount = discountPrice > 0 && discountPrice < regularPrice;
+              const regularPrice = Number(product.price_regular) || 0;
+              const discountPrice = product.price_discount ? Number(product.price_discount) : null;
+              const hasDiscount = discountPrice !== null && discountPrice > 0 && discountPrice < regularPrice;
               const displayPrice = hasDiscount ? discountPrice : regularPrice;
               
               return (
                 <motion.div 
-                  key={`${product.productName}-${index}`} 
+                  key={`${product.name}-${index}`} 
                   variants={item} 
                   className="product-card bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
                 >
                   <div className="relative">
                     <img 
-                      src={product.image || "/placeholder.svg"} 
-                      alt={product.productName || 'Продукт'} 
+                      src={product.image_url || "/placeholder.svg"} 
+                      alt={product.name || t('products.noName')} 
                       className="w-full h-48 object-cover"
                       onError={(e) => {
-                        console.log('Image error for product:', product.productName);
+                        console.log('Image error for product:', product.name);
                         e.currentTarget.src = "/placeholder.svg";
                       }}
                     />
-                    {hasDiscount && (
+                    {hasDiscount && discountPrice && (
                       <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
                         -{calculateDiscount(regularPrice, discountPrice)}%
                       </div>
                     )}
                   </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">{product.productName || 'Без названия'}</h3>
+                    <h3 className="text-xl font-semibold mb-2">{product.name || t('products.noName')}</h3>
                     <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">
-                      {product.description || 'Описание отсутствует'}
+                      {product.description || t('products.noDescription')}
                     </p>
                     
                     <div className="flex justify-between items-center mb-4">
@@ -108,15 +118,15 @@ const ProductsList = ({ producer }) => {
                       </div>
                     </div>
                     
-                    <button 
+                    <motion.button 
                       className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center"
-                      onClick={() => console.log('Add to cart:', product.productName)}
+                      onClick={() => console.log('Add to cart:', product.name)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      Добавить в корзину
-                    </button>
+                      <ShoppingCart size={20} className="mr-2" />
+                      {t('common.addToCart')}
+                    </motion.button>
                   </div>
                 </motion.div>
               );
