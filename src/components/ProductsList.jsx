@@ -2,14 +2,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
-import { useLanguage } from '../contexts/LanguageContext';
 
 const ProductsList = ({
   products,
   producer
 }) => {
-  const { addToCart } = useCart();
-  const { t } = useLanguage();
+  const {
+    addToCart
+  } = useCart();
   
   const container = {
     hidden: {
@@ -49,7 +49,7 @@ const ProductsList = ({
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producerName}</h2>
           <p className="text-gray-600 text-center">{producer.address}</p>
-          <p className="text-gray-500 text-center mt-2">{t('discountsAvailableFrom')} {producer.discountAvailableTime}</p>
+          <p className="text-gray-500 text-center mt-2">Скидки доступны {producer.discountAvailableTime}</p>
         </div>
         
         <motion.div 
@@ -97,7 +97,7 @@ const ProductsList = ({
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  {t('addToCart')}
+                  Добавить в корзину
                 </button>
               </div>
             </motion.div>

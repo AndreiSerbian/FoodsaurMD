@@ -5,18 +5,16 @@ import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
 
 const Products = () => {
   const { producerName } = useParams();
-  const { t } = useLanguage();
   const [producer, setProducer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   
   const images = producer ? [
-    { url: producer.producerImage.exterior, label: t('exterior') },
-    { url: producer.producerImage.interior, label: t('interior') }
+    { url: producer.producerImage.exterior, label: 'Экстерьер' },
+    { url: producer.producerImage.interior, label: 'Интерьер' }
   ] : [];
 
   useEffect(() => {
@@ -45,17 +43,17 @@ const Products = () => {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600">{t('loading')}</p>
+          <p className="mt-4 text-gray-600">Загрузка...</p>
         </div>
       </div>;
   }
 
   if (!producer) {
     return <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold mb-4">{t('categoryNotFound')}</h2>
-        <p className="text-gray-600 mb-8">{t('noCategoriesText')}</p>
+        <h2 className="text-2xl font-bold mb-4">Ресторан не найден</h2>
+        <p className="text-gray-600 mb-8">К сожалению, такого ресторана нет в нашей базе.</p>
         <Link to="/" className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition duration-300">
-          {t('returnToHome')}
+          Вернуться на главную
         </Link>
       </div>;
   }
@@ -75,7 +73,7 @@ const Products = () => {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            {t('backToRestaurants')}
+            Назад к ресторанам
           </Link>
         </motion.div>
         
