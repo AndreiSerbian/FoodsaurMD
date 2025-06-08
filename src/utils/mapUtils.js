@@ -1,14 +1,7 @@
 
-import { LatLngExpression } from 'leaflet';
-
-export interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
 // Mock geocoding function for demo purposes
 // In real app, you'd use a geocoding service like OpenCage, Mapbox, or Google
-export const geocodeAddress = async (address: string): Promise<Coordinates | null> => {
+export const geocodeAddress = async (address) => {
   // For demo, generate random coordinates around Chisinau
   const baseCoords = { lat: 47.0105, lng: 28.8638 };
   const randomOffset = () => (Math.random() - 0.5) * 0.05;
@@ -22,11 +15,11 @@ export const geocodeAddress = async (address: string): Promise<Coordinates | nul
   };
 };
 
-export const coordinatesToLatLng = (coords: Coordinates): LatLngExpression => {
+export const coordinatesToLatLng = (coords) => {
   return [coords.lat, coords.lng];
 };
 
-export const createRandomCoordinatesAroundChisinau = (): Coordinates => {
+export const createRandomCoordinatesAroundChisinau = () => {
   const baseCoords = { lat: 47.0105, lng: 28.8638 };
   const randomOffset = () => (Math.random() - 0.5) * 0.1;
   

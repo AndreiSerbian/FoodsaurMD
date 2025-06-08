@@ -1,13 +1,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-type ProducerProduct = Tables<'producer_products'>;
-type ProducerProductInsert = TablesInsert<'producer_products'>;
-type ProducerProductUpdate = TablesUpdate<'producer_products'>;
-
-export const useProducerProducts = (producerId?: string) => {
+export const useProducerProducts = (producerId) => {
   return useQuery({
     queryKey: ['producer-products', producerId],
     queryFn: async () => {
@@ -30,7 +25,7 @@ export const useCreateProduct = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (product: ProducerProductInsert) => {
+    mutationFn: async (product) => {
       const { data, error } = await supabase
         .from('producer_products')
         .insert(product)
@@ -50,7 +45,7 @@ export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, ...product }: ProducerProductUpdate & { id: string }) => {
+    mutationFn: async ({ id, ...product }) => {
       const { data, error } = await supabase
         .from('producer_products')
         .update(product)
@@ -71,7 +66,7 @@ export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id) => {
       const { error } = await supabase
         .from('producer_products')
         .delete()

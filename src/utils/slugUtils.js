@@ -1,14 +1,10 @@
 
 /**
- * Утилиты для работы со slug
- */
-
-/**
  * Генерирует slug из названия
- * @param name Название для преобразования в slug
- * @returns slug в формате kebab-case
+ * @param {string} name Название для преобразования в slug
+ * @returns {string} slug в формате kebab-case
  */
-export const generateSlug = (name: string): string => {
+export const generateSlug = (name) => {
   return name
     .toLowerCase()
     .trim()
@@ -55,10 +51,10 @@ export const generateSlug = (name: string): string => {
 
 /**
  * Проверяет валидность slug
- * @param slug Строка для проверки
- * @returns true если slug валидный
+ * @param {string} slug Строка для проверки
+ * @returns {boolean} true если slug валидный
  */
-export const isValidSlug = (slug: string): boolean => {
+export const isValidSlug = (slug) => {
   const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   return slugRegex.test(slug);
 };
@@ -72,16 +68,16 @@ export const CATEGORY_SLUGS = {
   'Паназиатская': 'panasian',
   'Десерты': 'desserts',
   'Напитки': 'drinks'
-} as const;
+};
 
 /**
  * Получает slug для категории, используя предустановленные значения или генерируя новый
- * @param categoryName Название категории
- * @returns slug для категории
+ * @param {string} categoryName Название категории
+ * @returns {string} slug для категории
  */
-export const getCategorySlug = (categoryName: string): string => {
+export const getCategorySlug = (categoryName) => {
   // Сначала проверяем предустановленные slug
-  const predefinedSlug = CATEGORY_SLUGS[categoryName as keyof typeof CATEGORY_SLUGS];
+  const predefinedSlug = CATEGORY_SLUGS[categoryName];
   if (predefinedSlug) {
     return predefinedSlug;
   }

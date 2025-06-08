@@ -1,11 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
-
-type ProducerProfile = Tables<'producer_profiles'>;
-type ProducerProfileInsert = TablesInsert<'producer_profiles'>;
-type ProducerProfileUpdate = TablesUpdate<'producer_profiles'>;
 
 export const useProducerProfile = () => {
   return useQuery({
@@ -30,7 +25,7 @@ export const useCreateProducerProfile = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (profile: Omit<ProducerProfileInsert, 'user_id'>) => {
+    mutationFn: async (profile) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -53,7 +48,7 @@ export const useUpdateProducerProfile = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (profile: ProducerProfileUpdate) => {
+    mutationFn: async (profile) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 

@@ -1,9 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
-
-type UserRole = Tables<'user_roles'>;
 
 export const useUserRoles = () => {
   return useQuery({
@@ -24,7 +21,7 @@ export const useUpdateUserRole = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ userId, role }: { userId: string, role: 'admin' | 'producer' }) => {
+    mutationFn: async ({ userId, role }) => {
       const { data, error } = await supabase
         .from('user_roles')
         .upsert({ user_id: userId, role })

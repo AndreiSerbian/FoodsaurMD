@@ -1,9 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
-
-type Category = Tables<'categories'>;
 
 export const useCategories = () => {
   return useQuery({
@@ -20,7 +17,7 @@ export const useCategories = () => {
   });
 };
 
-export const useCategoryBySlug = (slug: string) => {
+export const useCategoryBySlug = (slug) => {
   return useQuery({
     queryKey: ['category', slug],
     queryFn: async () => {
