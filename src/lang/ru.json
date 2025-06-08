@@ -113,5 +113,12 @@
   "categoryDesserts": "Десерты",
   "categoryDrinks": "Напитки",
   "heroSlogan": "Вкусно • Выгодно • Экологично",
-  "searchPlaceholder": "Найти ресторан..."
+  "searchPlaceholder": "Найти ресторан...",
+  "menuItemsCount": "позиций в меню",
+  "discountsAvailable": "Скидки доступны",
+  "previousPhoto": "Предыдущее фото",
+  "nextPhoto": "Следующее фото",
+  "exterior": "Экстерьер",
+  "interior": "Интерьер",
+  "chooseRestaurant": "Выберите ресторан с уцененными товарами"
 }

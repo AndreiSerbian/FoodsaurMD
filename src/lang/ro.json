@@ -113,5 +113,12 @@
   "categoryDesserts": "Deserturi",
   "categoryDrinks": "Băuturi",
   "heroSlogan": "Gustos • Avantajos • Ecologic",
-  "searchPlaceholder": "Caută restaurant..."
+  "searchPlaceholder": "Caută restaurant...",
+  "menuItemsCount": "poziții în meniu",
+  "discountsAvailable": "Reduceri disponibile",
+  "previousPhoto": "Fotografia anterioară",
+  "nextPhoto": "Fotografia următoare",
+  "exterior": "Exterior",
+  "interior": "Interior",
+  "chooseRestaurant": "Alegeți restaurantul cu produse reduse"
 }
