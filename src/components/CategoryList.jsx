@@ -45,6 +45,20 @@ const CategoryList = ({
     setHoveredProducer(null);
   };
 
+  // Format discount time with proper translation
+  const formatDiscountTime = (timeString) => {
+    if (!timeString) return '';
+    
+    // Assuming timeString is in format "HH:MM - HH:MM" (e.g., "10:00 - 18:00")
+    const parts = timeString.split(' - ');
+    if (parts.length === 2) {
+      return `${t('discountAvailableTimePrefix')} ${parts[0]} ${t('discountAvailableTimeConnector')} ${parts[1]}`;
+    }
+    
+    // Fallback to original format if parsing fails
+    return `${t('discountsAvailableFrom')} ${timeString}`;
+  };
+
   // Функция для получения изображения по категории и состоянию наведения
   const getCategoryImage = category => {
     const producer = producersData.find(p => p.categoryName === category && p.producerName === hoveredProducer);
