@@ -132,5 +132,7 @@
   "orderSuccess": "Comanda ta a fost plasată cu succes și va fi livrată în scurt timp.",
   "processing": "Se procesează...",
   "clearCart": "Golește coșul",
-  "remove": "Elimină"
+  "remove": "Elimină",
+  "discountAvailableTimePrefix": "Reducere disponibilă de la",
+  "discountAvailableTimeConnector": "până la"
 }

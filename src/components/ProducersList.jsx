@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -34,6 +35,20 @@ const ProducerCard = ({
   
   const handleImageError = e => {
     e.target.src = "/placeholder.svg";
+  };
+
+  // Format discount time with proper translation
+  const formatDiscountTime = (timeString) => {
+    if (!timeString) return '';
+    
+    // Assuming timeString is in format "HH:MM - HH:MM" (e.g., "10:00 - 18:00")
+    const parts = timeString.split(' - ');
+    if (parts.length === 2) {
+      return `${t('discountAvailableTimePrefix')} ${parts[0]} ${t('discountAvailableTimeConnector')} ${parts[1]}`;
+    }
+    
+    // Fallback to original format if parsing fails
+    return `${t('discountsAvailableFrom')} ${timeString}`;
   };
   
   return (
@@ -87,7 +102,7 @@ const ProducerCard = ({
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{t('discountsAvailable')} {producer.discountAvailableTime}</span>
+              <span>{formatDiscountTime(producer.discountAvailableTime)}</span>
             </div>
           </div>
         </div>

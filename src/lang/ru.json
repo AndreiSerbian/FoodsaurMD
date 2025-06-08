@@ -132,5 +132,7 @@
   "orderSuccess": "Ваш заказ успешно оформлен и будет доставлен в ближайшее время.",
   "processing": "Обработка...",
   "clearCart": "Очистить корзину",
-  "remove": "Удалить"
+  "remove": "Удалить",
+  "discountAvailableTimePrefix": "Скидки действуют с",
+  "discountAvailableTimeConnector": "до"
 }
