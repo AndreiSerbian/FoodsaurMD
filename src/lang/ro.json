@@ -105,5 +105,11 @@
   "created": "Înregistrare",
   "languageSelector": "Limba",
   "russian": "Русский",
-  "romanian": "Română"
+  "romanian": "Română",
+  "categories": "Categorii",
+  "categoryMoldavian": "Moldovenească",
+  "categoryEuropean": "Europeană",
+  "categoryPanasian": "Panasiană",
+  "categoryDesserts": "Deserturi",
+  "categoryDrinks": "Băuturi"
 }

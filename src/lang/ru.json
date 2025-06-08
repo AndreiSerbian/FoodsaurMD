@@ -105,5 +105,11 @@
   "created": "Регистрация",
   "languageSelector": "Язык",
   "russian": "Русский",
-  "romanian": "Română"
+  "romanian": "Română",
+  "categories": "Категории",
+  "categoryMoldavian": "Молдавская",
+  "categoryEuropean": "Европейская",
+  "categoryPanasian": "Паназиатская",
+  "categoryDesserts": "Десерты",
+  "categoryDrinks": "Напитки"
 }
