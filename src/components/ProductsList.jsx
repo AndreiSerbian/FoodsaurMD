@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
@@ -41,20 +42,6 @@ const ProductsList = ({
   const calculateDiscount = (regular, discounted) => {
     return Math.round((1 - discounted / regular) * 100);
   };
-
-  // Format discount time with proper translation
-  const formatDiscountTime = (timeString) => {
-    if (!timeString) return '';
-    
-    // Assuming timeString is in format "HH:MM - HH:MM" (e.g., "10:00 - 18:00")
-    const parts = timeString.split(' - ');
-    if (parts.length === 2) {
-      return `${t('discountPrefix')} ${t('discountFrom')} ${parts[0]} ${t('discountTo')} ${parts[1]}`;
-    }
-    
-    // Fallback to original format if parsing fails
-    return timeString;
-  };
   
   return (
     <section className="py-12">
@@ -62,7 +49,7 @@ const ProductsList = ({
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producerName}</h2>
           <p className="text-gray-600 text-center">{producer.address}</p>
-          <p className="text-gray-500 text-center mt-2">{formatDiscountTime(producer.discountAvailableTime)}</p>
+          <p className="text-gray-500 text-center mt-2">{t('discountsAvailableFrom')} {producer.discountAvailableTime}</p>
         </div>
         
         <motion.div 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -42,20 +43,6 @@ const CategoryList = ({
   const handleMouseLeave = () => {
     setHoveredCategory(null);
     setHoveredProducer(null);
-  };
-
-  // Format discount time with proper translation
-  const formatDiscountTime = (timeString) => {
-    if (!timeString) return '';
-    
-    // Assuming timeString is in format "HH:MM - HH:MM" (e.g., "10:00 - 18:00")
-    const parts = timeString.split(' - ');
-    if (parts.length === 2) {
-      return `${t('discountPrefix')} ${t('discountFrom')} ${parts[0]} ${t('discountTo')} ${parts[1]}`;
-    }
-    
-    // Fallback to original format if parsing fails
-    return timeString;
   };
 
   // Функция для получения изображения по категории и состоянию наведения
