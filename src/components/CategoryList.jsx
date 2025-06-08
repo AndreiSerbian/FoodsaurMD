@@ -1,13 +1,10 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCategories } from '../hooks/useCategories';
-import { useProducersByCategory } from '../hooks/useProducersWithProducts';
-import { getCategoryImage } from '../utils/imageUtils';
-import { getProducerImagesSync } from '../utils/supabaseImageUtils';
-import ProducerImageSlider from './ProducerImageSlider';
+import { getCategoryName } from '../utils/categoryUtils';
+import CategoryCard from './CategoryCard';
 
 const CategoryList = () => {
   const { t } = useTranslation();
@@ -46,12 +43,7 @@ const CategoryList = () => {
     show: { opacity: 1, y: 0 }
   };
 
-  // Function to get translated category name
-  const getCategoryName = (categorySlug) => {
-    const translationKey = `categories.${categorySlug}`;
-    const translated = t(translationKey);
-    return translated !== translationKey ? translated : categorySlug;
-  };
+  const getCategoryNameWithTranslation = (categorySlug) => getCategoryName(categorySlug, t);
 
   return (
     <section className="py-12">
@@ -79,83 +71,13 @@ const CategoryList = () => {
             <CategoryCard 
               key={category.id} 
               category={category}
-              getCategoryName={getCategoryName}
+              getCategoryName={getCategoryNameWithTranslation}
               item={item}
             />
           ))}
         </motion.div>
       </div>
     </section>
-  );
-};
-
-const CategoryCard = ({ category, getCategoryName, item }) => {
-  // Получаем производителей только для этой конкретной категории
-  const { data: producers = [], isLoading: producersLoading } = useProducersByCategory(category.slug, false);
-  
-  // Показываем изображения только если есть производители и они загружены
-  const firstProducer = !producersLoading && producers.length > 0 ? producers[0] : null;
-  const producerImages = firstProducer 
-    ? getProducerImagesSync(firstProducer.producer_name)
-    : [];
-
-  // Проверяем, что у нас есть валидные изображения производителя
-  const hasValidProducerImages = producerImages.length > 0 && 
-    producerImages.some(img => img.url && img.url !== "/placeholder.svg");
-
-  return (
-    <motion.div 
-      variants={item}
-      className="category-card"
-    >
-      <Link 
-        to={`/category/${category.slug}`}
-        className="block bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 transform hover:scale-105"
-      >
-        <div className="relative">
-          {/* Показываем слайдер изображений производителя, если есть валидные изображения */}
-          {!producersLoading && firstProducer && hasValidProducerImages ? (
-            <ProducerImageSlider images={producerImages} />
-          ) : (
-            /* Иначе показываем изображение категории */
-            <div className="relative h-48 overflow-hidden">
-              <img 
-                src={category.image_url || getCategoryImage(category.slug)} 
-                alt={getCategoryName(category.slug)}
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                onError={(e) => {
-                  e.currentTarget.src = "/placeholder.svg";
-                }}
-              />
-            </div>
-          )}
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-          <div className="absolute bottom-4 left-4 right-4">
-            <h3 className="text-xl font-bold text-white mb-1">
-              {getCategoryName(category.slug)}
-            </h3>
-            {category.description && (
-              <p className="text-white/80 text-sm">
-                {category.description}
-              </p>
-            )}
-            {/* Показываем информацию о производителе, если есть и загрузка завершена */}
-            {!producersLoading && firstProducer && (
-              <p className="text-white/70 text-xs mt-1">
-                {firstProducer.producer_name}
-              </p>
-            )}
-            {/* Показываем количество производителей, если есть */}
-            {!producersLoading && producers.length > 0 && (
-              <p className="text-white/60 text-xs">
-                {producers.length} {producers.length === 1 ? 'производитель' : 'производителей'}
-              </p>
-            )}
-          </div>
-        </div>
-      </Link>
-    </motion.div>
   );
 };
 
