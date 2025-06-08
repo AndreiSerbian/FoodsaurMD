@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
 import { motion } from 'framer-motion';
+import { ChevronLeft } from 'lucide-react';
 
 const Products = () => {
   const { producerName } = useParams();
@@ -11,79 +12,64 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   
-  // Безопасно получаем изображения
   const images = producer ? [
-    { url: producer.producerImage?.exterior || "/placeholder.svg", label: 'Экстерьер' },
-    { url: producer.producerImage?.interior || "/placeholder.svg", label: 'Интерьер' }
+    { url: producer.producerImage.exterior, label: 'Экстерьер' },
+    { url: producer.producerImage.interior, label: 'Интерьер' }
   ] : [];
 
   useEffect(() => {
     // Simulate API call
     setTimeout(() => {
       const decodedProducerName = decodeURIComponent(producerName);
-      console.log('Looking for producer:', decodedProducerName);
       const foundProducer = getProducerByName(decodedProducerName);
-      
-      if (foundProducer) {
-        // Создаем безопасную копию данных производителя
-        const safeProducer = {
-          ...foundProducer,
-          producerImage: {
-            exterior: foundProducer.producerImage?.exterior || "/placeholder.svg",
-            interior: foundProducer.producerImage?.interior || "/placeholder.svg"
-          },
-          products: foundProducer.products?.map(product => ({
-            ...product,
-            image: product.image || "/placeholder.svg"
-          })) || []
-        };
-        
-        console.log('Safe producer data:', safeProducer);
-        setProducer(safeProducer);
-      } else {
-        console.log('Producer not found');
-        setProducer(null);
-      }
+      setProducer(foundProducer);
       setLoading(false);
     }, 500);
   }, [producerName]);
 
+  const handleNextImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrevImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-gray-600">Загрузка...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   if (!producer) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    return <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <h2 className="text-2xl font-bold mb-4">Ресторан не найден</h2>
         <p className="text-gray-600 mb-8">К сожалению, такого ресторана нет в нашей базе.</p>
-        <Link to="/" className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-300">
+        <Link to="/" className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition duration-300">
           Вернуться на главную
         </Link>
-      </div>
-    );
+      </div>;
   }
 
-  return (
-    <div className="min-h-screen pb-20">
+  return <div className="min-h-screen pb-20">
       <div className="container mx-auto px-4 py-8">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.5 }} 
-          className="mb-8"
-        >
-          <Link 
-            to={`/category/${encodeURIComponent(producer.categoryName)}`} 
-            className="inline-flex items-center text-green-600 hover:text-green-700 transition duration-200"
-          >
+        <motion.div initial={{
+          opacity: 0,
+          y: -20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.5
+        }} className="mb-8">
+          <Link to={`/category/${encodeURIComponent(producer.categoryName)}`} className="inline-flex items-center text-green-600 hover:text-primary transition duration-200">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -91,21 +77,23 @@ const Products = () => {
           </Link>
         </motion.div>
         
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ duration: 0.5, delay: 0.2 }} 
-          className="mb-8 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden"
-        >
+        <motion.div initial={{
+          opacity: 0
+        }} animate={{
+          opacity: 1
+        }} transition={{
+          duration: 0.5,
+          delay: 0.2
+        }} className="mb-8 relative h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden">
           <img 
-            src={images[currentImage]?.url || "/placeholder.svg"} 
-            alt={`${producer.producerName} - ${images[currentImage]?.label}`} 
+            src={images[currentImage].url || "/placeholder.svg"} 
+            alt={`${producer.producerName} - ${images[currentImage].label}`} 
             className="w-full h-full object-cover"
             onError={(e) => {e.currentTarget.src = "/placeholder.svg"}}
           />
           
           <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-            {images[currentImage]?.label || 'Изображение'}
+            {images[currentImage].label}
           </div>
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
@@ -116,10 +104,9 @@ const Products = () => {
           </div>
         </motion.div>
         
-        <ProductsList producer={producer} />
+        <ProductsList products={producer.products} producer={producer} />
       </div>
-    </div>
-  );
+    </div>;
 };
 
 export default Products;

@@ -1,29 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { producersData, categories } from '../data/products';
 import HeroSection from '../components/HeroSection';
 import CategoryList from '../components/CategoryList';
-import { useProducersWithProducts } from '../hooks/useProducersWithProducts';
+import { motion } from 'framer-motion';
 
 const Home = () => {
-  const { t } = useTranslation();
   const [filteredProducers, setFilteredProducers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const { data: allProducers = [] } = useProducersWithProducts();
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredProducers([]);
     } else {
-      const filtered = allProducers.filter(producer => 
-        producer.producer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (producer.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = producersData.filter(producer => 
+        producer.producerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        producer.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredProducers(filtered);
     }
-  }, [searchQuery, allProducers]);
+  }, [searchQuery]);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -41,51 +37,44 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl font-bold mb-6 text-center">{t('search.results')}</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Результаты поиска</h2>
             
             {filteredProducers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {filteredProducers.map((producer, index) => (
                   <motion.div 
-                    key={producer.id}
+                    key={index}
                     className="producer-card"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Link to={`/producer/${encodeURIComponent(producer.producer_name)}`} className="block">
-                      <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                        <div className="relative">
-                          <img 
-                            src={producer.exterior_image_url || "/placeholder.svg"} 
-                            alt={producer.producer_name}
-                            className="w-full h-48 object-cover"
-                            onError={(e) => {e.currentTarget.src = "/placeholder.svg"}}
-                          />
-                        </div>
-                        <div className="p-6">
-                          <div className="text-sm font-medium text-blue-500 mb-1">
-                            {producer.category?.name || ''}
-                          </div>
-                          <h3 className="text-xl font-semibold mb-2">{producer.producer_name}</h3>
-                          <p className="text-gray-600 text-sm">{producer.address}</p>
-                        </div>
+                    <a href={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
+                      <div className="relative">
+                        <img 
+                          src={producer.producerImage.exterior || "/placeholder.svg"} 
+                          alt={producer.producerName}
+                          className="w-full h-48 object-cover rounded-t-2xl"
+                        />
                       </div>
-                    </Link>
+                      <div className="p-6">
+                        <div className="text-sm font-medium text-blue-500 mb-1">{producer.categoryName}</div>
+                        <h3 className="text-xl font-semibold mb-2">{producer.producerName}</h3>
+                        <p className="text-gray-600 text-sm">{producer.address}</p>
+                      </div>
+                    </a>
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-4">{t('search.noResults')}</p>
-                <p className="text-gray-400">{t('search.tryDifferent')}</p>
-              </div>
+              <p className="text-center text-gray-500">По вашему запросу ничего не найдено.</p>
             )}
           </motion.div>
         )}
         
+        {/* If no search query show categories */}
         {searchQuery.trim() === '' && (
-          <CategoryList />
+          <CategoryList categories={categories} />
         )}
       </div>
     </div>

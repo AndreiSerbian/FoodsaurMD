@@ -31,12 +31,12 @@ function importProducerImages() {
     // Динамический импорт всех jpg/png файлов из producers
     const producerImagesContext = import.meta.glob('../assets/Images/producers/*.{jpg,png,jpeg}', { eager: true });
     
-    // Формируем объект с ключами - названиями производителей и типом (interior/exterior/logo), значениями - путями к изображениям
+    // Формируем объект с ключами - названиями производителей и типом (interior/exterior), значениями - путями к изображениям
     Object.keys(producerImagesContext).forEach(path => {
       const fullFileName = path.split('/').pop();
       const [producerWithType] = fullFileName.split('.');
       
-      // Определяем тип изображения (interior/exterior/logo)
+      // Определяем тип изображения (interior/exterior)
       if (producerWithType.endsWith('-interior')) {
         const producerName = producerWithType.replace('-interior', '');
         if (!producerImages[producerName]) producerImages[producerName] = {};
@@ -45,10 +45,6 @@ function importProducerImages() {
         const producerName = producerWithType.replace('-exterior', '');
         if (!producerImages[producerName]) producerImages[producerName] = {};
         producerImages[producerName].exterior = producerImagesContext[path].default;
-      } else if (producerWithType.endsWith('-logo')) {
-        const producerName = producerWithType.replace('-logo', '');
-        if (!producerImages[producerName]) producerImages[producerName] = {};
-        producerImages[producerName].logo = producerImagesContext[path].default;
       }
     });
   } catch (error) {
@@ -101,7 +97,7 @@ export const getCategoryImage = (categoryName) => {
 /**
  * Получает путь к изображению производителя
  * @param {string} producerName - Название производителя
- * @param {string} type - Тип изображения (interior, exterior или logo)
+ * @param {string} type - Тип изображения (interior или exterior)
  * @returns {string} Путь к изображению производителя или путь к placeholder
  */
 export const getProducerImage = (producerName, type) => {
@@ -111,7 +107,7 @@ export const getProducerImage = (producerName, type) => {
     .replace(/\s+/g, "-")
     .replace(/[^\w-]/g, "");
   
-  return PRODUCER_IMAGES[formattedName]?.[type] || "/lovable-uploads/1f68cba8-0b76-4b8e-83c0-739e35516fae.png";
+  return PRODUCER_IMAGES[formattedName]?.[type] || "/placeholder.svg";
 };
 
 /**

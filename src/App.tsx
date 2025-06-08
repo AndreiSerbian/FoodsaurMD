@@ -1,55 +1,36 @@
 
-import { Suspense } from "react";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./hooks/useAuth";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
 import Layout from "./components/Layout";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import ProducerDetail from "./pages/ProducerDetail";
-import AdminPanel from "./pages/AdminPanel";
-import ProducerAuth from "./pages/ProducerAuth";
-import ProducerDashboard from "./pages/ProducerDashboard";
-import ProducersMap from "./pages/ProducersMap";
+import Home from "./pages/Home";
+import Producers from "./pages/Producers";
+import Products from "./pages/Products";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
+    <TooltipProvider>
       <CartProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Layout>
             <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/producer-auth" element={<ProducerAuth />} />
-              <Route 
-                path="/*" 
-                element={
-                  <Layout>
-                    <Suspense fallback={<div>Loading...</div>}>
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/producer/:producerSlug" element={<ProducerDetail />} />
-                        <Route path="/admin" element={<AdminPanel />} />
-                        <Route path="/dashboard" element={<ProducerDashboard />} />
-                        <Route path="/map" element={<ProducersMap />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                  </Layout>
-                } 
-              />
+              <Route path="/" element={<Home />} />
+              <Route path="/category/:categoryName" element={<Producers />} />
+              <Route path="/producer/:producerName" element={<Products />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+          </Layout>
+        </BrowserRouter>
       </CartProvider>
-    </AuthProvider>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
