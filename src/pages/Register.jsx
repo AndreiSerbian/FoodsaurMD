@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import LanguageSelector from '../components/LanguageSelector'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -18,29 +19,30 @@ const Register = () => {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const { signUp } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const validateForm = () => {
     const newErrors = {}
 
     if (!formData.brandName.trim()) {
-      newErrors.brandName = 'Название компании обязательно'
+      newErrors.brandName = t('required')
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email обязателен'
+      newErrors.email = t('required')
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Неверный формат email'
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Телефон обязателен'
+      newErrors.phone = t('required')
     } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Неверный формат телефона'
     }
 
     if (!formData.password) {
-      newErrors.password = 'Пароль обязателен'
+      newErrors.password = t('required')
     } else if (formData.password.length < 6) {
       newErrors.password = 'Пароль должен содержать минимум 6 символов'
     }
@@ -92,16 +94,21 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Регистрация производителя
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Или{' '}
-            <Link to="/login" className="font-medium text-green-600 hover:text-green-500">
-              войдите в существующий аккаунт
-            </Link>
-          </p>
+        <div className="flex justify-between items-center">
+          <div className="flex-1">
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              {t('registerTitle')}
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              {t('loginNotice')}{' '}
+              <Link to="/login" className="font-medium text-green-600 hover:text-green-500">
+                {t('login')}
+              </Link>
+            </p>
+          </div>
+          <div className="ml-4">
+            <LanguageSelector />
+          </div>
         </div>
         
         {message && (
@@ -119,7 +126,7 @@ const Register = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="brandName">Название компании</Label>
+              <Label htmlFor="brandName">{t('brandName')}</Label>
               <Input
                 id="brandName"
                 name="brandName"
@@ -134,7 +141,7 @@ const Register = () => {
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 name="email"
@@ -149,7 +156,7 @@ const Register = () => {
             </div>
 
             <div>
-              <Label htmlFor="phone">Телефон</Label>
+              <Label htmlFor="phone">{t('phone')}</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -164,7 +171,7 @@ const Register = () => {
             </div>
 
             <div>
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 name="password"
@@ -179,7 +186,7 @@ const Register = () => {
             </div>
 
             <div>
-              <Label htmlFor="confirmPassword">Повторите пароль</Label>
+              <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
@@ -200,7 +207,7 @@ const Register = () => {
               disabled={loading}
               className="w-full bg-green-600 hover:bg-green-700"
             >
-              {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+              {loading ? t('enterRegister') : t('registerProducer')}
             </Button>
           </div>
         </form>
