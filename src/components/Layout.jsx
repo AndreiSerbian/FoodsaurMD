@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Button } from './ui/button';
 import LanguageSelector from './LanguageSelector';
+import MobileMenu from './MobileMenu';
 import Cart from './Cart';
 
 const Layout = ({ children }) => {
@@ -16,6 +17,8 @@ const Layout = ({ children }) => {
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold text-green-900">Foodsaur</Link>
+          
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8 items-center">
             <Link to="/" className="text-green-600 hover:text-green-900 transition duration-200">
               {t('home')}
@@ -63,6 +66,11 @@ const Layout = ({ children }) => {
             
             <LanguageSelector />
           </nav>
+
+          {/* Mobile Navigation */}
+          <div className="flex items-center space-x-2 md:hidden">
+            <MobileMenu />
+          </div>
         </div>
       </header>
       
