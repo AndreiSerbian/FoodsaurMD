@@ -71,13 +71,13 @@ const MobileMenu = () => {
         <DrawerTrigger asChild>
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Открыть меню</span>
+            <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader className="text-left">
             <DrawerTitle className="flex items-center justify-between">
-              Меню
+              {t('menu')}
               <DrawerClose asChild>
                 <Button variant="ghost" size="icon">
                   <X className="h-4 w-4" />
@@ -147,7 +147,7 @@ const MobileMenu = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="hidden md:flex">
           <Menu className="h-5 w-5" />
-          <span className="sr-only">Открыть меню</span>
+          <span className="sr-only">{t('openMenu')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
