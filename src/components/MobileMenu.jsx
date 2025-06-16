@@ -13,6 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetClose,
+  SheetDescription,
 } from './ui/sheet';
 import {
   DropdownMenu,
@@ -84,6 +85,9 @@ const MobileMenu = () => {
                 </Button>
               </SheetClose>
             </SheetTitle>
+            <SheetDescription>
+              {t('menu')} навигации приложения
+            </SheetDescription>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             {menuItems.map((item, index) => (
