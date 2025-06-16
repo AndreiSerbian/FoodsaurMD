@@ -7,13 +7,13 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useIsMobile } from '../hooks/use-mobile';
 import { Button } from './ui/button';
 import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-  DrawerClose,
-} from './ui/drawer';
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from './ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,17 +26,17 @@ const MobileMenu = () => {
   const { user, userRole, signOut } = useAuth();
   const { t, currentLanguage, changeLanguage, availableLanguages } = useLanguage();
   const isMobile = useIsMobile();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const toggleLanguage = () => {
     const newLanguage = currentLanguage === 'ru' ? 'ro' : 'ru';
     changeLanguage(newLanguage);
-    setIsDrawerOpen(false);
+    setIsSheetOpen(false);
   };
 
   const handleSignOut = () => {
     signOut();
-    setIsDrawerOpen(false);
+    setIsSheetOpen(false);
   };
 
   const currentLang = availableLanguages.find(lang => lang.code === currentLanguage);
@@ -67,30 +67,30 @@ const MobileMenu = () => {
 
   if (isMobile) {
     return (
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerTrigger asChild>
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-5 w-5" />
             <span className="sr-only">{t('openMenu')}</span>
           </Button>
-        </DrawerTrigger>
-        <DrawerContent>
-          <DrawerHeader className="text-left">
-            <DrawerTitle className="flex items-center justify-between">
+        </SheetTrigger>
+        <SheetContent side="right" className="w-80">
+          <SheetHeader>
+            <SheetTitle className="flex items-center justify-between">
               {t('menu')}
-              <DrawerClose asChild>
+              <SheetClose asChild>
                 <Button variant="ghost" size="icon">
                   <X className="h-4 w-4" />
                 </Button>
-              </DrawerClose>
-            </DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-6 space-y-2">
+              </SheetClose>
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
             {menuItems.map((item, index) => (
               <Link
                 key={index}
                 to={item.to}
-                onClick={() => setIsDrawerOpen(false)}
+                onClick={() => setIsSheetOpen(false)}
                 className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <item.icon className="h-5 w-5 text-green-600" />
@@ -98,7 +98,7 @@ const MobileMenu = () => {
               </Link>
             ))}
             
-            <div className="border-t pt-2 mt-4">
+            <div className="border-t pt-4">
               <button
                 onClick={toggleLanguage}
                 className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors w-full text-left"
@@ -110,7 +110,7 @@ const MobileMenu = () => {
               </button>
             </div>
 
-            <div className="border-t pt-2">
+            <div className="border-t pt-4">
               {user ? (
                 <div className="space-y-2">
                   <div className="px-3 py-2 text-sm text-gray-600">
@@ -127,7 +127,7 @@ const MobileMenu = () => {
               ) : (
                 <Link
                   to="/login"
-                  onClick={() => setIsDrawerOpen(false)}
+                  onClick={() => setIsSheetOpen(false)}
                   className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <LogIn className="h-5 w-5 text-green-600" />
@@ -136,8 +136,8 @@ const MobileMenu = () => {
               )}
             </div>
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
     );
   }
 
