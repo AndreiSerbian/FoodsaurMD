@@ -42,7 +42,7 @@ const App = () => (
                   path="/dashboard" 
                   element={
                     <ProtectedRoute requiredRole="producer">
-                      <Dashboard />
+                      <Layout><Dashboard /></Layout>
                     </ProtectedRoute>
                   } 
                 />
@@ -51,7 +51,7 @@ const App = () => (
                   path="/admin-panel" 
                   element={
                     <ProtectedRoute adminOnly={true}>
-                      <AdminPanel />
+                      <Layout><AdminPanel /></Layout>
                     </ProtectedRoute>
                   } 
                 />

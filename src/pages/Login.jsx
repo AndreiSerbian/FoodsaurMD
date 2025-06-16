@@ -6,7 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import LanguageSelector from '../components/LanguageSelector'
+import Layout from '../components/Layout'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -42,10 +42,10 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="flex justify-between items-center">
-          <div className="flex-1">
+    <Layout>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               {t('loginTitle')}
             </h2>
@@ -56,56 +56,53 @@ const Login = () => {
               </Link>
             </p>
           </div>
-          <div className="ml-4">
-            <LanguageSelector />
-          </div>
+
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {errors.general}
+            </div>
+          )}
+
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="email">{t('email')}</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="password">{t('password')}</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                {loading ? t('enterLogin') : t('signIn')}
+              </Button>
+            </div>
+          </form>
         </div>
-
-        {errors.general && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {errors.general}
-          </div>
-        )}
-
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="email">{t('email')}</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="password">{t('password')}</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700"
-            >
-              {loading ? t('enterLogin') : t('signIn')}
-            </Button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Layout>
   )
 }
 
