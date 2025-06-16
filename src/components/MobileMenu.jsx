@@ -66,26 +66,27 @@ const MobileMenu = () => {
     }
   }
 
+  // Для мобильных устройств
   if (isMobile) {
     return (
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="md:hidden">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => setIsSheetOpen(true)}
+          >
             <Menu className="h-5 w-5" />
             <span className="sr-only">{t('openMenu')}</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-80">
+        <SheetContent side="right" className="w-80 z-50">
           <SheetHeader>
-            <SheetTitle className="flex items-center justify-between">
+            <SheetTitle className="text-left">
               {t('menu')}
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon">
-                  <X className="h-4 w-4" />
-                </Button>
-              </SheetClose>
             </SheetTitle>
-            <SheetDescription>
+            <SheetDescription className="text-left">
               {t('menu')} навигации приложения
             </SheetDescription>
           </SheetHeader>
@@ -145,7 +146,7 @@ const MobileMenu = () => {
     );
   }
 
-  // Desktop dropdown menu
+  // Для десктопа - dropdown меню
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -154,7 +155,7 @@ const MobileMenu = () => {
           <span className="sr-only">{t('openMenu')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 z-50">
         {menuItems.map((item, index) => (
           <DropdownMenuItem key={index} asChild>
             <Link to={item.to} className="flex items-center space-x-2">
