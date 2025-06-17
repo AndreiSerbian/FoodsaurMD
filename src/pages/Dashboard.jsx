@@ -8,6 +8,7 @@ import { Label } from '../components/ui/label'
 import { Plus } from 'lucide-react'
 import ProductForm from '../components/ProductForm'
 import ProductList from '../components/ProductList'
+import CategorySelector from '../components/CategorySelector'
 
 const Dashboard = () => {
   const { user, signOut } = useAuth()
@@ -21,7 +22,8 @@ const Dashboard = () => {
     phone: '',
     address: '',
     description: '',
-    telegram_handle: ''
+    telegram_handle: '',
+    categories: []
   })
 
   useEffect(() => {
@@ -45,7 +47,8 @@ const Dashboard = () => {
           phone: data.phone || '',
           address: data.address || '',
           description: data.description || '',
-          telegram_handle: data.telegram_handle || ''
+          telegram_handle: data.telegram_handle || '',
+          categories: data.categories || []
         })
       } else if (error && error.code === 'PGRST116') {
         await createProfile()
@@ -66,6 +69,7 @@ const Dashboard = () => {
           producer_name: user.user_metadata?.brand_name || '',
           phone: user.user_metadata?.phone || '',
           telegram_handle: user.user_metadata?.telegram_handle || '',
+          categories: user.user_metadata?.categories || [],
           email_verified: true
         }])
         .select()
@@ -78,7 +82,8 @@ const Dashboard = () => {
           phone: data.phone || '',
           address: data.address || '',
           description: data.description || '',
-          telegram_handle: data.telegram_handle || ''
+          telegram_handle: data.telegram_handle || '',
+          categories: data.categories || []
         })
       }
     } catch (error) {
@@ -113,6 +118,13 @@ const Dashboard = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    })
+  }
+
+  const handleCategoriesChange = (categories) => {
+    setFormData({
+      ...formData,
+      categories
     })
   }
 
@@ -202,6 +214,11 @@ const Dashboard = () => {
                           onChange={handleChange}
                         />
                       </div>
+
+                      <CategorySelector
+                        selectedCategories={formData.categories}
+                        onCategoriesChange={handleCategoriesChange}
+                      />
                       
                       <div className="flex space-x-2">
                         <Button type="submit" size="sm">
@@ -242,6 +259,24 @@ const Dashboard = () => {
                       <div>
                         <p className="text-sm font-medium text-gray-500">Описание</p>
                         <p className="text-sm text-gray-900">{profile?.description || 'Не указано'}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Категории</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {profile?.categories && profile.categories.length > 0 ? (
+                            profile.categories.map((category) => (
+                              <span
+                                key={category}
+                                className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                              >
+                                {category}
+                              </span>
+                            ))
+                          ) : (
+                            <p className="text-sm text-gray-900">Не указаны</p>
+                          )}
+                        </div>
                       </div>
                       
                       <div>

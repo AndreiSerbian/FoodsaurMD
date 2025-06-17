@@ -102,6 +102,7 @@ export type Database = {
       producer_profiles: {
         Row: {
           address: string | null
+          categories: string[] | null
           category_id: string | null
           category_name: string | null
           created_at: string | null
@@ -123,6 +124,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          categories?: string[] | null
           category_id?: string | null
           category_name?: string | null
           created_at?: string | null
@@ -144,6 +146,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          categories?: string[] | null
           category_id?: string | null
           category_name?: string | null
           created_at?: string | null

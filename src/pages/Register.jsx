@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import CategorySelector from '../components/CategorySelector'
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,8 @@ const Register = () => {
     phone: '',
     telegramHandle: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    categories: []
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -58,6 +60,10 @@ const Register = () => {
       newErrors.confirmPassword = 'Пароли не совпадают'
     }
 
+    if (!formData.categories || formData.categories.length === 0) {
+      newErrors.categories = 'Выберите хотя бы одну категорию'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -77,7 +83,8 @@ const Register = () => {
         formData.password, 
         formData.brandName, 
         formData.phone,
-        formData.telegramHandle
+        formData.telegramHandle,
+        formData.categories
       )
 
       if (result.needsConfirmation) {
@@ -96,6 +103,13 @@ const Register = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    })
+  }
+
+  const handleCategoriesChange = (categories) => {
+    setFormData({
+      ...formData,
+      categories
     })
   }
 
@@ -188,6 +202,12 @@ const Register = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.telegramHandle}</p>
               )}
             </div>
+
+            <CategorySelector
+              selectedCategories={formData.categories}
+              onCategoriesChange={handleCategoriesChange}
+              errors={errors}
+            />
 
             <div>
               <Label htmlFor="password">{t('password')}</Label>
