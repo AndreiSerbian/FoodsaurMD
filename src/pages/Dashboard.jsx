@@ -5,18 +5,23 @@ import { supabase } from '../integrations/supabase/client'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import ProductManagement from '../components/ProductManagement'
+import { Plus } from 'lucide-react'
+import ProductForm from '../components/ProductForm'
+import ProductList from '../components/ProductList'
 
 const Dashboard = () => {
   const { user, signOut } = useAuth()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [showProductForm, setShowProductForm] = useState(false)
+  const [editingProduct, setEditingProduct] = useState(null)
   const [formData, setFormData] = useState({
-    brand_name: '',
+    producer_name: '',
     phone: '',
     address: '',
-    description: ''
+    description: '',
+    telegram_handle: ''
   })
 
   useEffect(() => {
@@ -36,13 +41,13 @@ const Dashboard = () => {
       if (data) {
         setProfile(data)
         setFormData({
-          brand_name: data.brand_name || '',
+          producer_name: data.producer_name || '',
           phone: data.phone || '',
           address: data.address || '',
-          description: data.description || ''
+          description: data.description || '',
+          telegram_handle: data.telegram_handle || ''
         })
       } else if (error && error.code === 'PGRST116') {
-        // Профиль не найден, создаем новый
         await createProfile()
       }
     } catch (error) {
@@ -58,8 +63,9 @@ const Dashboard = () => {
         .from('producer_profiles')
         .insert([{
           user_id: user.id,
-          brand_name: user.user_metadata?.brand_name || '',
+          producer_name: user.user_metadata?.brand_name || '',
           phone: user.user_metadata?.phone || '',
+          telegram_handle: user.user_metadata?.telegram_handle || '',
           email_verified: true
         }])
         .select()
@@ -68,10 +74,11 @@ const Dashboard = () => {
       if (data) {
         setProfile(data)
         setFormData({
-          brand_name: data.brand_name || '',
+          producer_name: data.producer_name || '',
           phone: data.phone || '',
           address: data.address || '',
-          description: data.description || ''
+          description: data.description || '',
+          telegram_handle: data.telegram_handle || ''
         })
       }
     } catch (error) {
@@ -109,6 +116,17 @@ const Dashboard = () => {
     })
   }
 
+  const handleEditProduct = (product) => {
+    setEditingProduct(product)
+    setShowProductForm(true)
+  }
+
+  const handleProductSave = () => {
+    setShowProductForm(false)
+    setEditingProduct(null)
+    // Обновление списка товаров произойдет автоматически
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -119,24 +137,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Панель управления производителя
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">{user?.email}</span>
-              <Button onClick={signOut} variant="outline">
-                Выйти
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -151,11 +151,11 @@ const Dashboard = () => {
                   {editing ? (
                     <form onSubmit={handleUpdateProfile} className="space-y-4">
                       <div>
-                        <Label htmlFor="brand_name">Название</Label>
+                        <Label htmlFor="producer_name">Название</Label>
                         <Input
-                          id="brand_name"
-                          name="brand_name"
-                          value={formData.brand_name}
+                          id="producer_name"
+                          name="producer_name"
+                          value={formData.producer_name}
                           onChange={handleChange}
                         />
                       </div>
@@ -167,6 +167,17 @@ const Dashboard = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleChange}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="telegram_handle">Telegram</Label>
+                        <Input
+                          id="telegram_handle"
+                          name="telegram_handle"
+                          value={formData.telegram_handle}
+                          onChange={handleChange}
+                          placeholder="@username"
                         />
                       </div>
                       
@@ -210,12 +221,17 @@ const Dashboard = () => {
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm font-medium text-gray-500">Название</p>
-                        <p className="text-sm text-gray-900">{profile?.brand_name || 'Не указано'}</p>
+                        <p className="text-sm text-gray-900">{profile?.producer_name || 'Не указано'}</p>
                       </div>
                       
                       <div>
                         <p className="text-sm font-medium text-gray-500">Телефон</p>
                         <p className="text-sm text-gray-900">{profile?.phone || 'Не указан'}</p>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Telegram</p>
+                        <p className="text-sm text-gray-900">{profile?.telegram_handle || 'Не указан'}</p>
                       </div>
                       
                       <div>
@@ -254,11 +270,43 @@ const Dashboard = () => {
 
             {/* Управление товарами */}
             <div className="lg:col-span-2">
-              <ProductManagement profile={profile} />
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Управление товарами
+                    </h3>
+                    <Button 
+                      onClick={() => setShowProductForm(true)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Добавить товар
+                    </Button>
+                  </div>
+                  
+                  <ProductList 
+                    producerProfile={profile}
+                    onEditProduct={handleEditProduct}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {showProductForm && (
+        <ProductForm
+          product={editingProduct}
+          producerProfile={profile}
+          onSave={handleProductSave}
+          onCancel={() => {
+            setShowProductForm(false)
+            setEditingProduct(null)
+          }}
+        />
+      )}
     </div>
   )
 }

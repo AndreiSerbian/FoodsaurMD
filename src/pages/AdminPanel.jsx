@@ -57,8 +57,9 @@ const AdminPanel = () => {
   const handleEditProducer = (producer) => {
     setEditingProducer(producer.id)
     setFormData({
-      brand_name: producer.brand_name,
+      producer_name: producer.producer_name,
       phone: producer.phone,
+      telegram_handle: producer.telegram_handle || '',
       address: producer.address || '',
       description: producer.description || ''
     })
@@ -98,7 +99,7 @@ const AdminPanel = () => {
     const tempPassword = generateTempPassword()
     
     // В реальном приложении здесь должна быть отправка email
-    alert(`Временный пароль для ${producer.brand_name}: ${tempPassword}`)
+    alert(`Временный пароль для ${producer.producer_name}: ${tempPassword}`)
     
     // Здесь можно добавить логику для сброса пароля через Supabase Admin API
     console.log('Reset password for producer:', producer.id, 'New password:', tempPassword)
@@ -114,24 +115,6 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Админ-панель
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">{user?.email}</span>
-              <Button onClick={signOut} variant="outline">
-                Выйти
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -146,11 +129,11 @@ const AdminPanel = () => {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="brand_name">Название</Label>
+                          <Label htmlFor="producer_name">Название</Label>
                           <Input
-                            id="brand_name"
-                            name="brand_name"
-                            value={formData.brand_name}
+                            id="producer_name"
+                            name="producer_name"
+                            value={formData.producer_name}
                             onChange={handleChange}
                           />
                         </div>
@@ -164,8 +147,19 @@ const AdminPanel = () => {
                             onChange={handleChange}
                           />
                         </div>
+
+                        <div>
+                          <Label htmlFor="telegram_handle">Telegram</Label>
+                          <Input
+                            id="telegram_handle"
+                            name="telegram_handle"
+                            value={formData.telegram_handle}
+                            onChange={handleChange}
+                            placeholder="@username"
+                          />
+                        </div>
                         
-                        <div className="md:col-span-2">
+                        <div>
                           <Label htmlFor="address">Адрес</Label>
                           <Input
                             id="address"
@@ -219,10 +213,10 @@ const AdminPanel = () => {
                           </div>
                           <div className="ml-4">
                             <h3 className="text-lg font-medium text-gray-900">
-                              {producer.brand_name}
+                              {producer.producer_name}
                             </h3>
                             <p className="text-sm text-gray-500">
-                              {producer.phone} • {producer.address || 'Адрес не указан'}
+                              {producer.phone} • {producer.telegram_handle} • {producer.address || 'Адрес не указан'}
                             </p>
                             {producer.description && (
                               <p className="text-sm text-gray-600 mt-1">

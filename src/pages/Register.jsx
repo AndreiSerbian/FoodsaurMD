@@ -6,13 +6,13 @@ import { useLanguage } from '../contexts/LanguageContext'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import Layout from '../components/Layout'
 
 const Register = () => {
   const [formData, setFormData] = useState({
     brandName: '',
     email: '',
     phone: '',
+    telegramHandle: '',
     password: '',
     confirmPassword: ''
   })
@@ -40,6 +40,12 @@ const Register = () => {
       newErrors.phone = t('required')
     } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Неверный формат телефона'
+    }
+
+    if (!formData.telegramHandle.trim()) {
+      newErrors.telegramHandle = 'Telegram обязателен'
+    } else if (!/^@?[a-zA-Z0-9_]{5,32}$/.test(formData.telegramHandle.replace('@', ''))) {
+      newErrors.telegramHandle = 'Неверный формат Telegram (5-32 символа)'
     }
 
     if (!formData.password) {
@@ -70,7 +76,8 @@ const Register = () => {
         formData.email, 
         formData.password, 
         formData.brandName, 
-        formData.phone
+        formData.phone,
+        formData.telegramHandle
       )
 
       if (result.needsConfirmation) {
@@ -93,124 +100,138 @@ const Register = () => {
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              {t('registerTitle')}
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              {t('loginNotice')}{' '}
-              <Link to="/login" className="font-medium text-green-600 hover:text-green-500">
-                {t('login')}
-              </Link>
-            </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {t('registerTitle')}
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            {t('loginNotice')}{' '}
+            <Link to="/login" className="font-medium text-green-600 hover:text-green-500">
+              {t('login')}
+            </Link>
+          </p>
+        </div>
+        
+        {message && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+            {message}
           </div>
-          
-          {message && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-              {message}
-            </div>
-          )}
+        )}
 
-          {errors.general && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {errors.general}
-            </div>
-          )}
+        {errors.general && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {errors.general}
+          </div>
+        )}
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="brandName">{t('brandName')}</Label>
-                <Input
-                  id="brandName"
-                  name="brandName"
-                  type="text"
-                  value={formData.brandName}
-                  onChange={handleChange}
-                  className={errors.brandName ? 'border-red-300' : ''}
-                />
-                {errors.brandName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.brandName}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="email">{t('email')}</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={errors.email ? 'border-red-300' : ''}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="phone">{t('phone')}</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className={errors.phone ? 'border-red-300' : ''}
-                />
-                {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="password">{t('password')}</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={errors.password ? 'border-red-300' : ''}
-                />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={errors.confirmPassword ? 'border-red-300' : ''}
-                />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                )}
-              </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="brandName">{t('brandName')}</Label>
+              <Input
+                id="brandName"
+                name="brandName"
+                type="text"
+                value={formData.brandName}
+                onChange={handleChange}
+                className={errors.brandName ? 'border-red-300' : ''}
+              />
+              {errors.brandName && (
+                <p className="mt-1 text-sm text-red-600">{errors.brandName}</p>
+              )}
             </div>
 
             <div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                {loading ? t('enterRegister') : t('registerProducer')}
-              </Button>
+              <Label htmlFor="email">{t('email')}</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={errors.email ? 'border-red-300' : ''}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
-          </form>
-        </div>
+
+            <div>
+              <Label htmlFor="phone">{t('phone')}</Label>
+              <Input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                className={errors.phone ? 'border-red-300' : ''}
+              />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="telegramHandle">Telegram</Label>
+              <Input
+                id="telegramHandle"
+                name="telegramHandle"
+                type="text"
+                placeholder="@username"
+                value={formData.telegramHandle}
+                onChange={handleChange}
+                className={errors.telegramHandle ? 'border-red-300' : ''}
+              />
+              {errors.telegramHandle && (
+                <p className="mt-1 text-sm text-red-600">{errors.telegramHandle}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="password">{t('password')}</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={errors.password ? 'border-red-300' : ''}
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={errors.confirmPassword ? 'border-red-300' : ''}
+              />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700"
+            >
+              {loading ? t('enterRegister') : t('registerProducer')}
+            </Button>
+          </div>
+        </form>
       </div>
-    </Layout>
+    </div>
   )
 }
 

@@ -110,12 +110,14 @@ export type Database = {
           exterior_image_url: string | null
           id: string
           interior_image_url: string | null
+          is_approved: boolean | null
           is_demo: boolean | null
           is_verified: boolean | null
           logo_url: string | null
           phone: string | null
           producer_name: string
           slug: string | null
+          telegram_handle: string | null
           updated_at: string | null
           user_id: string
         }
@@ -129,12 +131,14 @@ export type Database = {
           exterior_image_url?: string | null
           id?: string
           interior_image_url?: string | null
+          is_approved?: boolean | null
           is_demo?: boolean | null
           is_verified?: boolean | null
           logo_url?: string | null
           phone?: string | null
           producer_name: string
           slug?: string | null
+          telegram_handle?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -148,12 +152,14 @@ export type Database = {
           exterior_image_url?: string | null
           id?: string
           interior_image_url?: string | null
+          is_approved?: boolean | null
           is_demo?: boolean | null
           is_verified?: boolean | null
           logo_url?: string | null
           phone?: string | null
           producer_name?: string
           slug?: string | null
+          telegram_handle?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -163,6 +169,88 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_images: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          is_primary: boolean | null
+          product_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          is_primary?: boolean | null
+          product_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          is_primary?: boolean | null
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          in_stock: boolean | null
+          name: string
+          price_discount: number | null
+          price_regular: number
+          price_unit: string
+          producer_id: string
+          quantity: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          in_stock?: boolean | null
+          name: string
+          price_discount?: number | null
+          price_regular: number
+          price_unit?: string
+          producer_id: string
+          quantity?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          in_stock?: boolean | null
+          name?: string
+          price_discount?: number | null
+          price_regular?: number
+          price_unit?: string
+          producer_id?: string
+          quantity?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
             referencedColumns: ["id"]
           },
         ]

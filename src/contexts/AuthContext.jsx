@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signUp = async (email, password, brandName, phone) => {
+  const signUp = async (email, password, brandName, phone, telegramHandle) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -71,7 +71,8 @@ export const AuthProvider = ({ children }) => {
           emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             brand_name: brandName,
-            phone: phone
+            phone: phone,
+            telegram_handle: telegramHandle
           }
         }
       })
@@ -130,8 +131,9 @@ export const AuthProvider = ({ children }) => {
         .from('producer_profiles')
         .insert([{
           user_id: user.id,
-          brand_name: profileData.brand_name,
+          producer_name: profileData.producer_name,
           phone: profileData.phone,
+          telegram_handle: profileData.telegram_handle,
           address: profileData.address,
           description: profileData.description,
           email_verified: true
