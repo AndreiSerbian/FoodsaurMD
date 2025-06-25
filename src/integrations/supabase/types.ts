@@ -176,6 +176,36 @@ export type Database = {
           },
         ]
       }
+      producers: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          email: string
+          id: string
+          phone: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_name: string
+          created_at?: string | null
+          email: string
+          id?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          phone?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       product_images: {
         Row: {
           created_at: string | null
