@@ -39,59 +39,35 @@ export type Database = {
         }
         Relationships: []
       }
-      producer_products: {
+      producer_categories: {
         Row: {
           category_id: string | null
           created_at: string | null
-          description: string | null
           id: string
-          image_url: string | null
-          is_demo: boolean | null
-          name: string
-          price_discount: number | null
-          price_regular: number
-          producer_id: string
-          quantity: number
-          updated_at: string | null
+          producer_id: string | null
         }
         Insert: {
           category_id?: string | null
           created_at?: string | null
-          description?: string | null
           id?: string
-          image_url?: string | null
-          is_demo?: boolean | null
-          name: string
-          price_discount?: number | null
-          price_regular: number
-          producer_id: string
-          quantity?: number
-          updated_at?: string | null
+          producer_id?: string | null
         }
         Update: {
           category_id?: string | null
           created_at?: string | null
-          description?: string | null
           id?: string
-          image_url?: string | null
-          is_demo?: boolean | null
-          name?: string
-          price_discount?: number | null
-          price_regular?: number
-          producer_id?: string
-          quantity?: number
-          updated_at?: string | null
+          producer_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "producer_products_category_id_fkey"
+            foreignKeyName: "producer_categories_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "producer_products_producer_id_fkey"
+            foreignKeyName: "producer_categories_producer_id_fkey"
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "producer_profiles"
@@ -183,6 +159,7 @@ export type Database = {
           email: string
           id: string
           phone: string | null
+          producer_profile_id: string | null
           status: string | null
           updated_at: string | null
         }
@@ -192,6 +169,7 @@ export type Database = {
           email: string
           id?: string
           phone?: string | null
+          producer_profile_id?: string | null
           status?: string | null
           updated_at?: string | null
         }
@@ -201,10 +179,19 @@ export type Database = {
           email?: string
           id?: string
           phone?: string | null
+          producer_profile_id?: string | null
           status?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "producers_producer_profile_id_fkey"
+            columns: ["producer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_images: {
         Row: {
@@ -229,6 +216,13 @@ export type Database = {
           product_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_product_images_products"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_images_product_id_fkey"
             columns: ["product_id"]
@@ -279,6 +273,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_products_producer_profiles"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_producer_id_fkey"
             columns: ["producer_id"]
