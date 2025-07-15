@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../integrations/supabase/client'
 import ProductManagement from '../components/ProductManagement'
+import PickupPointManagement from '../components/PickupPointManagement'
+import OrderManagement from '../components/OrderManagement'
 import CategorySelector from '../components/CategorySelector'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
@@ -262,6 +264,12 @@ const Dashboard = () => {
 
       {/* Управление товарами */}
       <ProductManagement profile={profile} />
+
+      {/* Управление точками выдачи */}
+      <PickupPointManagement producerProfile={profile} />
+
+      {/* Управление заказами */}
+      <OrderManagement producerProfile={profile} />
     </div>
   )
 }

@@ -23,6 +23,9 @@ const Layout = ({ children }) => {
             <Link to="/" className="text-green-600 hover:text-green-900 transition duration-200">
               {t('home')}
             </Link>
+            <Link to="/order-search" className="text-green-600 hover:text-green-900 transition duration-200">
+              Поиск заказа
+            </Link>
             
             {user ? (
               <div className="flex items-center space-x-4">

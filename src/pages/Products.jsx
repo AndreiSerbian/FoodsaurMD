@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getProducerByName } from '../data/products';
 import ProductsList from '../components/ProductsList';
+import PreOrderForm from '../components/PreOrderForm';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 
@@ -105,6 +106,16 @@ const Products = () => {
         </motion.div>
         
         <ProductsList products={producer.products} producer={producer} />
+        
+        {/* Форма предзаказа */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="mt-12"
+        >
+          <PreOrderForm producer={producer} />
+        </motion.div>
       </div>
     </div>;
 };

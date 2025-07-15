@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
+import OrderSearchPage from "./pages/OrderSearch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,8 @@ const App = () => (
                     </ProtectedRoute>
                   } 
                 />
+                
+                <Route path="/order-search" element={<Layout><OrderSearchPage /></Layout>} />
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
