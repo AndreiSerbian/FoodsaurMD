@@ -1,5 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const CartContext = createContext();
 
@@ -8,22 +10,94 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
+  const [selectedPickupPoint, setSelectedPickupPoint] = useState(null);
+  const [selectedPickupTime, setSelectedPickupTime] = useState(null);
+  const [discountTotal, setDiscountTotal] = useState(0);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Calculate total whenever cart items change
-    const total = cartItems.reduce((sum, item) => sum + (item.priceDiscount * item.quantity), 0);
-    setCartTotal(total);
+    // Calculate totals whenever cart items change
+    const regularTotal = cartItems.reduce((sum, item) => sum + (item.priceRegular * item.quantity), 0);
+    const discountedTotal = cartItems.reduce((sum, item) => sum + ((item.priceDiscount || item.priceRegular) * item.quantity), 0);
+    
+    setCartTotal(discountedTotal);
+    setDiscountTotal(regularTotal - discountedTotal);
   }, [cartItems]);
 
-  const addToCart = (product, producerName) => {
+  const selectPickupPoint = (pickupPoint) => {
+    if (cartItems.length > 0 && selectedPickupPoint?.id !== pickupPoint.id) {
+      // Clear cart if switching to different pickup point
+      setCartItems([]);
+      toast({
+        title: "Корзина очищена",
+        description: "Товары из другой точки были удалены из корзины."
+      });
+    }
+    setSelectedPickupPoint(pickupPoint);
+  };
+
+  const addToCart = async (product, pickupPointId) => {
+    if (!selectedPickupPoint) {
+      toast({
+        title: "Ошибка",
+        description: "Сначала выберите точку получения",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (selectedPickupPoint.id !== pickupPointId) {
+      toast({
+        title: "Ошибка", 
+        description: "Товар доступен только в выбранной точке получения",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check availability at pickup point
+    try {
+      const { data: availability, error } = await supabase
+        .from('pickup_point_products')
+        .select('quantity_available, is_available')
+        .eq('pickup_point_id', pickupPointId)
+        .eq('product_id', product.id)
+        .single();
+
+      if (error || !availability?.is_available || availability.quantity_available <= 0) {
+        toast({
+          title: "Товар недоступен",
+          description: "Товар закончился в выбранной точке",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if adding one more item would exceed available quantity
+      const currentQuantity = cartItems.find(item => item.id === product.id)?.quantity || 0;
+      if (currentQuantity >= availability.quantity_available) {
+        toast({
+          title: "Недостаточно товара",
+          description: `Доступно только ${availability.quantity_available} единиц`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось проверить наличие товара",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setCartItems(prevItems => {
-      // Check if item is already in cart
-      const existingItemIndex = prevItems.findIndex(
-        item => item.productName === product.productName && item.producerName === producerName
-      );
+      const existingItemIndex = prevItems.findIndex(item => item.id === product.id);
 
       if (existingItemIndex >= 0) {
-        // Item exists, update quantity
         const updatedItems = [...prevItems];
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
@@ -31,47 +105,184 @@ export const CartProvider = ({ children }) => {
         };
         return updatedItems;
       } else {
-        // Item doesn't exist, add new item
-        return [...prevItems, { ...product, producerName, quantity: 1 }];
+        return [...prevItems, { ...product, quantity: 1 }];
       }
     });
   };
 
-  const removeFromCart = (productName, producerName) => {
-    setCartItems(prevItems => 
-      prevItems.filter(item => 
-        !(item.productName === productName && item.producerName === producerName)
-      )
-    );
+  const removeFromCart = (productId) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
 
-  const updateQuantity = (productName, producerName, quantity) => {
+  const updateQuantity = async (productId, quantity) => {
     if (quantity <= 0) {
-      removeFromCart(productName, producerName);
+      removeFromCart(productId);
+      return;
+    }
+
+    // Check availability for new quantity
+    const product = cartItems.find(item => item.id === productId);
+    if (!product || !selectedPickupPoint) return;
+
+    try {
+      const { data: availability, error } = await supabase
+        .from('pickup_point_products')
+        .select('quantity_available')
+        .eq('pickup_point_id', selectedPickupPoint.id)
+        .eq('product_id', productId)
+        .single();
+
+      if (error || quantity > availability.quantity_available) {
+        toast({
+          title: "Недостаточно товара",
+          description: `Доступно только ${availability.quantity_available} единиц`,
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
       return;
     }
 
     setCartItems(prevItems => 
       prevItems.map(item => 
-        (item.productName === productName && item.producerName === producerName)
-          ? { ...item, quantity }
-          : item
+        item.id === productId ? { ...item, quantity } : item
       )
     );
   };
 
   const clearCart = () => {
     setCartItems([]);
+    setSelectedPickupPoint(null);
+    setSelectedPickupTime(null);
+  };
+
+  const createPreOrder = async () => {
+    if (!selectedPickupPoint || !selectedPickupTime || cartItems.length === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Выберите точку получения, время и добавьте товары",
+        variant: "destructive"
+      });
+      return null;
+    }
+
+    try {
+      // Create pre-order
+      const { data: preOrder, error: orderError } = await supabase
+        .from('pre_orders')
+        .insert({
+          order_code: await generateOrderCode(),
+          pickup_point_id: selectedPickupPoint.id,
+          total_amount: cartTotal,
+          discount_amount: discountTotal,
+          pickup_time: selectedPickupTime,
+          status: 'created'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cartItems.map(item => ({
+        pre_order_id: preOrder.id,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_regular: item.priceRegular,
+        price_discount: item.priceDiscount || item.priceRegular
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('pre_order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      // Update product quantities at pickup point
+      for (const item of cartItems) {
+        const { error: updateError } = await supabase
+          .from('pickup_point_products')
+          .update({
+            quantity_available: supabase.raw(`quantity_available - ${item.quantity}`)
+          })
+          .eq('pickup_point_id', selectedPickupPoint.id)
+          .eq('product_id', item.id);
+
+        if (updateError) console.error('Error updating quantity:', updateError);
+      }
+
+      // Send notification to producer
+      await supabase.functions.invoke('create-pre-order-notification', {
+        body: {
+          preOrderId: preOrder.id,
+          orderCode: preOrder.order_code,
+          pickupPointId: selectedPickupPoint.id,
+          totalAmount: cartTotal,
+          itemsCount: cartItems.length
+        }
+      });
+
+      clearCart();
+      
+      toast({
+        title: "Заказ создан!",
+        description: `Код заказа: ${preOrder.order_code}`
+      });
+
+      return preOrder;
+
+    } catch (error) {
+      console.error('Error creating pre-order:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось создать заказ",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  const generateOrderCode = async () => {
+    const { data, error } = await supabase.rpc('generate_order_code');
+    if (error) {
+      console.error('Error generating code:', error);
+      return Math.floor(Math.random() * 90000000) + 10000000; // Fallback 8-digit code
+    }
+    return data;
+  };
+
+  const isWithinDiscountTime = () => {
+    if (!selectedPickupPoint) return false;
+    
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    const [fromHour, fromMin] = selectedPickupPoint.discount_available_from?.split(':').map(Number) || [0, 0];
+    const [toHour, toMin] = selectedPickupPoint.discount_available_to?.split(':').map(Number) || [23, 59];
+    
+    const fromTime = fromHour * 60 + fromMin;
+    const toTime = toHour * 60 + toMin;
+    
+    return currentTime >= fromTime && currentTime <= toTime;
   };
 
   return (
     <CartContext.Provider value={{
       cartItems,
       cartTotal,
+      discountTotal,
+      selectedPickupPoint,
+      selectedPickupTime,
+      selectPickupPoint,
+      setSelectedPickupTime,
       addToCart,
       removeFromCart,
       updateQuantity,
-      clearCart
+      clearCart,
+      createPreOrder,
+      isWithinDiscountTime
     }}>
       {children}
     </CartContext.Provider>
