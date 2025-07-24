@@ -116,14 +116,24 @@ const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
                 <p className="text-sm text-gray-500 mt-1 line-clamp-2">
                   {product.description}
                 </p>
+                {product.ingredients && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    <span className="font-medium">Состав:</span> {product.ingredients}
+                  </p>
+                )}
+                {product.allergen_info && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    <span className="font-medium">Аллергены:</span> {product.allergen_info}
+                  </p>
+                )}
                 <div className="flex items-center mt-2 space-x-4">
                   <div className="flex items-center space-x-2">
                     <span className="text-lg font-semibold text-green-600">
-                      {product.price_discount || product.price_regular} lei
+                      {product.price_discount || product.price_regular} лей
                     </span>
                     {product.price_discount && (
                       <span className="text-sm text-gray-500 line-through">
-                        {product.price_regular} lei
+                        {product.price_regular} лей
                       </span>
                     )}
                     <span className="text-sm text-gray-500">/ {product.price_unit}</span>
@@ -131,6 +141,11 @@ const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
                   <div className="text-sm text-gray-500">
                     Остаток: {product.quantity} {product.price_unit}
                   </div>
+                  {product.discount_size && (
+                    <div className="text-xs text-orange-600">
+                      Скидка: {product.discount_size} дн.
+                    </div>
+                  )}
                   <div className={`text-xs px-2 py-1 rounded-full ${
                     product.in_stock 
                       ? 'bg-green-100 text-green-800' 

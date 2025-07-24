@@ -461,10 +461,13 @@ export type Database = {
       }
       products: {
         Row: {
+          allergen_info: string | null
           created_at: string | null
           description: string
+          discount_size: number | null
           id: string
           in_stock: boolean | null
+          ingredients: string | null
           name: string
           price_discount: number | null
           price_regular: number
@@ -474,10 +477,13 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          allergen_info?: string | null
           created_at?: string | null
           description: string
+          discount_size?: number | null
           id?: string
           in_stock?: boolean | null
+          ingredients?: string | null
           name: string
           price_discount?: number | null
           price_regular: number
@@ -487,10 +493,13 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          allergen_info?: string | null
           created_at?: string | null
           description?: string
+          discount_size?: number | null
           id?: string
           in_stock?: boolean | null
+          ingredients?: string | null
           name?: string
           price_discount?: number | null
           price_regular?: number

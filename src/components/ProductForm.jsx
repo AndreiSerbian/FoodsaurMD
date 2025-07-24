@@ -31,11 +31,15 @@ const ProductForm = ({ product, onSave, onCancel, producerProfile }) => {
       setFormData({
         name: product.name || '',
         description: product.description || '',
+        ingredients: product.ingredients || '',
+        allergen_info: product.allergen_info || '',
         price_regular: product.price_regular || '',
         price_discount: product.price_discount || '',
+        discount_size: product.discount_size || '',
         quantity: product.quantity || '',
         price_unit: product.price_unit || 'шт',
-        in_stock: product.in_stock
+        in_stock: product.in_stock,
+        category_id: product.category_id || ''
       })
       fetchProductImages()
     }
@@ -228,7 +232,31 @@ const ProductForm = ({ product, onSave, onCancel, producerProfile }) => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="ingredients">Состав</Label>
+            <Textarea
+              id="ingredients"
+              name="ingredients"
+              value={formData.ingredients}
+              onChange={handleChange}
+              placeholder="Укажите основные ингредиенты продукта"
+              rows={2}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="allergen_info">Информация об аллергенах</Label>
+            <Textarea
+              id="allergen_info"
+              name="allergen_info"
+              value={formData.allergen_info}
+              onChange={handleChange}
+              placeholder="Укажите возможные аллергены"
+              rows={2}
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="price_regular">Обычная цена</Label>
               <Input
@@ -250,6 +278,17 @@ const ProductForm = ({ product, onSave, onCancel, producerProfile }) => {
                 step="0.01"
                 value={formData.price_discount}
                 onChange={handleChange}
+              />
+            </div>
+            <div>
+              <Label htmlFor="discount_size">Размер скидки (дни)</Label>
+              <Input
+                id="discount_size"
+                name="discount_size"
+                type="number"
+                value={formData.discount_size}
+                onChange={handleChange}
+                placeholder="Дни"
               />
             </div>
           </div>
