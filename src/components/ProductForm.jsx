@@ -12,11 +12,15 @@ const ProductForm = ({ product, onSave, onCancel, producerProfile }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    ingredients: '',
+    allergen_info: '',
     price_regular: '',
     price_discount: '',
+    discount_size: '',
     quantity: '',
     price_unit: 'шт',
-    in_stock: true
+    in_stock: true,
+    category_id: ''
   })
   const [images, setImages] = useState([])
   const [uploading, setUploading] = useState(false)
