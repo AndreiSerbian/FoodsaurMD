@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,53 +6,41 @@ import { Button } from './ui/button';
 import LanguageSelector from './LanguageSelector';
 import MobileMenu from './MobileMenu';
 import Cart from './Cart';
-
-const Layout = ({ children }) => {
-  const { user, userRole, signOut } = useAuth();
-  const { t } = useLanguage();
-
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
+const Layout = ({
+  children
+}) => {
+  const {
+    user,
+    userRole,
+    signOut
+  } = useAuth();
+  const {
+    t
+  } = useLanguage();
+  return <div className="min-h-screen flex flex-col bg-background">
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold text-green-900">Foodsaur</Link>
           
           {/* Десктопное меню */}
           <nav className="hidden md:flex space-x-8 items-center">
-            <Link to="/" className="text-green-600 hover:text-green-900 transition duration-200">
-              {t('home')}
-            </Link>
+            
             <Link to="/order-search" className="text-green-600 hover:text-green-900 transition duration-200">
               Поиск заказа
             </Link>
             
-            {user ? (
-              <div className="flex items-center space-x-4">
-                <Link 
-                  to="/dashboard" 
-                  className="text-green-600 hover:text-green-900 transition duration-200"
-                >
+            {user ? <div className="flex items-center space-x-4">
+                <Link to="/dashboard" className="text-green-600 hover:text-green-900 transition duration-200">
                   {t('producerPanel')}
                 </Link>
-                {userRole === 'admin' && (
-                  <Link 
-                    to="/admin-panel" 
-                    className="text-red-600 hover:text-red-900 transition duration-200"
-                  >
+                {userRole === 'admin' && <Link to="/admin-panel" className="text-red-600 hover:text-red-900 transition duration-200">
                     {t('adminPanel')}
-                  </Link>
-                )}
+                  </Link>}
                 <span className="text-gray-600 text-sm">{user.email}</span>
-                <Button 
-                  onClick={signOut} 
-                  variant="outline" 
-                  size="sm"
-                >
+                <Button onClick={signOut} variant="outline" size="sm">
                   {t('logout')}
                 </Button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-4">
+              </div> : <div className="flex items-center space-x-4">
                 <Link to="/login">
                   <Button variant="outline" size="sm">
                     {t('login')}
@@ -64,8 +51,7 @@ const Layout = ({ children }) => {
                     {t('register')}
                   </Button>
                 </Link>
-              </div>
-            )}
+              </div>}
             
             <LanguageSelector />
           </nav>
@@ -89,8 +75,6 @@ const Layout = ({ children }) => {
       </footer>
       
       <Cart />
-    </div>
-  );
+    </div>;
 };
-
 export default Layout;
