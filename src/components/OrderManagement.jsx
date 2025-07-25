@@ -178,7 +178,7 @@ const OrderManagement = ({ producerProfile }) => {
             <SelectTrigger className="h-5 w-40">
               <SelectValue placeholder="Фильтр" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="h-5 w-40">
               <SelectItem value="all">Все заказы</SelectItem>
               <SelectItem value="created">Новые</SelectItem>
               <SelectItem value="confirmed">Подтвержденные</SelectItem>
