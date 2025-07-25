@@ -8,8 +8,9 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Plus, Edit, Trash2, MapPin, Clock } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
-
-const PickupPointManagement = ({ producerProfile }) => {
+const PickupPointManagement = ({
+  producerProfile
+}) => {
   const [pickupPoints, setPickupPoints] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingPoint, setEditingPoint] = useState(null);
@@ -23,22 +24,22 @@ const PickupPointManagement = ({ producerProfile }) => {
     discount_available_to: '',
     is_active: true
   });
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     if (producerProfile?.id) {
       fetchPickupPoints();
     }
   }, [producerProfile]);
-
   const fetchPickupPoints = async () => {
     try {
-      const { data, error } = await supabase
-        .from('pickup_points')
-        .select('*')
-        .eq('producer_id', producerProfile.id)
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('pickup_points').select('*').eq('producer_id', producerProfile.id).order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setPickupPoints(data || []);
     } catch (error) {
@@ -50,38 +51,32 @@ const PickupPointManagement = ({ producerProfile }) => {
       });
     }
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
-
     try {
       if (editingPoint) {
-        const { error } = await supabase
-          .from('pickup_points')
-          .update(formData)
-          .eq('id', editingPoint.id);
-
+        const {
+          error
+        } = await supabase.from('pickup_points').update(formData).eq('id', editingPoint.id);
         if (error) throw error;
         toast({
           title: "Успешно",
           description: "Точка выдачи обновлена"
         });
       } else {
-        const { error } = await supabase
-          .from('pickup_points')
-          .insert({
-            ...formData,
-            producer_id: producerProfile.id
-          });
-
+        const {
+          error
+        } = await supabase.from('pickup_points').insert({
+          ...formData,
+          producer_id: producerProfile.id
+        });
         if (error) throw error;
         toast({
           title: "Успешно",
           description: "Точка выдачи создана"
         });
       }
-
       setShowDialog(false);
       setEditingPoint(null);
       resetForm();
@@ -97,8 +92,7 @@ const PickupPointManagement = ({ producerProfile }) => {
       setLoading(false);
     }
   };
-
-  const handleEdit = (point) => {
+  const handleEdit = point => {
     setEditingPoint(point);
     setFormData({
       name: point.name,
@@ -111,20 +105,15 @@ const PickupPointManagement = ({ producerProfile }) => {
     });
     setShowDialog(true);
   };
-
-  const handleDelete = async (pointId) => {
+  const handleDelete = async pointId => {
     if (!confirm('Вы уверены, что хотите удалить эту точку выдачи?')) {
       return;
     }
-
     try {
-      const { error } = await supabase
-        .from('pickup_points')
-        .delete()
-        .eq('id', pointId);
-
+      const {
+        error
+      } = await supabase.from('pickup_points').delete().eq('id', pointId);
       if (error) throw error;
-      
       toast({
         title: "Успешно",
         description: "Точка выдачи удалена"
@@ -139,7 +128,6 @@ const PickupPointManagement = ({ producerProfile }) => {
       });
     }
   };
-
   const resetForm = () => {
     setFormData({
       name: '',
@@ -151,27 +139,21 @@ const PickupPointManagement = ({ producerProfile }) => {
       is_active: true
     });
   };
-
   const handleNewPoint = () => {
     setEditingPoint(null);
     resetForm();
     setShowDialog(true);
   };
-
   if (!producerProfile?.id) {
-    return (
-      <Card>
+    return <Card>
         <CardContent className="py-6">
           <p className="text-muted-foreground text-center">
             Сначала заполните профиль производителя
           </p>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle className="flex items-center gap-2">
@@ -180,7 +162,7 @@ const PickupPointManagement = ({ producerProfile }) => {
           </CardTitle>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
-              <Button onClick={handleNewPoint}>
+              <Button onClick={handleNewPoint} className="text-base text-gray-50 bg-green-900 hover:bg-green-800">
                 <Plus className="h-4 w-4 mr-2" />
                 Добавить точку
               </Button>
@@ -194,76 +176,59 @@ const PickupPointManagement = ({ producerProfile }) => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="name">Название точки</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                    placeholder="Например: Центральная кухня"
-                  />
+                  <Input id="name" value={formData.name} onChange={e => setFormData({
+                  ...formData,
+                  name: e.target.value
+                })} required placeholder="Например: Центральная кухня" />
                 </div>
 
                 <div>
                   <Label htmlFor="address">Адрес</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    required
-                    placeholder="Улица, дом, район"
-                  />
+                  <Input id="address" value={formData.address} onChange={e => setFormData({
+                  ...formData,
+                  address: e.target.value
+                })} required placeholder="Улица, дом, район" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="working_hours_from">Работает с</Label>
-                    <Input
-                      id="working_hours_from"
-                      type="time"
-                      value={formData.working_hours_from}
-                      onChange={(e) => setFormData({...formData, working_hours_from: e.target.value})}
-                    />
+                    <Input id="working_hours_from" type="time" value={formData.working_hours_from} onChange={e => setFormData({
+                    ...formData,
+                    working_hours_from: e.target.value
+                  })} />
                   </div>
                   <div>
                     <Label htmlFor="working_hours_to">Работает до</Label>
-                    <Input
-                      id="working_hours_to"
-                      type="time"
-                      value={formData.working_hours_to}
-                      onChange={(e) => setFormData({...formData, working_hours_to: e.target.value})}
-                    />
+                    <Input id="working_hours_to" type="time" value={formData.working_hours_to} onChange={e => setFormData({
+                    ...formData,
+                    working_hours_to: e.target.value
+                  })} />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="discount_available_from">Скидки с</Label>
-                    <Input
-                      id="discount_available_from"
-                      type="time"
-                      value={formData.discount_available_from}
-                      onChange={(e) => setFormData({...formData, discount_available_from: e.target.value})}
-                    />
+                    <Input id="discount_available_from" type="time" value={formData.discount_available_from} onChange={e => setFormData({
+                    ...formData,
+                    discount_available_from: e.target.value
+                  })} />
                   </div>
                   <div>
                     <Label htmlFor="discount_available_to">Скидки до</Label>
-                    <Input
-                      id="discount_available_to"
-                      type="time"
-                      value={formData.discount_available_to}
-                      onChange={(e) => setFormData({...formData, discount_available_to: e.target.value})}
-                    />
+                    <Input id="discount_available_to" type="time" value={formData.discount_available_to} onChange={e => setFormData({
+                    ...formData,
+                    discount_available_to: e.target.value
+                  })} />
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="is_active"
-                    checked={formData.is_active}
-                    onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                    className="rounded"
-                  />
+                  <input type="checkbox" id="is_active" checked={formData.is_active} onChange={e => setFormData({
+                  ...formData,
+                  is_active: e.target.checked
+                })} className="rounded" />
                   <Label htmlFor="is_active">Активная точка</Label>
                 </div>
 
@@ -271,11 +236,7 @@ const PickupPointManagement = ({ producerProfile }) => {
                   <Button type="submit" disabled={loading} className="flex-1">
                     {loading ? 'Сохранение...' : 'Сохранить'}
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowDialog(false)}
-                  >
+                  <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                     Отмена
                   </Button>
                 </div>
@@ -285,14 +246,10 @@ const PickupPointManagement = ({ producerProfile }) => {
         </div>
       </CardHeader>
       <CardContent>
-        {pickupPoints.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
+        {pickupPoints.length === 0 ? <p className="text-muted-foreground text-center py-8">
             У вас пока нет точек выдачи. Создайте первую точку.
-          </p>
-        ) : (
-          <div className="space-y-4">
-            {pickupPoints.map((point) => (
-              <div key={point.id} className="border rounded-lg p-4">
+          </p> : <div className="space-y-4">
+            {pickupPoints.map(point => <div key={point.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
                     <h4 className="font-medium">{point.name}</h4>
@@ -302,41 +259,25 @@ const PickupPointManagement = ({ producerProfile }) => {
                     <Badge variant={point.is_active ? "default" : "secondary"}>
                       {point.is_active ? 'Активна' : 'Неактивна'}
                     </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(point)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => handleEdit(point)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(point.id)}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(point.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-                {(point.working_hours_from || point.working_hours_to) && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {(point.working_hours_from || point.working_hours_to) && <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     Работает: {point.working_hours_from || '00:00'} - {point.working_hours_to || '23:59'}
-                  </div>
-                )}
-                {(point.discount_available_from || point.discount_available_to) && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  </div>}
+                {(point.discount_available_from || point.discount_available_to) && <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
                     Скидки: {point.discount_available_from || '00:00'} - {point.discount_available_to || '23:59'}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+                  </div>}
+              </div>)}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default PickupPointManagement;
