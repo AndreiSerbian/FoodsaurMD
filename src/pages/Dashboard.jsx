@@ -145,10 +145,10 @@ const Dashboard = () => {
               </div>
 
               <div className="flex space-x-2">
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading} className="bg-green-900 hover:bg-green-800 text-gray-50">
                   {loading ? 'Сохранение...' : 'Сохранить'}
                 </Button>
-                {editing && <Button type="button" variant="outline" onClick={() => setEditing(false)}>
+                {editing && <Button type="button" variant="outline" onClick={() => setEditing(false)} className="bg-red-700 hover:bg-red-600 text-gray-50">
                     Отмена
                   </Button>}
               </div>
