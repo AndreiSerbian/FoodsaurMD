@@ -179,12 +179,12 @@ const OrderManagement = ({ producerProfile }) => {
               <SelectValue placeholder="Фильтр" />
             </SelectTrigger>
             <SelectContent className="w-40">
-              <SelectItem value="all">Все заказы</SelectItem>
-              <SelectItem value="created">Новые</SelectItem>
-              <SelectItem value="confirmed">Подтвержденные</SelectItem>
-              <SelectItem value="ready">Готовые</SelectItem>
-              <SelectItem value="completed">Выданные</SelectItem>
-              <SelectItem value="cancelled">Отмененные</SelectItem>
+              <SelectItem className="h-10 pr-8" value="all">Все заказы</SelectItem>
+              <SelectItem className="h-10 pr-8" value="created">Новые</SelectItem>
+              <SelectItem className="h-10 pr-8" value="confirmed">Подтвержденные</SelectItem>
+              <SelectItem className="h-10 pr-8" value="ready">Готовые</SelectItem>
+              <SelectItem className="h-10 pr-8" value="completed">Выданные</SelectItem>
+              <SelectItem className="h-10 pr-8" value="cancelled">Отмененные</SelectItem>
             </SelectContent>
           </Select>
         </div>
