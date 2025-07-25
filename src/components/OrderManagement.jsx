@@ -175,10 +175,10 @@ const OrderManagement = ({ producerProfile }) => {
             Управление заказами
           </CardTitle>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-5 w-40">
+            <SelectTrigger className="h-10 w-40">
               <SelectValue placeholder="Фильтр" />
             </SelectTrigger>
-            <SelectContent className="h-5 w-40">
+            <SelectContent className="w-40">
               <SelectItem value="all">Все заказы</SelectItem>
               <SelectItem value="created">Новые</SelectItem>
               <SelectItem value="confirmed">Подтвержденные</SelectItem>
