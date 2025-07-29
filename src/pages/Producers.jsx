@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProducersByCategory, producersData } from '../data/products';
+import { supabase } from '../integrations/supabase/client';
 import ProducersList from '../components/ProducersList';
 import { motion } from 'framer-motion';
 const Producers = () => {
@@ -10,14 +10,53 @@ const Producers = () => {
   const [producers, setProducers] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const decodedCategoryName = decodeURIComponent(categoryName);
-      const filteredProducers = getProducersByCategory(decodedCategoryName);
-      setProducers(filteredProducers);
-      setLoading(false);
-    }, 500);
+    fetchProducersByCategory();
   }, [categoryName]);
+
+  const fetchProducersByCategory = async () => {
+    try {
+      const decodedCategoryName = decodeURIComponent(categoryName);
+      
+      // Получаем producer_profiles с их категориями
+      const { data: producerData, error } = await supabase
+        .from('producer_profiles')
+        .select(`
+          *,
+          producer_categories!inner(
+            categories!inner(
+              name,
+              slug
+            )
+          )
+        `)
+        .eq('producer_categories.categories.name', decodedCategoryName);
+
+      if (error) {
+        console.error('Error fetching producers:', error);
+        setProducers([]);
+      } else {
+        // Преобразуем данные в формат, совместимый с ProducersList
+        const formattedProducers = producerData?.map(producer => ({
+          producerName: producer.producer_name,
+          address: producer.address,
+          discountAvailableTime: producer.discount_available_time || 'не указано',
+          categoryName: decodedCategoryName,
+          producerImage: {
+            exterior: producer.exterior_image_url || '/placeholder.svg',
+            interior: producer.interior_image_url || '/placeholder.svg'
+          },
+          products: [] // Продукты можно загрузить отдельно при необходимости
+        })) || [];
+        
+        setProducers(formattedProducers);
+      }
+    } catch (error) {
+      console.error('Error fetching producers by category:', error);
+      setProducers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">

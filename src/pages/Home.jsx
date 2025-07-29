@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { producersData, categories } from '../data/products';
+import { supabase } from '../integrations/supabase/client';
 import HeroSection from '../components/HeroSection';
 import CategoryList from '../components/CategoryList';
 import { motion } from 'framer-motion';
@@ -8,18 +8,64 @@ import { motion } from 'framer-motion';
 const Home = () => {
   const [filteredProducers, setFilteredProducers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredProducers([]);
     } else {
-      const filtered = producersData.filter(producer => 
-        producer.producerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        producer.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredProducers(filtered);
+      searchProducers();
     }
   }, [searchQuery]);
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('name')
+        .order('name');
+      
+      if (!error && data) {
+        setCategories(data.map(cat => cat.name));
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const searchProducers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('producer_profiles')
+        .select(`
+          *,
+          producer_categories(
+            categories(
+              name
+            )
+          )
+        `)
+        .ilike('producer_name', `%${searchQuery}%`);
+      
+      if (!error && data) {
+        const formatted = data.map(producer => ({
+          producerName: producer.producer_name,
+          address: producer.address,
+          categoryName: producer.producer_categories?.[0]?.categories?.name || 'Без категории',
+          producerImage: {
+            exterior: producer.exterior_image_url || '/placeholder.svg'
+          }
+        }));
+        setFilteredProducers(formatted);
+      }
+    } catch (error) {
+      console.error('Error searching producers:', error);
+    }
+  };
 
   const handleSearch = (query) => {
     setSearchQuery(query);
