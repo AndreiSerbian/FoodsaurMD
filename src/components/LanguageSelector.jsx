@@ -13,7 +13,7 @@ const LanguageSelector = () => {
   return <div className="relative">
       <Button variant="outline" size="sm" onClick={() => setIsOpen(!isOpen)} className="flex items-center space-x-2 text-gray-50 bg-green-800 hover:bg-green-700">
         <span>{currentLang?.flag}</span>
-        <span className="hidden sm:inline">{currentLang?.name}</span>
+        <span className="hidden sm:inline">{currentLang?.code}</span>
       </Button>
 
       {isOpen && <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
@@ -23,7 +23,7 @@ const LanguageSelector = () => {
           setIsOpen(false);
         }} className={`flex items-center w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${currentLanguage === language.code ? 'bg-green-50 text-green-600' : 'text-gray-700'}`}>
                 <span className="mr-3">{language.flag}</span>
-                <span>{language.name}</span>
+                <span>{language.code}</span>
               </button>)}
           </div>
         </div>}
