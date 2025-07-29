@@ -195,7 +195,7 @@ const Dashboard = () => {
       </div>
 
       {/* Управление категориями */}
-      <CategoryManagement producerProfile={profile} />
+      {profile && <CategoryManagement producerProfile={profile} />}
 
       {/* Управление товарами */}
       <ProductManagement profile={profile} />
