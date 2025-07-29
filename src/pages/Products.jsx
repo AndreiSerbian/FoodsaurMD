@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getProducerByName } from '../data/products';
+import { supabase } from '../integrations/supabase/client';
 import ProductsList from '../components/ProductsList';
 import PreOrderForm from '../components/PreOrderForm';
 import { motion } from 'framer-motion';
@@ -19,13 +19,77 @@ const Products = () => {
   ] : [];
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const decodedProducerName = decodeURIComponent(producerName);
-      const foundProducer = getProducerByName(decodedProducerName);
-      setProducer(foundProducer);
-      setLoading(false);
-    }, 500);
+    const fetchProducerData = async () => {
+      try {
+        const decodedProducerName = decodeURIComponent(producerName);
+        
+        // Получаем данные производителя из Supabase
+        const { data: producerData, error: producerError } = await supabase
+          .from('producer_profiles')
+          .select('*')
+          .eq('slug', decodedProducerName)
+          .single();
+
+        if (producerError || !producerData) {
+          setProducer(null);
+          setLoading(false);
+          return;
+        }
+
+        // Получаем продукты этого производителя
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select(`
+            *,
+            product_images (
+              image_url,
+              is_primary
+            )
+          `)
+          .eq('producer_id', producerData.id);
+
+        if (productsError) {
+          console.error('Error fetching products:', productsError);
+          setProducer(null);
+          setLoading(false);
+          return;
+        }
+
+        // Форматируем данные для компонента
+        const formattedProducer = {
+          id: producerData.id,
+          producerName: producerData.producer_name,
+          address: producerData.address || 'Адрес не указан',
+          discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
+          categoryName: 'Десерты', // Можно получить из producer_categories если нужно
+          producerImage: {
+            exterior: producerData.exterior_image_url || '/placeholder.svg',
+            interior: producerData.interior_image_url || '/placeholder.svg'
+          },
+          products: productsData.map(product => ({
+            id: product.id,
+            productName: product.name,
+            description: product.description,
+            priceRegular: parseFloat(product.price_regular),
+            priceDiscount: parseFloat(product.price_discount || product.price_regular),
+            image: product.product_images?.find(img => img.is_primary)?.image_url || '/placeholder.svg',
+            ingredients: product.ingredients,
+            allergen_info: product.allergen_info,
+            quantity: product.quantity,
+            in_stock: product.in_stock
+          }))
+        };
+
+        setProducer(formattedProducer);
+      } catch (error) {
+        console.error('Error fetching producer data:', error);
+        setProducer(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducerData();
   }, [producerName]);
 
   const handleNextImage = (e) => {
