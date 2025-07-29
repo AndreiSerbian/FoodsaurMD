@@ -21,6 +21,7 @@ const ProductForm = ({
     price_discount: '',
     discount_size: '',
     quantity: '',
+    weight: '',
     price_unit: 'шт',
     in_stock: true,
     category_id: ''
@@ -39,6 +40,7 @@ const ProductForm = ({
         price_discount: product.price_discount || '',
         discount_size: product.discount_size || '',
         quantity: product.quantity || '',
+        weight: product.weight || '',
         price_unit: product.price_unit || 'шт',
         in_stock: product.in_stock,
         category_id: product.category_id || ''
@@ -218,10 +220,14 @@ const ProductForm = ({
             
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="quantity">Остаток</Label>
               <Input id="quantity" name="quantity" type="number" value={formData.quantity} onChange={handleChange} required />
+            </div>
+            <div>
+              <Label htmlFor="weight">Вес товара (г)</Label>
+              <Input id="weight" name="weight" type="number" step="0.01" value={formData.weight} onChange={handleChange} placeholder="0.00" />
             </div>
             <div>
               <Label htmlFor="price_unit">Единица измерения</Label>
