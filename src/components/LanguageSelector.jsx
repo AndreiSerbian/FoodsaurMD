@@ -10,7 +10,7 @@ const LanguageSelector = () => {
   } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const currentLang = availableLanguages.find(lang => lang.code === currentLanguage);
-  return <div className="relative">
+  return <div className="relative ml-auto">
       <Button variant="outline" size="sm" onClick={() => setIsOpen(!isOpen)} className="flex items-center space-x-2 text-gray-50 bg-green-800 hover:bg-green-700">
         <span>{currentLang?.flag}</span>
         <span className="hidden sm:inline">{currentLang?.code}</span>
