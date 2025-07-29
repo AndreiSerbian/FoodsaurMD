@@ -5,27 +5,24 @@ import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Search, Package, Clock, MapPin } from 'lucide-react';
-
 const OrderSearch = () => {
   const [orderCode, setOrderCode] = useState('');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const searchOrder = async () => {
     if (!orderCode.trim()) {
       setError('Введите код заказа');
       return;
     }
-
     setLoading(true);
     setError('');
     setOrder(null);
-
     try {
-      const { data, error: searchError } = await supabase
-        .from('pre_orders')
-        .select(`
+      const {
+        data,
+        error: searchError
+      } = await supabase.from('pre_orders').select(`
           *,
           pickup_points(name, address, producer_id, producer_profiles(producer_name)),
           pre_order_items(
@@ -34,19 +31,14 @@ const OrderSearch = () => {
             price_discount,
             products(name, description)
           )
-        `)
-        .eq('order_code', orderCode.trim())
-        .maybeSingle();
-
+        `).eq('order_code', orderCode.trim()).maybeSingle();
       if (searchError) {
         throw searchError;
       }
-
       if (!data) {
         setError('Заказ с таким кодом не найден');
         return;
       }
-
       setOrder(data);
     } catch (err) {
       console.error('Error searching order:', err);
@@ -55,21 +47,36 @@ const OrderSearch = () => {
       setLoading(false);
     }
   };
-
-  const getStatusBadge = (status) => {
+  const getStatusBadge = status => {
     const statusMap = {
-      created: { label: 'Создан', variant: 'secondary' },
-      confirmed: { label: 'Подтвержден', variant: 'default' },
-      ready: { label: 'Готов', variant: 'outline' },
-      completed: { label: 'Выдан', variant: 'default' },
-      cancelled: { label: 'Отменен', variant: 'destructive' }
+      created: {
+        label: 'Создан',
+        variant: 'secondary'
+      },
+      confirmed: {
+        label: 'Подтвержден',
+        variant: 'default'
+      },
+      ready: {
+        label: 'Готов',
+        variant: 'outline'
+      },
+      completed: {
+        label: 'Выдан',
+        variant: 'default'
+      },
+      cancelled: {
+        label: 'Отменен',
+        variant: 'destructive'
+      }
     };
-
-    const statusInfo = statusMap[status] || { label: status, variant: 'secondary' };
+    const statusInfo = statusMap[status] || {
+      label: status,
+      variant: 'secondary'
+    };
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
-
-  const formatDateTime = (dateTime) => {
+  const formatDateTime = dateTime => {
     return new Date(dateTime).toLocaleString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
@@ -78,16 +85,13 @@ const OrderSearch = () => {
       minute: '2-digit'
     });
   };
-
-  const calculateTotal = (items) => {
+  const calculateTotal = items => {
     return items.reduce((total, item) => {
       const price = item.price_discount || item.price_regular;
-      return total + (price * item.quantity);
+      return total + price * item.quantity;
     }, 0);
   };
-
-  return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+  return <div className="max-w-2xl mx-auto p-6 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -97,25 +101,16 @@ const OrderSearch = () => {
         </CardHeader>
         <CardContent>
           <div className="flex gap-3">
-            <Input
-              placeholder="Введите код заказа (6-8 цифр)"
-              value={orderCode}
-              onChange={(e) => setOrderCode(e.target.value)}
-              maxLength={8}
-              onKeyPress={(e) => e.key === 'Enter' && searchOrder()}
-            />
-            <Button onClick={searchOrder} disabled={loading}>
+            <Input placeholder="Введите код заказа (6-8 цифр)" value={orderCode} onChange={e => setOrderCode(e.target.value)} maxLength={8} onKeyPress={e => e.key === 'Enter' && searchOrder()} />
+            <Button onClick={searchOrder} disabled={loading} className="text-gray-50 bg-green-900 hover:bg-green-800">
               {loading ? 'Поиск...' : 'Найти'}
             </Button>
           </div>
-          {error && (
-            <p className="text-red-500 text-sm mt-2">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </CardContent>
       </Card>
 
-      {order && (
-        <Card>
+      {order && <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
               <div>
@@ -158,8 +153,7 @@ const OrderSearch = () => {
             <div>
               <h4 className="font-medium mb-3">Состав заказа</h4>
               <div className="space-y-2">
-                {order.pre_order_items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                {order.pre_order_items.map((item, index) => <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <div className="flex-1">
                       <p className="font-medium">{item.products.name}</p>
                       <p className="text-sm text-muted-foreground">
@@ -174,8 +168,7 @@ const OrderSearch = () => {
                         = {(item.price_discount || item.price_regular) * item.quantity} MDL
                       </p>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
 
@@ -184,11 +177,9 @@ const OrderSearch = () => {
                 <span className="text-lg font-semibold">Итого:</span>
                 <div className="text-right">
                   <p className="text-lg font-bold">{order.total_amount} MDL</p>
-                  {order.discount_amount > 0 && (
-                    <p className="text-sm text-green-600">
+                  {order.discount_amount > 0 && <p className="text-sm text-green-600">
                       Скидка: -{order.discount_amount} MDL
-                    </p>
-                  )}
+                    </p>}
                 </div>
               </div>
             </div>
@@ -198,10 +189,7 @@ const OrderSearch = () => {
               <p>Последнее обновление: {formatDateTime(order.updated_at)}</p>
             </div>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 };
-
 export default OrderSearch;
