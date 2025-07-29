@@ -244,6 +244,7 @@ const ProductForm = ({
                   <SelectItem value="г">г</SelectItem>
                   <SelectItem value="л">л</SelectItem>
                   <SelectItem value="мл">мл</SelectItem>
+                  <SelectItem value="упаковка">упаковка</SelectItem>
                 </SelectContent>
               </Select>
             </div>
