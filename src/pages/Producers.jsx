@@ -28,7 +28,7 @@ const Producers = () => {
               slug
             )
           ),
-          products (
+          products!fk_products_producer_profiles (
             id
           )
         `)
