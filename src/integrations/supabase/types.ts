@@ -74,6 +74,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pickup_point_products_pickup_point_id"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pickup_point_products_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pickup_point_products_pickup_point_id_fkey"
             columns: ["pickup_point_id"]
             isOneToOne: false
@@ -131,6 +145,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pickup_points_producer_id"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pickup_points_producer_id_fkey"
             columns: ["producer_id"]
             isOneToOne: false
@@ -168,6 +189,20 @@ export type Database = {
           quantity?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_pre_order_items_pre_order_id"
+            columns: ["pre_order_id"]
+            isOneToOne: false
+            referencedRelation: "pre_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pre_order_items_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "pre_order_items_pre_order_id_fkey"
             columns: ["pre_order_id"]
@@ -220,6 +255,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_pre_orders_pickup_point_id"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "pre_orders_pickup_point_id_fkey"
             columns: ["pickup_point_id"]
             isOneToOne: false
@@ -248,6 +290,20 @@ export type Database = {
           producer_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_producer_categories_category_id"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_producer_categories_producer_id"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "producer_categories_category_id_fkey"
             columns: ["category_id"]
@@ -371,6 +427,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_producer_telegram_settings_producer_id"
+            columns: ["producer_id"]
+            isOneToOne: true
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "producer_telegram_settings_producer_id_fkey"
             columns: ["producer_id"]
             isOneToOne: true
@@ -444,6 +507,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_product_images_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_product_images_products"
             columns: ["product_id"]
             isOneToOne: false
@@ -509,6 +579,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_products_producer_id"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fk_products_producer_profiles"
             columns: ["producer_id"]
