@@ -96,7 +96,7 @@ const CategoryManagement = ({
                           </div>}
                       </div>
                       <div>
-                        {isSelected ? <Badge variant="default" className="text-xs">
+                        {isSelected ? <Badge variant="default" className="text-xs bg-green-700 text-gray-50">
                             Выбрано
                           </Badge> : <Button size="sm" variant="outline" className="h-6 w-6 p-0">
                             <Plus className="h-3 w-3" />
