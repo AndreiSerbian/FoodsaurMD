@@ -304,20 +304,6 @@ export type Database = {
             referencedRelation: "producer_profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "producer_categories_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "producer_categories_producer_id_fkey"
-            columns: ["producer_id"]
-            isOneToOne: false
-            referencedRelation: "producer_profiles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       producer_profiles: {
@@ -507,21 +493,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_product_images_product_id"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_product_images_products"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_images_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
@@ -580,21 +552,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_products_producer_id"
-            columns: ["producer_id"]
-            isOneToOne: false
-            referencedRelation: "producer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_products_producer_profiles"
-            columns: ["producer_id"]
-            isOneToOne: false
-            referencedRelation: "producer_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_producer_id_fkey"
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "producer_profiles"
