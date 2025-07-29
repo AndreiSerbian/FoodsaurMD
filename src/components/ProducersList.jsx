@@ -36,7 +36,7 @@ const ProducerCard = ({
   };
   
   return (
-    <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
+    <Link to={`/producer/${producer.slug}`} className="block">
       <div className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full flex flex-col">
         <div className="relative">
           <div className="w-full h-48 relative overflow-hidden">

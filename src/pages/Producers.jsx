@@ -17,7 +17,7 @@ const Producers = () => {
     try {
       const decodedCategoryName = decodeURIComponent(categoryName);
       
-      // Получаем producer_profiles с их категориями
+      // Получаем producer_profiles с их категориями и количеством продуктов
       const { data: producerData, error } = await supabase
         .from('producer_profiles')
         .select(`
@@ -27,6 +27,9 @@ const Producers = () => {
               name,
               slug
             )
+          ),
+          products (
+            id
           )
         `)
         .eq('producer_categories.categories.name', decodedCategoryName);
@@ -38,6 +41,7 @@ const Producers = () => {
         // Преобразуем данные в формат, совместимый с ProducersList
         const formattedProducers = producerData?.map(producer => ({
           producerName: producer.producer_name,
+          slug: producer.slug,
           address: producer.address,
           discountAvailableTime: producer.discount_available_time || 'не указано',
           categoryName: decodedCategoryName,
@@ -45,7 +49,7 @@ const Producers = () => {
             exterior: producer.exterior_image_url || '/placeholder.svg',
             interior: producer.interior_image_url || '/placeholder.svg'
           },
-          products: [] // Продукты можно загрузить отдельно при необходимости
+          products: producer.products || [] // Используем реальное количество продуктов
         })) || [];
         
         setProducers(formattedProducers);
