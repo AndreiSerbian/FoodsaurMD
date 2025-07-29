@@ -37,7 +37,7 @@ const Layout = ({
                     {t('adminPanel')}
                   </Link>}
                 <span className="text-gray-600 text-sm">{user.email}</span>
-                <Button onClick={signOut} variant="outline" size="sm">
+                <Button onClick={signOut} variant="outline" size="sm" className="bg-red-700 hover:bg-red-600 text-gray-50">
                   {t('logout')}
                 </Button>
               </div> : <div className="flex items-center space-x-4">
