@@ -22,11 +22,26 @@ const OrderManagement = ({ producerProfile }) => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
+      // Сначала получаем ID точек выдачи этого производителя
+      const { data: pickupPoints, error: ppError } = await supabase
+        .from('pickup_points')
+        .select('id')
+        .eq('producer_id', producerProfile.id);
+      
+      if (ppError) throw ppError;
+      
+      const pickupPointIds = pickupPoints.map(pp => pp.id);
+      
+      if (pickupPointIds.length === 0) {
+        setOrders([]);
+        return;
+      }
+
       let query = supabase
         .from('pre_orders')
         .select(`
           *,
-          pickup_points!inner(name, address, producer_id),
+          pickup_points!fk_pre_orders_pickup_point_id(name, address),
           pre_order_items(
             quantity,
             price_regular,
@@ -34,7 +49,7 @@ const OrderManagement = ({ producerProfile }) => {
             products(name, description)
           )
         `)
-        .eq('pickup_points.producer_id', producerProfile.id)
+        .in('pickup_point_id', pickupPointIds)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
