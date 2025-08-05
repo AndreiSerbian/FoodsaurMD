@@ -59,30 +59,37 @@ const Products = () => {
           return;
         }
 
-        // Форматируем данные для компонента
-        const formattedProducer = {
-          id: producerData.id,
-          producerName: producerData.producer_name,
-          address: producerData.address || 'Адрес не указан',
-          discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
-          categoryName: 'Десерты', // Можно получить из producer_categories если нужно
-          producerImage: {
-            exterior: producerData.exterior_image_url || '/placeholder.svg',
-            interior: producerData.interior_image_url || '/placeholder.svg'
-          },
-          products: productsData.map(product => ({
-            id: product.id,
-            productName: product.name,
-            description: product.description,
-            priceRegular: parseFloat(product.price_regular),
-            priceDiscount: parseFloat(product.price_discount || product.price_regular),
-            image: product.product_images?.find(img => img.is_primary)?.image_url || '/placeholder.svg',
-            ingredients: product.ingredients,
-            allergen_info: product.allergen_info,
-            quantity: product.quantity,
-            in_stock: product.in_stock
-          }))
-        };
+         // Форматируем данные для компонента
+         const formattedProducer = {
+           id: producerData.id,
+           producerName: producerData.producer_name,
+           address: producerData.address || 'Адрес не указан',
+           discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
+           categoryName: 'Десерты', // Можно получить из producer_categories если нужно
+           producerImage: {
+             exterior: producerData.exterior_image_url || '/placeholder.svg',
+             interior: producerData.interior_image_url || '/placeholder.svg'
+           },
+           products: productsData.map(product => {
+             const primaryImage = product.product_images?.find(img => img.is_primary);
+             console.log(`Product: ${product.name}, Primary image:`, primaryImage);
+             
+             return {
+               id: product.id,
+               productName: product.name,
+               description: product.description,
+               priceRegular: parseFloat(product.price_regular),
+               priceDiscount: parseFloat(product.price_discount || product.price_regular),
+               image: primaryImage?.image_url || '/placeholder.svg',
+               ingredients: product.ingredients,
+               allergen_info: product.allergen_info,
+               quantity: product.quantity,
+               in_stock: product.in_stock
+             };
+           })
+         };
+
+         console.log('Formatted producer with products:', formattedProducer);
 
         setProducer(formattedProducer);
       } catch (error) {
