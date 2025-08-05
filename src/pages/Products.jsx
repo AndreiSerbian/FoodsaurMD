@@ -48,6 +48,10 @@ const Products = () => {
           `)
           .eq('producer_id', producerData.id);
 
+        console.log('Producer data:', producerData);
+        console.log('Products data:', productsData);
+        console.log('Products error:', productsError);
+
         if (productsError) {
           console.error('Error fetching products:', productsError);
           setProducer(null);
