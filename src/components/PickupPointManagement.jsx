@@ -143,9 +143,11 @@ const PickupPointManagement = ({
     });
   };
   const handleNewPoint = () => {
+    console.log('handleNewPoint called');
     setEditingPoint(null);
     resetForm();
     setShowDialog(true);
+    console.log('showDialog set to true');
   };
   if (!producerProfile?.id) {
     return <Card>
@@ -156,6 +158,7 @@ const PickupPointManagement = ({
         </CardContent>
       </Card>;
   }
+  console.log('PickupPointManagement render, showDialog:', showDialog);
   return <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
@@ -163,9 +166,15 @@ const PickupPointManagement = ({
             <MapPin className="h-5 w-5" />
             Точки выдачи
           </CardTitle>
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+          <Dialog open={showDialog} onOpenChange={(open) => {
+            console.log('Dialog onOpenChange:', open);
+            setShowDialog(open);
+            if (open) {
+              handleNewPoint();
+            }
+          }}>
             <DialogTrigger asChild>
-              <Button className="text-base text-gray-50 bg-green-900 hover:bg-green-800">
+              <Button className="text-base text-gray-50 bg-green-900 hover:bg-green-800" onClick={() => console.log('Button clicked')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Добавить точку
               </Button>
