@@ -11,14 +11,16 @@ const ProductManagement = ({
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const handleAddProduct = () => {
     setEditingProduct(null);
     setShowAddForm(true);
+    setIsOpen(true); // Automatically open the section when adding a product
   };
   const handleEditProduct = product => {
     setEditingProduct(product);
     setShowAddForm(true);
+    setIsOpen(true); // Automatically open the section when editing a product
   };
   const handleCloseForm = () => {
     setShowAddForm(false);
@@ -44,14 +46,17 @@ const ProductManagement = ({
   return <div className="bg-white overflow-hidden shadow rounded-lg">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="px-4 py-5 sm:p-6">
-          <div className="flex justify-between items-center mb-6">
-            <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80 text-left">
               <h3 className="text-lg leading-6 font-medium text-gray-50">
                 Управление товарами
               </h3>
               <ChevronDown className={`h-4 w-4 text-gray-50 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <Button onClick={handleAddProduct} className="bg-green-900 hover:bg-green-800 text-gray-50">
+            <Button 
+              onClick={handleAddProduct} 
+              className="bg-green-900 hover:bg-green-800 text-gray-50 w-full sm:w-auto"
+            >
               Добавить товар
             </Button>
           </div>
