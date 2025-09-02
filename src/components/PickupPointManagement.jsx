@@ -169,12 +169,15 @@ const PickupPointManagement = ({
           <Dialog open={showDialog} onOpenChange={(open) => {
             console.log('Dialog onOpenChange:', open);
             setShowDialog(open);
-            if (open) {
-              handleNewPoint();
-            }
           }}>
             <DialogTrigger asChild>
-              <Button className="text-base text-gray-50 bg-green-900 hover:bg-green-800" onClick={() => console.log('Button clicked')}>
+              <Button 
+                className="text-base text-gray-50 bg-green-900 hover:bg-green-800" 
+                onClick={() => {
+                  console.log('Button clicked');
+                  handleNewPoint();
+                }}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Добавить точку
               </Button>
