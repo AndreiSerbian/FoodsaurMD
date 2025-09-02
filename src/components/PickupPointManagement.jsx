@@ -1,46 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog';
-import { Plus, Edit, Trash2, MapPin, Clock } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { ChevronDown, Plus, Edit, Trash2, MapPin, Clock } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
-const PickupPointManagement = ({
-  producerProfile
-}) => {
+import PointForm from './PointForm';
+
+const PickupPointManagement = ({ producerProfile }) => {
   const [pickupPoints, setPickupPoints] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [editingPoint, setEditingPoint] = useState(null);
-  const [showDialog, setShowDialog] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    city: '',
-    address: '',
-    working_hours_from: '',
-    working_hours_to: '',
-    discount_available_from: '',
-    discount_available_to: '',
-    is_active: true
-  });
-  const {
-    toast
-  } = useToast();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+
   useEffect(() => {
     if (producerProfile?.id) {
       fetchPickupPoints();
     }
-  }, [producerProfile]);
+  }, [producerProfile, refreshKey]);
+
   const fetchPickupPoints = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('pickup_points').select('*').eq('producer_id', producerProfile.id).order('created_at', {
-        ascending: false
-      });
+      const { data, error } = await supabase
+        .from('pickup_points')
+        .select('*')
+        .eq('producer_id', producerProfile.id)
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
       setPickupPoints(data || []);
     } catch (error) {
@@ -52,75 +42,48 @@ const PickupPointManagement = ({
       });
     }
   };
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (editingPoint) {
-        const {
-          error
-        } = await supabase.from('pickup_points').update(formData).eq('id', editingPoint.id);
-        if (error) throw error;
-        toast({
-          title: "Успешно",
-          description: "Точка выдачи обновлена"
-        });
-      } else {
-        const {
-          error
-        } = await supabase.from('pickup_points').insert({
-          ...formData,
-          producer_id: producerProfile.id
-        });
-        if (error) throw error;
-        toast({
-          title: "Успешно",
-          description: "Точка выдачи создана"
-        });
-      }
-      setShowDialog(false);
-      setEditingPoint(null);
-      resetForm();
-      fetchPickupPoints();
-    } catch (error) {
-      console.error('Error saving pickup point:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось сохранить точку выдачи",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
+
+  const handleAddPoint = () => {
+    setEditingPoint(null);
+    setShowAddForm(true);
+    setIsOpen(true);
   };
-  const handleEdit = point => {
+
+  const handleEditPoint = (point) => {
     setEditingPoint(point);
-    setFormData({
-      name: point.name,
-      city: point.city || '',
-      address: point.address,
-      working_hours_from: point.working_hours_from || '',
-      working_hours_to: point.working_hours_to || '',
-      discount_available_from: point.discount_available_from || '',
-      discount_available_to: point.discount_available_to || '',
-      is_active: point.is_active
-    });
-    setShowDialog(true);
+    setShowAddForm(true);
+    setIsOpen(true);
   };
-  const handleDelete = async pointId => {
+
+  const handleCloseForm = () => {
+    setShowAddForm(false);
+    setEditingPoint(null);
+  };
+
+  const handleSavePoint = () => {
+    setShowAddForm(false);
+    setEditingPoint(null);
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleDeletePoint = async (pointId) => {
     if (!confirm('Вы уверены, что хотите удалить эту точку выдачи?')) {
       return;
     }
+
     try {
-      const {
-        error
-      } = await supabase.from('pickup_points').delete().eq('id', pointId);
+      const { error } = await supabase
+        .from('pickup_points')
+        .delete()
+        .eq('id', pointId);
+
       if (error) throw error;
+
       toast({
         title: "Успешно",
         description: "Точка выдачи удалена"
       });
-      fetchPickupPoints();
+      setRefreshKey(prev => prev + 1);
     } catch (error) {
       console.error('Error deleting pickup point:', error);
       toast({
@@ -130,182 +93,122 @@ const PickupPointManagement = ({
       });
     }
   };
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      city: '',
-      address: '',
-      working_hours_from: '',
-      working_hours_to: '',
-      discount_available_from: '',
-      discount_available_to: '',
-      is_active: true
-    });
+
+  const handleViewPoints = () => {
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setShowAddForm(false);
+      setEditingPoint(null);
+    }
   };
-  const handleNewPoint = () => {
-    console.log('handleNewPoint called');
-    setEditingPoint(null);
-    resetForm();
-    setShowDialog(true);
-    console.log('showDialog set to true');
+
+  const formatWorkHours = (workHours) => {
+    if (!workHours) return 'Не указаны';
+    
+    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayKeys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const todayKey = dayKeys[today];
+    const todayHours = workHours[todayKey] || [];
+    
+    if (todayHours.length === 0) {
+      return 'Сегодня закрыто';
+    }
+    
+    return `Сегодня: ${todayHours.map(range => `${range.open}-${range.close}`).join(', ')}`;
   };
+
   if (!producerProfile?.id) {
-    return <Card>
+    return (
+      <Card>
         <CardContent className="py-6">
           <p className="text-muted-foreground text-center">
             Сначала заполните профиль производителя
           </p>
         </CardContent>
-      </Card>;
+      </Card>
+    );
   }
-  console.log('PickupPointManagement render, showDialog:', showDialog);
-  return <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Точки выдачи
-          </CardTitle>
-          <Dialog open={showDialog} onOpenChange={(open) => {
-            console.log('Dialog onOpenChange:', open);
-            setShowDialog(open);
-          }}>
-            <DialogTrigger asChild>
+
+  return (
+    <div className="bg-white overflow-hidden shadow rounded-lg">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <div className="px-4 py-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80 text-left">
+              <MapPin className="h-5 w-5 text-gray-50" />
+              <h3 className="text-lg leading-6 font-medium text-gray-50">
+                Управление точками выдачи
+              </h3>
+              <ChevronDown className={`h-4 w-4 text-gray-50 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
-                className="text-base text-gray-50 bg-green-900 hover:bg-green-800" 
-                onClick={() => {
-                  console.log('Button clicked');
-                  handleNewPoint();
-                }}
+                onClick={handleViewPoints} 
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
+              >
+                {isOpen ? 'Скрыть точки' : 'Просмотреть точки'}
+              </Button>
+              <Button 
+                onClick={handleAddPoint} 
+                className="bg-green-900 hover:bg-green-800 text-gray-50 w-full sm:w-auto"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Добавить точку
               </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingPoint ? 'Редактировать точку выдачи' : 'Новая точка выдачи'}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingPoint ? 'Изменение параметров существующей точки выдачи' : 'Создание новой точки выдачи для ваших клиентов'}
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Название точки</Label>
-                  <Input id="name" value={formData.name} onChange={e => setFormData({
-                  ...formData,
-                  name: e.target.value
-                })} required placeholder="Например: Центральная кухня" />
-                </div>
+            </div>
+          </div>
 
-                <div>
-                  <Label htmlFor="city">Город</Label>
-                  <Input id="city" value={formData.city} onChange={e => setFormData({
-                  ...formData,
-                  city: e.target.value
-                })} required placeholder="Кишинев" />
-                </div>
-
-                <div>
-                  <Label htmlFor="address">Адрес</Label>
-                  <Input id="address" value={formData.address} onChange={e => setFormData({
-                  ...formData,
-                  address: e.target.value
-                })} required placeholder="Улица, дом, район" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="working_hours_from">Работает с</Label>
-                    <Input id="working_hours_from" type="time" value={formData.working_hours_from} onChange={e => setFormData({
-                    ...formData,
-                    working_hours_from: e.target.value
-                  })} />
+          <CollapsibleContent className="space-y-4">
+            {pickupPoints.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                У вас пока нет точек выдачи. Создайте первую точку.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {pickupPoints.map(point => (
+                  <div key={point.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-medium">{point.title || point.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {point.city && `${point.city}, `}{point.address}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={point.is_active ? "default" : "secondary"}>
+                          {point.is_active ? 'Активна' : 'Неактивна'}
+                        </Badge>
+                        <Button size="sm" variant="outline" onClick={() => handleEditPoint(point)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleDeletePoint(point.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      {formatWorkHours(point.work_hours)}
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="working_hours_to">Работает до</Label>
-                    <Input id="working_hours_to" type="time" value={formData.working_hours_to} onChange={e => setFormData({
-                    ...formData,
-                    working_hours_to: e.target.value
-                  })} />
-                  </div>
-                </div>
+                ))}
+              </div>
+            )}
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="discount_available_from">Скидки с</Label>
-                    <Input id="discount_available_from" type="time" value={formData.discount_available_from} onChange={e => setFormData({
-                    ...formData,
-                    discount_available_from: e.target.value
-                  })} />
-                  </div>
-                  <div>
-                    <Label htmlFor="discount_available_to">Скидки до</Label>
-                    <Input id="discount_available_to" type="time" value={formData.discount_available_to} onChange={e => setFormData({
-                    ...formData,
-                    discount_available_to: e.target.value
-                  })} />
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="is_active" checked={formData.is_active} onChange={e => setFormData({
-                  ...formData,
-                  is_active: e.target.checked
-                })} className="rounded" />
-                  <Label htmlFor="is_active">Активная точка</Label>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button type="submit" disabled={loading} className="flex-1">
-                    {loading ? 'Сохранение...' : 'Сохранить'}
-                  </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
-                    Отмена
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+            {showAddForm && (
+              <PointForm 
+                point={editingPoint} 
+                producerProfile={producerProfile} 
+                onSave={handleSavePoint} 
+                onCancel={handleCloseForm} 
+              />
+            )}
+          </CollapsibleContent>
         </div>
-      </CardHeader>
-      <CardContent>
-        {pickupPoints.length === 0 ? <p className="text-muted-foreground text-center py-8">
-            У вас пока нет точек выдачи. Создайте первую точку.
-          </p> : <div className="space-y-4">
-            {pickupPoints.map(point => <div key={point.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1">
-                    <h4 className="font-medium">{point.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {point.city && `${point.city}, `}{point.address}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={point.is_active ? "default" : "secondary"}>
-                      {point.is_active ? 'Активна' : 'Неактивна'}
-                    </Badge>
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(point)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(point.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                {(point.working_hours_from || point.working_hours_to) && <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    Работает: {point.working_hours_from || '00:00'} - {point.working_hours_to || '23:59'}
-                  </div>}
-                {(point.discount_available_from || point.discount_available_to) && <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    Скидки: {point.discount_available_from || '00:00'} - {point.discount_available_to || '23:59'}
-                  </div>}
-              </div>)}
-          </div>}
-      </CardContent>
-    </Card>;
+      </Collapsible>
+    </div>
+  );
 };
+
 export default PickupPointManagement;
