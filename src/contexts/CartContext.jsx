@@ -2,6 +2,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  getSelectedPoint, 
+  setSelectedPoint, 
+  clearSelectedPoint, 
+  canAddItemToCart, 
+  onSelectedPointChange 
+} from '../modules/cart/cartRules.js';
 
 const CartContext = createContext();
 
@@ -13,7 +20,38 @@ export const CartProvider = ({ children }) => {
   const [selectedPickupPoint, setSelectedPickupPoint] = useState(null);
   const [selectedPickupTime, setSelectedPickupTime] = useState(null);
   const [discountTotal, setDiscountTotal] = useState(0);
+  const [selectedPointInfo, setSelectedPointInfo] = useState(null); // Из cartRules
   const { toast } = useToast();
+
+  // Синхронизация с localStorage точками
+  useEffect(() => {
+    const currentPoint = getSelectedPoint();
+    setSelectedPointInfo(currentPoint);
+
+    // Слушаем изменения выбранной точки
+    const unsubscribe = onSelectedPointChange((point) => {
+      setSelectedPointInfo(point);
+      if (!point) {
+        // Если точка очищена, очищаем корзину
+        setCartItems([]);
+        setSelectedPickupPoint(null);
+        setSelectedPickupTime(null);
+      }
+    });
+
+    // Слушаем событие очистки корзины
+    const handleClearCart = () => {
+      setCartItems([]);
+      clearSelectedPoint();
+    };
+
+    window.addEventListener('clearCart', handleClearCart);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('clearCart', handleClearCart);
+    };
+  }, []);
 
   useEffect(() => {
     // Calculate totals whenever cart items change
@@ -34,6 +72,11 @@ export const CartProvider = ({ children }) => {
       });
     }
     setSelectedPickupPoint(pickupPoint);
+  };
+
+  // Проверка возможности добавления товара с учетом правил точек
+  const canAddToCart = (producerSlug, pointId) => {
+    return canAddItemToCart(producerSlug, pointId);
   };
 
   const addToCart = async (product, pickupPointId) => {
@@ -156,6 +199,7 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
     setSelectedPickupPoint(null);
     setSelectedPickupTime(null);
+    clearSelectedPoint();
   };
 
   const createPreOrder = async () => {
@@ -275,6 +319,7 @@ export const CartProvider = ({ children }) => {
       discountTotal,
       selectedPickupPoint,
       selectedPickupTime,
+      selectedPointInfo,
       selectPickupPoint,
       setSelectedPickupTime,
       addToCart,
@@ -282,7 +327,8 @@ export const CartProvider = ({ children }) => {
       updateQuantity,
       clearCart,
       createPreOrder,
-      isWithinDiscountTime
+      isWithinDiscountTime,
+      canAddToCart
     }}>
       {children}
     </CartContext.Provider>
