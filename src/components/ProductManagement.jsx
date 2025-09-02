@@ -36,9 +36,11 @@ const ProductManagement = ({
   };
   
   const handleViewProducts = () => {
-    setIsOpen(true);
-    setShowAddForm(false);
-    setEditingProduct(null);
+    setIsOpen(!isOpen);
+    if (!isOpen) {
+      setShowAddForm(false);
+      setEditingProduct(null);
+    }
   };
   if (!profile?.id) {
     return <div className="bg-white overflow-hidden shadow rounded-lg">
@@ -65,7 +67,7 @@ const ProductManagement = ({
                 variant="outline"
                 className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
               >
-                Просмотреть товары
+                {isOpen ? 'Скрыть товары' : 'Просмотреть товары'}
               </Button>
               <Button 
                 onClick={handleAddProduct} 
