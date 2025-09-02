@@ -9,6 +9,9 @@ export const useProducerCategories = (producerId) => {
   useEffect(() => {
     if (producerId) {
       fetchProducerCategories()
+    } else {
+      setLoading(false)
+      setCategories([])
     }
   }, [producerId])
 
