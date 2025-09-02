@@ -5,7 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog';
 import { Plus, Edit, Trash2, MapPin, Clock } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 const PickupPointManagement = ({
@@ -184,6 +184,9 @@ const PickupPointManagement = ({
                 <DialogTitle>
                   {editingPoint ? 'Редактировать точку выдачи' : 'Новая точка выдачи'}
                 </DialogTitle>
+                <DialogDescription>
+                  {editingPoint ? 'Изменение параметров существующей точки выдачи' : 'Создание новой точки выдачи для ваших клиентов'}
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
