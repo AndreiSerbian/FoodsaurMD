@@ -17,6 +17,7 @@ const PickupPointManagement = ({
   const [showDialog, setShowDialog] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    city: '',
     address: '',
     working_hours_from: '',
     working_hours_to: '',
@@ -96,6 +97,7 @@ const PickupPointManagement = ({
     setEditingPoint(point);
     setFormData({
       name: point.name,
+      city: point.city || '',
       address: point.address,
       working_hours_from: point.working_hours_from || '',
       working_hours_to: point.working_hours_to || '',
@@ -131,6 +133,7 @@ const PickupPointManagement = ({
   const resetForm = () => {
     setFormData({
       name: '',
+      city: '',
       address: '',
       working_hours_from: '',
       working_hours_to: '',
@@ -162,7 +165,7 @@ const PickupPointManagement = ({
           </CardTitle>
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
-              <Button onClick={handleNewPoint} className="text-base text-gray-50 bg-green-900 hover:bg-green-800">
+              <Button className="text-base text-gray-50 bg-green-900 hover:bg-green-800">
                 <Plus className="h-4 w-4 mr-2" />
                 Добавить точку
               </Button>
@@ -180,6 +183,14 @@ const PickupPointManagement = ({
                   ...formData,
                   name: e.target.value
                 })} required placeholder="Например: Центральная кухня" />
+                </div>
+
+                <div>
+                  <Label htmlFor="city">Город</Label>
+                  <Input id="city" value={formData.city} onChange={e => setFormData({
+                  ...formData,
+                  city: e.target.value
+                })} required placeholder="Кишинев" />
                 </div>
 
                 <div>
@@ -253,7 +264,9 @@ const PickupPointManagement = ({
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
                     <h4 className="font-medium">{point.name}</h4>
-                    <p className="text-sm text-muted-foreground">{point.address}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {point.city && `${point.city}, `}{point.address}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={point.is_active ? "default" : "secondary"}>
