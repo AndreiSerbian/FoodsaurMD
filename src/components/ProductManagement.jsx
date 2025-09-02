@@ -34,6 +34,12 @@ const ProductManagement = ({
   const handleDeleteProduct = () => {
     setRefreshKey(prev => prev + 1); // Обновляем список товаров
   };
+  
+  const handleViewProducts = () => {
+    setIsOpen(true);
+    setShowAddForm(false);
+    setEditingProduct(null);
+  };
   if (!profile?.id) {
     return <div className="bg-white overflow-hidden shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
@@ -53,12 +59,21 @@ const ProductManagement = ({
               </h3>
               <ChevronDown className={`h-4 w-4 text-gray-50 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
             </CollapsibleTrigger>
-            <Button 
-              onClick={handleAddProduct} 
-              className="bg-green-900 hover:bg-green-800 text-gray-50 w-full sm:w-auto"
-            >
-              Добавить товар
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button 
+                onClick={handleViewProducts} 
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
+              >
+                Просмотреть товары
+              </Button>
+              <Button 
+                onClick={handleAddProduct} 
+                className="bg-green-900 hover:bg-green-800 text-gray-50 w-full sm:w-auto"
+              >
+                Добавить товар
+              </Button>
+            </div>
           </div>
 
           <CollapsibleContent className="space-y-4">
