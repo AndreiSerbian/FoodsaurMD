@@ -107,7 +107,16 @@ export const CartProvider = ({ children }) => {
         .eq('product_id', product.id)
         .single();
 
-      if (error || !availability?.is_available || availability.quantity_available <= 0) {
+      let availableQuantity = product.quantity;
+      let isAvailable = product.in_stock;
+
+      // If product is explicitly linked to pickup point, use those values
+      if (!error && availability) {
+        availableQuantity = availability.quantity_available;
+        isAvailable = availability.is_available;
+      }
+
+      if (!isAvailable || availableQuantity <= 0) {
         toast({
           title: "Товар недоступен",
           description: "Товар закончился в выбранной точке",
@@ -118,10 +127,10 @@ export const CartProvider = ({ children }) => {
 
       // Check if adding one more item would exceed available quantity
       const currentQuantity = cartItems.find(item => item.id === product.id)?.quantity || 0;
-      if (currentQuantity >= availability.quantity_available) {
+      if (currentQuantity >= availableQuantity) {
         toast({
           title: "Недостаточно товара",
-          description: `Доступно только ${availability.quantity_available} единиц`,
+          description: `Доступно только ${availableQuantity} единиц`,
           variant: "destructive"
         });
         return;
@@ -175,10 +184,17 @@ export const CartProvider = ({ children }) => {
         .eq('product_id', productId)
         .single();
 
-      if (error || quantity > availability.quantity_available) {
+      let availableQuantity = product.quantity;
+      
+      // If product is explicitly linked to pickup point, use those values
+      if (!error && availability) {
+        availableQuantity = availability.quantity_available;
+      }
+
+      if (quantity > availableQuantity) {
         toast({
           title: "Недостаточно товара",
-          description: `Доступно только ${availability.quantity_available} единиц`,
+          description: `Доступно только ${availableQuantity} единиц`,
           variant: "destructive"
         });
         return;
@@ -244,17 +260,27 @@ export const CartProvider = ({ children }) => {
 
       if (itemsError) throw itemsError;
 
-      // Update product quantities at pickup point
+      // Update product quantities at pickup point (only if explicitly linked)
       for (const item of cartItems) {
-        const { error: updateError } = await supabase
+        const { data: pickupPointProduct } = await supabase
           .from('pickup_point_products')
-          .update({
-            quantity_available: supabase.raw(`quantity_available - ${item.quantity}`)
-          })
+          .select('id')
           .eq('pickup_point_id', selectedPointInfo.pointId)
-          .eq('product_id', item.id);
+          .eq('product_id', item.id)
+          .single();
 
-        if (updateError) console.error('Error updating quantity:', updateError);
+        // Only update if product is explicitly linked to pickup point
+        if (pickupPointProduct) {
+          const { error: updateError } = await supabase
+            .from('pickup_point_products')
+            .update({
+              quantity_available: supabase.raw(`quantity_available - ${item.quantity}`)
+            })
+            .eq('pickup_point_id', selectedPointInfo.pointId)
+            .eq('product_id', item.id);
+
+          if (updateError) console.error('Error updating quantity:', updateError);
+        }
       }
 
       // Send notification to producer
