@@ -35,7 +35,8 @@ const ProductsList = ({
   };
   
   const handleAddToCart = product => {
-    addToCart(product, producer.producerName);
+    // Pass the producer object which should include slug
+    addToCart(product, producer.slug || producer.producerName);
   };
 
   // Calculate discount percentage
