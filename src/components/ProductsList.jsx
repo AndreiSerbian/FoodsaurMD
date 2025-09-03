@@ -67,10 +67,10 @@ const ProductsList = ({
               <div className="relative">
                 <img 
                   src={product.image} 
-                  alt={product.productName} 
+                  alt={product.name} 
                   className="w-full h-48 object-cover rounded-t-2xl"
                   onError={(e) => {
-                    console.error('Failed to load image:', product.image, 'for product:', product.productName);
+                    console.error('Failed to load image:', product.image, 'for product:', product.name);
                     e.currentTarget.src = "/placeholder.svg";
                   }}
                 />
@@ -81,7 +81,7 @@ const ProductsList = ({
                 )}
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{product.productName}</h3>
+                <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
                 <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">{product.description}</p>
                 
                 <div className="flex justify-between items-center mb-4">

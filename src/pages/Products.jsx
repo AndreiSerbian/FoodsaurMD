@@ -60,9 +60,10 @@ const Products = () => {
         }
 
          // Форматируем данные для компонента
-         const formattedProducer = {
-           id: producerData.id,
-           producerName: producerData.producer_name,
+          const formattedProducer = {
+            id: producerData.id,
+            slug: producerData.slug,
+            producerName: producerData.producer_name,
            address: producerData.address || 'Адрес не указан',
            discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
            categoryName: 'Десерты', // Можно получить из producer_categories если нужно

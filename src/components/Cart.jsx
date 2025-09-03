@@ -4,7 +4,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const Cart = () => {
-  const { cartItems, cartTotal, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { 
+    cartItems, 
+    cartTotal, 
+    discountTotal,
+    removeFromCart, 
+    updateQuantity, 
+    clearCart,
+    selectedPointInfo,
+    createPreOrder
+  } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -13,25 +22,31 @@ const Cart = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleQuantityChange = (productName, producerName, newQuantity) => {
-    updateQuantity(productName, producerName, Number(newQuantity));
+  const handleQuantityChange = (productId, newQuantity) => {
+    updateQuantity(productId, Number(newQuantity));
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     setIsProcessing(true);
     
-    // Simulate order processing
-    setTimeout(() => {
+    try {
+      const order = await createPreOrder();
+      if (order) {
+        setIsProcessing(false);
+        setShowOrderAlert(true);
+        setIsOpen(false);
+        
+        // Auto-hide the alert after 5 seconds
+        setTimeout(() => {
+          setShowOrderAlert(false);
+        }, 5000);
+      } else {
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
       setIsProcessing(false);
-      setShowOrderAlert(true);
-      clearCart();
-      setIsOpen(false);
-      
-      // Auto-hide the alert after 5 seconds
-      setTimeout(() => {
-        setShowOrderAlert(false);
-      }, 5000);
-    }, 1000);
+    }
   };
 
   const cartVariants = {
@@ -119,27 +134,47 @@ const Cart = () => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
+              {selectedPointInfo && (
+                <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm font-medium text-green-800">Точка получения:</p>
+                  <p className="text-sm text-green-700">{selectedPointInfo.pointName}</p>
+                </div>
+              )}
+              
               {cartItems.length === 0 ? (
                 <div className="text-center py-12">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                   <p className="mt-4 text-gray-500">Ваша корзина пуста</p>
+                  {!selectedPointInfo && (
+                    <p className="mt-2 text-sm text-gray-400">Выберите точку получения для начала покупок</p>
+                  )}
                 </div>
               ) : (
                 <ul className="space-y-4">
                   {cartItems.map((item, index) => (
-                    <li key={index} className="border-b pb-4">
+                    <li key={item.id || index} className="border-b pb-4">
                       <div className="flex justify-between">
                         <div>
-                          <h3 className="font-medium">{item.productName}</h3>
-                          <p className="text-sm text-gray-500">{item.producerName}</p>
-                          <p className="mt-1 font-semibold">{item.priceDiscount} MDL</p>
+                          <h3 className="font-medium">{item.name}</h3>
+                          <p className="text-sm text-gray-500">Производитель</p>
+                          <div className="mt-1">
+                            {item.priceDiscount && item.priceDiscount !== item.priceRegular ? (
+                              <div className="flex items-center space-x-2">
+                                <span className="font-semibold text-green-600">{item.priceDiscount} MDL</span>
+                                <span className="text-sm text-gray-500 line-through">{item.priceRegular} MDL</span>
+                              </div>
+                            ) : (
+                              <span className="font-semibold">{item.priceRegular} MDL</span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button 
-                            onClick={() => handleQuantityChange(item.productName, item.producerName, item.quantity - 1)}
+                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100"
+                            disabled={item.quantity <= 1}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -148,12 +183,12 @@ const Cart = () => {
                           <input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) => handleQuantityChange(item.productName, item.producerName, e.target.value)}
+                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                             min="1"
                             className="w-12 text-center border border-gray-300 rounded p-1"
                           />
                           <button 
-                            onClick={() => handleQuantityChange(item.productName, item.producerName, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,7 +198,7 @@ const Cart = () => {
                         </div>
                       </div>
                       <button 
-                        onClick={() => removeFromCart(item.productName, item.producerName)}
+                        onClick={() => removeFromCart(item.id)}
                         className="text-sm text-red-500 mt-2 flex items-center"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -179,16 +214,28 @@ const Cart = () => {
 
             {cartItems.length > 0 && (
               <div className="p-6 border-t">
+                {discountTotal > 0 && (
+                  <div className="mb-3 p-2 bg-green-50 rounded-lg">
+                    <div className="flex justify-between text-sm">
+                      <span>Обычная цена:</span>
+                      <span className="line-through text-gray-500">{cartTotal + discountTotal} MDL</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium text-green-600">
+                      <span>Скидка:</span>
+                      <span>-{discountTotal} MDL</span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between mb-4">
-                  <span className="font-medium">Итого:</span>
-                  <span className="font-bold">{cartTotal} MDL</span>
+                  <span className="font-medium">Итого к оплате:</span>
+                  <span className="font-bold text-lg">{cartTotal} MDL</span>
                 </div>
                 <button 
                   onClick={handleCheckout}
-                  disabled={isProcessing}
-                  className={`w-full bg-green-900 text-white py-3 rounded-lg ${isProcessing ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-800'} transition duration-300 mb-2 flex items-center justify-center`}
+                  disabled={isProcessing || !selectedPointInfo}
+                  className={`w-full bg-green-900 text-white py-3 rounded-lg ${isProcessing || !selectedPointInfo ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-800'} transition duration-300 mb-2 flex items-center justify-center`}
                 >
-                  {isProcessing ? 'Обработка...' : 'Оформить заказ'}
+                  {isProcessing ? 'Обработка...' : selectedPointInfo ? 'Оформить заказ' : 'Выберите точку получения'}
                 </button>
                 <button 
                   onClick={clearCart}

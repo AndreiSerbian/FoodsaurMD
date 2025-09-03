@@ -14,14 +14,14 @@ const PickupPointSelector = ({ producerId }) => {
 
   useEffect(() => {
     fetchPickupPoints();
-  }, [producerId]);
+  }, [producer?.id]);
 
   const fetchPickupPoints = async () => {
     try {
       const { data, error } = await supabase
         .from('pickup_points')
         .select('*')
-        .eq('producer_id', producerId)
+        .eq('producer_id', producer?.id)
         .eq('is_active', true)
         .order('name');
 
@@ -37,6 +37,23 @@ const PickupPointSelector = ({ producerId }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Integrate with cart rules
+  const handleSelectPoint = (point) => {
+    selectPickupPoint(point);
+    
+    // Also set in cart rules for global state
+    const selectedPointData = {
+      producerSlug: producer?.slug || 'unknown',
+      pointId: point.id,
+      pointName: point.name
+    };
+    
+    // Import and use cartRules functions
+    import('../modules/cart/cartRules.js').then(({ setSelectedPoint }) => {
+      setSelectedPoint(selectedPointData);
+    });
   };
 
   const formatTime = (timeString) => {
