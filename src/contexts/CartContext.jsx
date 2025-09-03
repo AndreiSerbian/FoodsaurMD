@@ -80,7 +80,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (product, pickupPointId) => {
-    if (!selectedPickupPoint) {
+    if (!selectedPointInfo) {
       toast({
         title: "Ошибка",
         description: "Сначала выберите точку получения",
@@ -89,7 +89,7 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
-    if (selectedPickupPoint.id !== pickupPointId) {
+    if (selectedPointInfo.pointId !== pickupPointId) {
       toast({
         title: "Ошибка", 
         description: "Товар доступен только в выбранной точке получения",
@@ -165,13 +165,13 @@ export const CartProvider = ({ children }) => {
 
     // Check availability for new quantity
     const product = cartItems.find(item => item.id === productId);
-    if (!product || !selectedPickupPoint) return;
+    if (!product || !selectedPointInfo) return;
 
     try {
       const { data: availability, error } = await supabase
         .from('pickup_point_products')
         .select('quantity_available')
-        .eq('pickup_point_id', selectedPickupPoint.id)
+        .eq('pickup_point_id', selectedPointInfo.pointId)
         .eq('product_id', productId)
         .single();
 
@@ -203,7 +203,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const createPreOrder = async () => {
-    if (!selectedPickupPoint || !selectedPickupTime || cartItems.length === 0) {
+    if (!selectedPointInfo || !selectedPickupTime || cartItems.length === 0) {
       toast({
         title: "Ошибка",
         description: "Выберите точку получения, время и добавьте товары",
@@ -218,7 +218,7 @@ export const CartProvider = ({ children }) => {
         .from('pre_orders')
         .insert({
           order_code: await generateOrderCode(),
-          pickup_point_id: selectedPickupPoint.id,
+          pickup_point_id: selectedPointInfo.pointId,
           total_amount: cartTotal,
           discount_amount: discountTotal,
           pickup_time: selectedPickupTime,
@@ -251,7 +251,7 @@ export const CartProvider = ({ children }) => {
           .update({
             quantity_available: supabase.raw(`quantity_available - ${item.quantity}`)
           })
-          .eq('pickup_point_id', selectedPickupPoint.id)
+          .eq('pickup_point_id', selectedPointInfo.pointId)
           .eq('product_id', item.id);
 
         if (updateError) console.error('Error updating quantity:', updateError);
@@ -262,7 +262,7 @@ export const CartProvider = ({ children }) => {
         body: {
           preOrderId: preOrder.id,
           orderCode: preOrder.order_code,
-          pickupPointId: selectedPickupPoint.id,
+          pickupPointId: selectedPointInfo.pointId,
           totalAmount: cartTotal,
           itemsCount: cartItems.length
         }
@@ -298,18 +298,11 @@ export const CartProvider = ({ children }) => {
   };
 
   const isWithinDiscountTime = () => {
-    if (!selectedPickupPoint) return false;
+    if (!selectedPointInfo) return false;
     
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    
-    const [fromHour, fromMin] = selectedPickupPoint.discount_available_from?.split(':').map(Number) || [0, 0];
-    const [toHour, toMin] = selectedPickupPoint.discount_available_to?.split(':').map(Number) || [23, 59];
-    
-    const fromTime = fromHour * 60 + fromMin;
-    const toTime = toHour * 60 + toMin;
-    
-    return currentTime >= fromTime && currentTime <= toTime;
+    // Нужно будет получить данные о скидочном времени из точки выдачи
+    // Пока возвращаем false, так как selectedPointInfo не содержит времени скидок
+    return false;
   };
 
   return (
