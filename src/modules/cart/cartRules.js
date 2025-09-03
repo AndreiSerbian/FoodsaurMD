@@ -1,135 +1,189 @@
 // @ts-check
 
-/** @typedef {{producerSlug: string, pointId: string, pointName: string}} SelectedPoint */
-
-const STORAGE_KEY = 'foodsaur_selected_point';
-
-/**
- * Получить текущую выбранную точку
- * @returns {SelectedPoint|null}
- */
-export function getSelectedPoint() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch (error) {
-    console.error('Error getting selected point:', error);
-    return null;
-  }
-}
+import { getCart, getSelectedPoint, getProducerLock } from './cartState.js';
+import { fetchPointStock, canFulfill } from './availability.js';
 
 /**
- * Установить выбранную точку
- * @param {SelectedPoint} point
+ * @typedef {Object} AddItemParams
+ * @property {Object} item
+ * @property {string} item.productId
+ * @property {string} item.producerSlug
+ * @property {string} item.pointId
+ * @property {number} item.qty
+ * @property {Object} item.product
+ * @property {Function} [resolveConflict] - Function to handle conflicts
  */
-export function setSelectedPoint(point) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(point));
-    
-    // Вызываем кастомное событие для уведомления других компонентов
-    window.dispatchEvent(new CustomEvent('selectedPointChanged', { 
-      detail: point 
-    }));
-  } catch (error) {
-    console.error('Error setting selected point:', error);
-  }
-}
 
 /**
- * Очистить выбранную точку
+ * @typedef {Object} AddItemResult
+ * @property {boolean} ok
+ * @property {string} [message]
+ * @property {string} [conflictType] - 'producer' | 'point' | 'stock'
+ * @property {Object} [conflictData]
  */
-export function clearSelectedPoint() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-    
-    // Вызываем кастомное событие для уведомления других компонентов
-    window.dispatchEvent(new CustomEvent('selectedPointChanged', { 
-      detail: null 
-    }));
-  } catch (error) {
-    console.error('Error clearing selected point:', error);
-  }
-}
 
 /**
- * Проверить, можно ли добавить товар в корзину (правило одной точки)
- * @param {string} producerSlug
- * @param {string} pointId
- * @returns {{canAdd: boolean, conflictType?: 'producer'|'point', currentPoint?: SelectedPoint}}
+ * Check if an item can be added to cart with business rules
+ * @param {AddItemParams} params
+ * @returns {Promise<AddItemResult>}
  */
-export function canAddItemToCart(producerSlug, pointId) {
+export async function canAddItem({ item, resolveConflict }) {
   const selectedPoint = getSelectedPoint();
-  
-  // Если корзина пустая (нет выбранной точки), можно добавлять
-  if (!selectedPoint) {
-    return { canAdd: true };
+  const producerLock = getProducerLock();
+  const currentCart = getCart();
+
+  // 1. Check producer conflict
+  if (producerLock && producerLock !== item.producerSlug) {
+    const conflictData = {
+      currentProducer: producerLock,
+      newProducer: item.producerSlug
+    };
+
+    if (resolveConflict) {
+      const resolved = await resolveConflict('producer', conflictData);
+      if (!resolved) {
+        return { 
+          ok: false, 
+          message: `В корзине уже есть товары от производителя "${producerLock}". Очистите корзину, чтобы продолжить.`,
+          conflictType: 'producer',
+          conflictData
+        };
+      }
+    } else {
+      return { 
+        ok: false, 
+        message: `В корзине уже есть товары от производителя "${producerLock}". Очистите корзину, чтобы продолжить.`,
+        conflictType: 'producer',
+        conflictData
+      };
+    }
   }
 
-  // Проверяем конфликт производителя
-  if (selectedPoint.producerSlug !== producerSlug) {
-    return { 
-      canAdd: false, 
-      conflictType: 'producer', 
-      currentPoint: selectedPoint 
+  // 2. Check point conflict (only if producer is same)
+  if (selectedPoint && selectedPoint.pointId !== item.pointId) {
+    const conflictData = {
+      currentPoint: selectedPoint,
+      newPointId: item.pointId
+    };
+
+    if (resolveConflict) {
+      const resolved = await resolveConflict('point', conflictData);
+      if (!resolved) {
+        return { 
+          ok: false, 
+          message: `В корзине уже есть товары из точки "${selectedPoint.pointName}". Очистите корзину, чтобы продолжить.`,
+          conflictType: 'point',
+          conflictData
+        };
+      }
+    } else {
+      return { 
+        ok: false, 
+        message: `В корзине уже есть товары из точки "${selectedPoint.pointName}". Очистите корзину, чтобы продолжить.`,
+        conflictType: 'point',
+        conflictData
+      };
+    }
+  }
+
+  // 3. Check stock availability
+  const stockInfo = await fetchPointStock(item.pointId, item.productId);
+  if (!stockInfo) {
+    return {
+      ok: false,
+      message: 'Не удалось проверить наличие товара',
+      conflictType: 'stock'
     };
   }
 
-  // Проверяем конфликт точки
-  if (selectedPoint.pointId !== pointId) {
-    return { 
-      canAdd: false, 
-      conflictType: 'point', 
-      currentPoint: selectedPoint 
+  // Calculate total quantity needed (existing + new)
+  const existingItem = currentCart.find(cartItem => cartItem.productId === item.productId);
+  const totalNeeded = (existingItem ? existingItem.qty : 0) + item.qty;
+
+  if (!canFulfill(totalNeeded, stockInfo.stock)) {
+    return {
+      ok: false,
+      message: `Недостаточно товара в наличии. Доступно: ${stockInfo.stock}, требуется: ${totalNeeded}`,
+      conflictType: 'stock',
+      conflictData: { available: stockInfo.stock, requested: totalNeeded }
     };
   }
 
-  // Всё совпадает
-  return { canAdd: true };
+  return { ok: true };
 }
 
 /**
- * Проверить совместимость точки с текущей корзиной
- * @param {string} producerSlug
- * @param {string} pointId
- * @returns {boolean}
+ * Add item to cart with all business rule checks
+ * @param {AddItemParams} params
+ * @returns {Promise<AddItemResult>}
  */
-export function isPointCompatibleWithCart(producerSlug, pointId) {
-  const result = canAddItemToCart(producerSlug, pointId);
-  return result.canAdd;
+export async function addItemWithRules(params) {
+  const result = await canAddItem(params);
+  
+  if (!result.ok) {
+    return result;
+  }
+
+  // If we get here, item can be added
+  return { ok: true };
 }
 
 /**
- * Получить сообщение о конфликте
- * @param {'producer'|'point'} conflictType
- * @param {SelectedPoint} currentPoint
+ * Validate current cart against business rules
+ * @returns {Promise<{isValid: boolean, errors: string[]}>}
+ */
+export async function validateCart() {
+  const cart = getCart();
+  const selectedPoint = getSelectedPoint();
+  const errors = [];
+
+  if (cart.length === 0) {
+    errors.push('Корзина пуста');
+    return { isValid: false, errors };
+  }
+
+  if (!selectedPoint) {
+    errors.push('Не выбрана точка получения');
+    return { isValid: false, errors };
+  }
+
+  // Check if all items are from same producer and point
+  const firstItem = cart[0];
+  for (const item of cart) {
+    if (item.producerSlug !== firstItem.producerSlug) {
+      errors.push('В корзине товары от разных производителей');
+    }
+    if (item.pointId !== firstItem.pointId) {
+      errors.push('В корзине товары из разных точек');
+    }
+  }
+
+  // Check stock for all items
+  for (const item of cart) {
+    const stockInfo = await fetchPointStock(item.pointId, item.productId);
+    if (!stockInfo || !canFulfill(item.qty, stockInfo.stock)) {
+      errors.push(`Недостаточно товара "${item.product?.name || item.productId}" в наличии`);
+    }
+  }
+
+  return { isValid: errors.length === 0, errors };
+}
+
+/**
+ * Get conflict message for UI display
+ * @param {string} conflictType
+ * @param {Object} conflictData
  * @returns {string}
  */
-export function getConflictMessage(conflictType, currentPoint) {
-  if (conflictType === 'producer') {
-    return `В корзине уже есть товары от другого производителя (точка "${currentPoint.pointName}"). Чтобы продолжить, нужно очистить корзину.`;
+export function getConflictMessage(conflictType, conflictData) {
+  switch (conflictType) {
+    case 'producer':
+      return `В корзине уже есть товары от производителя "${conflictData.currentProducer}". Чтобы добавить товары от "${conflictData.newProducer}", нужно очистить корзину.`;
+    case 'point':
+      return `В корзине уже есть товары из точки "${conflictData.currentPoint.pointName}". Чтобы продолжить, нужно очистить корзину.`;
+    case 'stock':
+      return `Недостаточно товара в наличии. Доступно: ${conflictData.available}, требуется: ${conflictData.requested}`;
+    default:
+      return 'Конфликт с текущей корзиной. Очистите корзину, чтобы продолжить.';
   }
-  
-  if (conflictType === 'point') {
-    return `В корзине уже есть товары из другой точки выдачи (${currentPoint.pointName}). Чтобы продолжить, нужно очистить корзину.`;
-  }
-  
-  return 'Конфликт с текущей корзиной. Очистите корзину, чтобы продолжить.';
-}
-
-/**
- * Слушать изменения выбранной точки
- * @param {(point: SelectedPoint|null) => void} callback
- * @returns {() => void} функция для отписки
- */
-export function onSelectedPointChange(callback) {
-  const handleChange = (event) => {
-    callback(event.detail);
-  };
-
-  window.addEventListener('selectedPointChanged', handleChange);
-  
-  // Возвращаем функцию для отписки
-  return () => {
-    window.removeEventListener('selectedPointChanged', handleChange);
-  };
 }
