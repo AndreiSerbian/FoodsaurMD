@@ -13,20 +13,29 @@ const PickupPointSelector = ({ producerId }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchPickupPoints();
-  }, [producer?.id]);
+    if (producerId) {
+      fetchPickupPoints();
+    }
+  }, [producerId]);
 
   const fetchPickupPoints = async () => {
     try {
       const { data, error } = await supabase
         .from('pickup_points')
         .select('*')
-        .eq('producer_id', producer?.id)
+        .eq('producer_id', producerId)
         .eq('is_active', true)
         .order('name');
 
       if (error) throw error;
-      setPickupPoints(data || []);
+      
+      const points = data || [];
+      setPickupPoints(points);
+      
+      // Если только одна точка, выбираем её автоматически
+      if (points.length === 1 && !selectedPickupPoint) {
+        handleSelectPoint(points[0]);
+      }
     } catch (error) {
       console.error('Error fetching pickup points:', error);
       toast({
@@ -40,8 +49,15 @@ const PickupPointSelector = ({ producerId }) => {
   };
 
   // Integrate with cart rules
-  const handleSelectPoint = (point) => {
+  const handleSelectPoint = async (point) => {
     selectPickupPoint(point);
+    
+    // Get producer data for slug
+    const { data: producer } = await supabase
+      .from('producer_profiles')
+      .select('slug')
+      .eq('id', producerId)
+      .single();
     
     // Also set in cart rules for global state
     const selectedPointData = {
@@ -51,9 +67,8 @@ const PickupPointSelector = ({ producerId }) => {
     };
     
     // Import and use cartRules functions
-    import('../modules/cart/cartRules.js').then(({ setSelectedPoint }) => {
-      setSelectedPoint(selectedPointData);
-    });
+    const { setSelectedPoint } = await import('../modules/cart/cartRules.js');
+    setSelectedPoint(selectedPointData);
   };
 
   const formatTime = (timeString) => {
@@ -138,7 +153,7 @@ const PickupPointSelector = ({ producerId }) => {
                   ? 'border-primary bg-primary/5' 
                   : 'border-border hover:border-primary/50'
               } ${!isOpen ? 'opacity-60' : ''}`}
-              onClick={() => selectPickupPoint(point)}
+              onClick={() => handleSelectPoint(point)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
