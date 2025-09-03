@@ -219,7 +219,14 @@ export const CartProvider = ({ children }) => {
   };
 
   const createPreOrder = async () => {
-    if (!selectedPointInfo || !selectedPickupTime || cartItems.length === 0) {
+    // Capture current cart state
+    const currentCartItems = [...cartItems];
+    const currentCartTotal = cartTotal;
+    const currentDiscountTotal = discountTotal;
+    const currentPointInfo = selectedPointInfo;
+    const currentPickupTime = selectedPickupTime;
+
+    if (!currentPointInfo || !currentPickupTime || currentCartItems.length === 0) {
       toast({
         title: "Ошибка",
         description: "Выберите точку получения, время и добавьте товары",
@@ -234,10 +241,10 @@ export const CartProvider = ({ children }) => {
         .from('pre_orders')
         .insert({
           order_code: await generateOrderCode(),
-          pickup_point_id: selectedPointInfo.pointId,
-          total_amount: cartTotal,
-          discount_amount: discountTotal,
-          pickup_time: selectedPickupTime,
+          pickup_point_id: currentPointInfo.pointId,
+          total_amount: currentCartTotal,
+          discount_amount: currentDiscountTotal,
+          pickup_time: currentPickupTime,
           status: 'created'
         })
         .select()
@@ -246,7 +253,7 @@ export const CartProvider = ({ children }) => {
       if (orderError) throw orderError;
 
       // Create order items
-      const orderItems = cartItems.map(item => ({
+      const orderItems = currentCartItems.map(item => ({
         pre_order_id: preOrder.id,
         product_id: item.id,
         quantity: item.quantity,
@@ -261,11 +268,11 @@ export const CartProvider = ({ children }) => {
       if (itemsError) throw itemsError;
 
       // Update product quantities at pickup point (only if explicitly linked)
-      for (const item of cartItems) {
+      for (const item of currentCartItems) {
         const { data: pickupPointProduct } = await supabase
           .from('pickup_point_products')
           .select('id')
-          .eq('pickup_point_id', selectedPointInfo.pointId)
+          .eq('pickup_point_id', currentPointInfo.pointId)
           .eq('product_id', item.id)
           .single();
 
@@ -276,7 +283,7 @@ export const CartProvider = ({ children }) => {
             .update({
               quantity_available: supabase.raw(`quantity_available - ${item.quantity}`)
             })
-            .eq('pickup_point_id', selectedPointInfo.pointId)
+            .eq('pickup_point_id', currentPointInfo.pointId)
             .eq('product_id', item.id);
 
           if (updateError) console.error('Error updating quantity:', updateError);
@@ -288,9 +295,9 @@ export const CartProvider = ({ children }) => {
         body: {
           preOrderId: preOrder.id,
           orderCode: preOrder.order_code,
-          pickupPointId: selectedPointInfo.pointId,
-          totalAmount: cartTotal,
-          itemsCount: cartItems.length
+          pickupPointId: currentPointInfo.pointId,
+          totalAmount: currentCartTotal,
+          itemsCount: currentCartItems.length
         }
       });
 
