@@ -18,20 +18,21 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function fetchPointStock(pointId, productId) {
   try {
+    // First try pickup_point_products table
     const { data, error } = await supabase
-      .from('point_inventory')
-      .select('stock, is_listed')
-      .eq('point_id', pointId)
+      .from('pickup_point_products')
+      .select('quantity_available, is_available')
+      .eq('pickup_point_id', pointId)
       .eq('product_id', productId)
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching point stock:', error);
-      return null;
+      console.error('Error fetching pickup point products:', error);
+      // Fall back to product default info
     }
 
-    // If no specific point inventory, get product default info
-    if (!data) {
+    // If no specific pickup point product link, get product default info
+    if (!data || error) {
       const { data: productData, error: productError } = await supabase
         .from('products')
         .select('quantity, price_regular, price_discount, in_stock')
@@ -39,7 +40,7 @@ export async function fetchPointStock(pointId, productId) {
         .single();
 
       if (productError) {
-        console.error('Error fetching product info:', error);
+        console.error('Error fetching product info:', productError);
         return null;
       }
 
@@ -64,10 +65,10 @@ export async function fetchPointStock(pointId, productId) {
     }
 
     return {
-      stock: data.stock || 0,
+      stock: data.quantity_available || 0,
       price: productData.price_regular,
       discount: productData.price_discount || 0,
-      isAvailable: data.is_listed && data.stock > 0
+      isAvailable: data.is_available && data.quantity_available > 0
     };
 
   } catch (error) {
