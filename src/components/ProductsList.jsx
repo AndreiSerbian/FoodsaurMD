@@ -85,14 +85,18 @@ const ProductsList = ({
                 <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
                 <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">{product.description}</p>
                 
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <span className="text-lg font-bold text-green-600">{product.priceDiscount} MDL</span>
-                    {product.priceDiscount < product.priceRegular && (
-                      <span className="text-sm text-green-900 line-through ml-2">{product.priceRegular} MDL</span>
-                    )}
-                  </div>
-                </div>
+                 <div className="flex justify-between items-center mb-4">
+                   <div>
+                     <span className="text-lg font-bold text-green-600">
+                       {product.priceDiscount || product.price_discount} MDL/{product.priceUnit || product.price_unit || 'шт'}
+                     </span>
+                     {(product.priceDiscount || product.price_discount) < (product.priceRegular || product.price_regular) && (
+                       <span className="text-sm text-green-900 line-through ml-2">
+                         {product.priceRegular || product.price_regular} MDL/{product.priceUnit || product.price_unit || 'шт'}
+                       </span>
+                     )}
+                   </div>
+                 </div>
                 
                 <button 
                   onClick={() => handleAddToCart(product)} 

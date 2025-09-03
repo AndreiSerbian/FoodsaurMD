@@ -159,16 +159,22 @@ const Cart = () => {
                         <div>
                           <h3 className="font-medium">{item.name}</h3>
                           <p className="text-sm text-gray-500">Производитель</p>
-                          <div className="mt-1">
-                            {item.priceDiscount && item.priceDiscount !== item.priceRegular ? (
-                              <div className="flex items-center space-x-2">
-                                <span className="font-semibold text-green-600">{item.priceDiscount} MDL</span>
-                                <span className="text-sm text-gray-500 line-through">{item.priceRegular} MDL</span>
-                              </div>
-                            ) : (
-                              <span className="font-semibold">{item.priceRegular} MDL</span>
-                            )}
-                          </div>
+                           <div className="mt-1">
+                             {item.price && item.originalPrice && item.price !== item.originalPrice ? (
+                               <div className="flex items-center space-x-2">
+                                 <span className="font-semibold text-green-600">
+                                   {item.price} MDL/{item.priceUnit || 'шт'}
+                                 </span>
+                                 <span className="text-sm text-gray-500 line-through">
+                                   {item.originalPrice} MDL/{item.priceUnit || 'шт'}
+                                 </span>
+                               </div>
+                             ) : (
+                               <span className="font-semibold">
+                                 {item.price || item.originalPrice} MDL/{item.priceUnit || 'шт'}
+                               </span>
+                             )}
+                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button 
