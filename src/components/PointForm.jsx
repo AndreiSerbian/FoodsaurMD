@@ -27,6 +27,40 @@ const PointForm = ({ point, onSave, onCancel, producerProfile }) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Функция для добавления всех товаров производителя в точку выдачи
+  const addAllProductsToPoint = async (pointId, producerId) => {
+    try {
+      // Получаем все товары производителя
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('id, quantity, in_stock')
+        .eq('producer_id', producerId);
+
+      if (productsError) throw productsError;
+
+      if (products && products.length > 0) {
+        // Добавляем все товары в точку выдачи
+        const pickupPointProducts = products.map(product => ({
+          pickup_point_id: pointId,
+          product_id: product.id,
+          quantity_available: product.quantity,
+          is_available: product.in_stock
+        }));
+
+        const { error: insertError } = await supabase
+          .from('pickup_point_products')
+          .insert(pickupPointProducts);
+
+        if (insertError) throw insertError;
+
+        console.log(`Added ${products.length} products to pickup point ${pointId}`);
+      }
+    } catch (error) {
+      console.error('Error adding products to pickup point:', error);
+      // Не показываем ошибку пользователю, так как точка все равно создана
+    }
+  };
+
   const WEEKDAYS = {
     mon: 'Понедельник',
     tue: 'Вторник', 
@@ -87,24 +121,34 @@ const PointForm = ({ point, onSave, onCancel, producerProfile }) => {
         work_hours: formData.work_hours
       };
 
-      if (point?.id) {
-        const { error } = await supabase
+      let result;
+      const isEditing = !!point?.id;
+
+      if (isEditing) {
+        result = await supabase
           .from('pickup_points')
           .update(pointData)
-          .eq('id', point.id);
+          .eq('id', point.id)
+          .select()
+          .single();
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         
         toast({
           title: "Успешно",
           description: "Точка выдачи обновлена"
         });
       } else {
-        const { error } = await supabase
+        result = await supabase
           .from('pickup_points')
-          .insert(pointData);
+          .insert(pointData)
+          .select()
+          .single();
         
-        if (error) throw error;
+        if (result.error) throw result.error;
+
+        // Если создаем новую точку, добавляем все товары производителя
+        await addAllProductsToPoint(result.data.id, producerProfile.id);
         
         toast({
           title: "Успешно", 

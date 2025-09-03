@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/ca
 import { AuthContext } from '../../contexts/AuthContext';
 import PointsAdminTable from '../../components/points/PointsAdminTable';
 import PointModal from '../../components/points/PointModal';
+import SyncProductsButton from '../../components/SyncProductsButton';
 
 export default function ProducerPoints() {
   const { profile } = useContext(AuthContext);
@@ -46,9 +47,12 @@ export default function ProducerPoints() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">
-          Мои точки выдачи
-        </h1>
+        <div className="flex justify-between items-start mb-2">
+          <h1 className="text-3xl font-bold">
+            Мои точки выдачи
+          </h1>
+          <SyncProductsButton producerId={profile.id} />
+        </div>
         <p className="text-muted-foreground">
           Управление точками выдачи вашей продукции
         </p>
