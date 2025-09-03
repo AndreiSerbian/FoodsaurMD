@@ -10,8 +10,7 @@ const PreOrderForm = () => {
   const {
     cartItems,
     cartTotal,
-    discountTotal,
-    selectedPickupPoint,
+    selectedPointInfo,
     selectedPickupTime,
     createPreOrder,
     isWithinDiscountTime
@@ -31,7 +30,7 @@ const PreOrderForm = () => {
       return;
     }
 
-    if (!selectedPickupPoint) {
+    if (!selectedPointInfo) {
       toast({
         title: "Точка не выбрана",
         description: "Выберите точку получения",
@@ -52,9 +51,16 @@ const PreOrderForm = () => {
     setIsCreating(true);
     
     try {
-      const order = await createPreOrder();
+      // Call createPreOrder with customer info - this should be collected from a form
+      const customerInfo = {
+        name: 'Test Customer', // This should come from a form
+        phone: '+373123456789', // This should come from a form
+        email: 'test@example.com' // This should come from a form
+      };
+      
+      const order = await createPreOrder(customerInfo);
       if (order) {
-        setOrderCode(order.order_code);
+        setOrderCode(order.orderCode);
       }
     } catch (error) {
       console.error('Error creating order:', error);
@@ -73,7 +79,10 @@ const PreOrderForm = () => {
   };
 
   const formatPrice = (price) => {
-    return `${price.toFixed(2)} лей`;
+    if (price === undefined || price === null || isNaN(price)) {
+      return '0.00 лей';
+    }
+    return `${Number(price).toFixed(2)} лей`;
   };
 
   if (orderCode) {
@@ -101,10 +110,7 @@ const PreOrderForm = () => {
               <span className="font-medium">Точка получения:</span>
             </div>
             <div className="text-sm text-muted-foreground ml-6">
-              {selectedPickupPoint?.name}
-            </div>
-            <div className="text-sm text-muted-foreground ml-6">
-              {selectedPickupPoint?.address}
+              {selectedPointInfo?.pointName}
             </div>
             
             <div className="flex items-center gap-2 text-sm pt-2">
@@ -150,15 +156,15 @@ const PreOrderForm = () => {
             </div>
           ) : (
             cartItems.map((item) => (
-              <div key={item.id} className="flex justify-between items-center py-2">
+              <div key={item.productId} className="flex justify-between items-center py-2">
                 <div className="flex-1">
-                  <div className="font-medium text-sm">{item.name}</div>
+                  <div className="font-medium text-sm">{item.product?.name || 'Товар'}</div>
                   <div className="text-xs text-muted-foreground">
-                    {formatPrice(item.priceDiscount || item.priceRegular)} × {item.quantity}
+                    {formatPrice(item.price)} × {item.qty}
                   </div>
                 </div>
                 <div className="text-sm font-medium">
-                  {formatPrice((item.priceDiscount || item.priceRegular) * item.quantity)}
+                  {formatPrice(item.price * item.qty)}
                 </div>
               </div>
             ))
@@ -169,19 +175,6 @@ const PreOrderForm = () => {
 
         {/* Price Summary */}
         <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Обычная цена:</span>
-            <span>{formatPrice(cartTotal + discountTotal)}</span>
-          </div>
-          {discountTotal > 0 && (
-            <div className="flex justify-between text-sm text-green-600">
-              <span className="flex items-center gap-1">
-                <Percent className="h-3 w-3" />
-                Скидка:
-              </span>
-              <span>-{formatPrice(discountTotal)}</span>
-            </div>
-          )}
           <div className="flex justify-between font-medium">
             <span>Итого к оплате:</span>
             <span>{formatPrice(cartTotal)}</span>
@@ -191,17 +184,14 @@ const PreOrderForm = () => {
         <Separator />
 
         {/* Pickup Details */}
-        {selectedPickupPoint && (
+        {selectedPointInfo && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium">
               <MapPin className="h-4 w-4" />
               Точка получения:
             </div>
             <div className="text-sm text-muted-foreground ml-6">
-              {selectedPickupPoint.name}
-            </div>
-            <div className="text-sm text-muted-foreground ml-6">
-              {selectedPickupPoint.address}
+              {selectedPointInfo.pointName}
             </div>
           </div>
         )}
@@ -219,7 +209,7 @@ const PreOrderForm = () => {
         )}
 
         {/* Discount Status */}
-        {selectedPickupPoint && (
+        {selectedPointInfo && (
           <div className={`p-3 rounded-lg border ${
             isWithinDiscountTime() 
               ? 'bg-green-50 border-green-200 text-green-800' 
@@ -240,7 +230,7 @@ const PreOrderForm = () => {
         {/* Create Order Button */}
         <Button 
           onClick={handleCreateOrder}
-          disabled={isCreating || cartItems.length === 0 || !selectedPickupPoint || !selectedPickupTime}
+          disabled={isCreating || cartItems.length === 0 || !selectedPointInfo || !selectedPickupTime}
           className="w-full"
           size="lg"
         >
