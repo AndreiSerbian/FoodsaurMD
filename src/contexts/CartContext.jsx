@@ -289,7 +289,7 @@ export const CartProvider = ({ children }) => {
 
   return (
     <CartContext.Provider value={{
-      cartItems,
+      cartItems: cartItems || [],
       cartTotal,
       selectedPickupTime,
       selectedPointInfo,
