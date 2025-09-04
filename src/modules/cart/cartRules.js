@@ -23,7 +23,7 @@ import { getCart, setCart } from './cartState.js';
 export async function trySetQty({ item, nextQty, pointId }) {
   const step = getStep(item.unit);
   const cart = getCart();
-  const currentItem = cart.items.find(i => i.productId === item.productId);
+  const currentItem = cart.items ? cart.items.find(i => i.productId === item.productId) : null;
   const currentInCart = currentItem ? currentItem.qty : 0;
 
   const maxAddable = await getMaxAddable({ 
@@ -53,15 +53,16 @@ export async function trySetQty({ item, nextQty, pointId }) {
  */
 export async function incWithLimit({ productId, unit, pointId }) {
   const cart = getCart();
-  const idx = cart.items.findIndex(i => i.productId === productId);
+  const items = cart.items || [];
+  const idx = items.findIndex(i => i.productId === productId);
   if (idx < 0) return { ok: false, reason: 'NOT_FOUND' };
   
-  const item = cart.items[idx];
+  const item = items[idx];
   const step = getStep(unit);
   const res = await trySetQty({ item, nextQty: (item.qty || 0) + step, pointId });
   
   cart.items[idx] = { ...item, qty: res.qty };
-  setCart({ ...cart, totals: undefined });
+  setCart(cart);
   return res;
 }
 
@@ -75,23 +76,24 @@ export async function incWithLimit({ productId, unit, pointId }) {
  */
 export async function decWithLimit({ productId, unit, pointId }) {
   const cart = getCart();
-  const idx = cart.items.findIndex(i => i.productId === productId);
+  const items = cart.items || [];
+  const idx = items.findIndex(i => i.productId === productId);
   if (idx < 0) return { ok: false, reason: 'NOT_FOUND' };
   
-  const item = cart.items[idx];
+  const item = items[idx];
   const step = getStep(unit);
   const newQty = Math.max(0, (item.qty || 0) - step);
   
   if (newQty === 0) {
     // Удаляем товар из корзины
     cart.items.splice(idx, 1);
-    setCart({ ...cart, totals: undefined });
+    setCart(cart);
     return { ok: true, qty: 0 };
   }
   
   const res = await trySetQty({ item, nextQty: newQty, pointId });
   cart.items[idx] = { ...item, qty: res.qty };
-  setCart({ ...cart, totals: undefined });
+  setCart(cart);
   return res;
 }
 
@@ -106,21 +108,22 @@ export async function decWithLimit({ productId, unit, pointId }) {
  */
 export async function setExactQty({ productId, qty, unit, pointId }) {
   const cart = getCart();
-  const idx = cart.items.findIndex(i => i.productId === productId);
+  const items = cart.items || [];
+  const idx = items.findIndex(i => i.productId === productId);
   if (idx < 0) return { ok: false, reason: 'NOT_FOUND' };
   
-  const item = cart.items[idx];
+  const item = items[idx];
   
   if (qty === 0) {
     // Удаляем товар из корзины
     cart.items.splice(idx, 1);
-    setCart({ ...cart, totals: undefined });
+    setCart(cart);
     return { ok: true, qty: 0 };
   }
   
   const res = await trySetQty({ item, nextQty: qty, pointId });
   cart.items[idx] = { ...item, qty: res.qty };
-  setCart({ ...cart, totals: undefined });
+  setCart(cart);
   return res;
 }
 
@@ -135,18 +138,19 @@ export async function setExactQty({ productId, qty, unit, pointId }) {
  */
 export async function canAddToCart({ product, producerSlug, pointId, qty = 1 }) {
   const cart = getCart();
+  const items = cart.items || [];
   
   // Проверяем блокировку производителя
-  if (cart.items.length > 0) {
-    const currentProducer = cart.items[0].producerSlug;
+  if (items.length > 0) {
+    const currentProducer = items[0].producerSlug;
     if (currentProducer !== producerSlug) {
       return { ok: false, reason: 'DIFFERENT_PRODUCER' };
     }
   }
   
   // Проверяем блокировку точки
-  if (cart.items.length > 0) {
-    const currentPoint = cart.items[0].pointId;
+  if (items.length > 0) {
+    const currentPoint = items[0].pointId;
     if (currentPoint !== pointId) {
       return { ok: false, reason: 'DIFFERENT_POINT' };
     }
@@ -155,7 +159,7 @@ export async function canAddToCart({ product, producerSlug, pointId, qty = 1 }) 
   // Проверяем остатки
   const step = getStep(product.price_unit);
   const normalizedQty = normalizeQty(qty, product.price_unit);
-  const currentItem = cart.items.find(i => i.productId === product.id);
+  const currentItem = items.find(i => i.productId === product.id);
   const currentInCart = currentItem ? currentItem.qty : 0;
   
   const maxAddable = await getMaxAddable({ 
@@ -217,11 +221,12 @@ export async function addItemWithRules({ item }) {
 
   // Если можно добавить, добавляем в корзину
   const cart = getCart();
-  const existingIndex = cart.items.findIndex(i => i.productId === item.productId);
+  const items = cart.items || [];
+  const existingIndex = items.findIndex(i => i.productId === item.productId);
   
   if (existingIndex >= 0) {
     // Обновляем количество существующего товара
-    const existingItem = cart.items[existingIndex];
+    const existingItem = items[existingIndex];
     const res = await trySetQty({ 
       item: existingItem, 
       nextQty: existingItem.qty + item.qty, 
@@ -240,6 +245,7 @@ export async function addItemWithRules({ item }) {
     }
   } else {
     // Добавляем новый товар
+    if (!cart.items) cart.items = [];
     cart.items.push(item);
     setCart(cart);
   }

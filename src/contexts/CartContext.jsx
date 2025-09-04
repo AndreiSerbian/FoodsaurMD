@@ -40,12 +40,12 @@ export const CartProvider = ({ children }) => {
     // Initial load
     const currentCart = getCart();
     const currentPoint = getSelectedPoint();
-    setCartItems(currentCart);
+    setCartItems(currentCart.items || []); // Extract items array
     setSelectedPointInfo(currentPoint);
 
     // Listen to changes
     const unsubscribeCart = onCartChange((cart) => {
-      setCartItems(cart);
+      setCartItems(cart.items || []); // Extract items array
     });
 
     const unsubscribePoint = onSelectedPointChange((point) => {

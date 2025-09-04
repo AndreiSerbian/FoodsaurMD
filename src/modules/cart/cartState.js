@@ -174,8 +174,9 @@ export function updateItemQuantity(productId, qty) {
  */
 export function getCartTotals() {
   const cart = getCart();
-  const total = cart.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const itemCount = cart.items.reduce((sum, item) => sum + item.qty, 0);
+  const items = cart.items || [];
+  const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
   
   return { total, itemCount };
 }
