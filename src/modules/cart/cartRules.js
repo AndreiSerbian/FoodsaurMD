@@ -170,3 +170,79 @@ export async function canAddToCart({ product, producerSlug, pointId, qty = 1 }) 
   
   return { ok: true };
 }
+
+/**
+ * Add item to cart with business rules validation
+ * @param {Object} params
+ * @param {Object} params.item - товар для добавления
+ * @param {string} params.item.productId
+ * @param {string} params.item.producerSlug
+ * @param {string} params.item.pointId
+ * @param {number} params.item.qty
+ * @param {number} params.item.price
+ * @param {string} params.item.unit
+ * @param {string} params.item.name
+ * @param {Object} params.item.product
+ * @returns {Promise<{ok: boolean, reason?: string, message?: string}>}
+ */
+export async function addItemWithRules({ item }) {
+  const canAdd = await canAddToCart({
+    product: { 
+      id: item.productId, 
+      price_unit: item.unit,
+      ...item.product 
+    },
+    producerSlug: item.producerSlug,
+    pointId: item.pointId,
+    qty: item.qty
+  });
+
+  if (!canAdd.ok) {
+    let message = '';
+    switch (canAdd.reason) {
+      case 'DIFFERENT_PRODUCER':
+        message = 'В корзине уже есть товары от другого производителя. Очистите корзину, чтобы продолжить.';
+        break;
+      case 'DIFFERENT_POINT':
+        message = 'В корзине уже есть товары из другой точки. Очистите корзину, чтобы продолжить.';
+        break;
+      case 'INSUFFICIENT_STOCK':
+        message = 'Нельзя больше — достигнут лимит для этой точки';
+        break;
+      default:
+        message = 'Невозможно добавить товар в корзину';
+    }
+    return { ok: false, reason: canAdd.reason, message };
+  }
+
+  // Если можно добавить, добавляем в корзину
+  const cart = getCart();
+  const existingIndex = cart.items.findIndex(i => i.productId === item.productId);
+  
+  if (existingIndex >= 0) {
+    // Обновляем количество существующего товара
+    const existingItem = cart.items[existingIndex];
+    const res = await trySetQty({ 
+      item: existingItem, 
+      nextQty: existingItem.qty + item.qty, 
+      pointId: item.pointId 
+    });
+    
+    cart.items[existingIndex] = { ...existingItem, qty: res.qty };
+    setCart(cart);
+    
+    if (!res.ok && res.reason === 'LIMIT') {
+      return { 
+        ok: false, 
+        reason: 'LIMIT', 
+        message: 'Нельзя больше — достигнут лимит для этой точки' 
+      };
+    }
+  } else {
+    // Добавляем новый товар
+    cart.items.push(item);
+    setCart(cart);
+  }
+
+  return { ok: true };
+}
