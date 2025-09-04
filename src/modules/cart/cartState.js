@@ -24,27 +24,29 @@ const STORAGE_KEYS = {
 };
 
 /**
- * Get current cart items
- * @returns {CartItem[]}
+ * Get current cart
+ * @returns {{items: CartItem[], totals?: Object, deliveryFee?: number, cartDiscount?: number}}
  */
 export function getCart() {
   try {
     const stored = localStorage.getItem(STORAGE_KEYS.CART);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return { items: [] };
+    const cart = JSON.parse(stored);
+    return { items: [], ...cart };
   } catch (error) {
     console.error('Error getting cart:', error);
-    return [];
+    return { items: [] };
   }
 }
 
 /**
- * Set cart items
- * @param {CartItem[]} items
+ * Set cart
+ * @param {{items: CartItem[], totals?: Object, deliveryFee?: number, cartDiscount?: number}} cart
  */
-export function setCart(items) {
+export function setCart(cart) {
   try {
-    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(items));
-    window.dispatchEvent(new CustomEvent('cartChanged', { detail: items }));
+    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
+    window.dispatchEvent(new CustomEvent('cartChanged', { detail: cart }));
   } catch (error) {
     console.error('Error setting cart:', error);
   }
@@ -58,7 +60,7 @@ export function clearCart() {
     localStorage.removeItem(STORAGE_KEYS.CART);
     localStorage.removeItem(STORAGE_KEYS.PRODUCER_LOCK);
     localStorage.removeItem(STORAGE_KEYS.SELECTED_POINT);
-    window.dispatchEvent(new CustomEvent('cartChanged', { detail: [] }));
+    window.dispatchEvent(new CustomEvent('cartChanged', { detail: { items: [] } }));
     window.dispatchEvent(new CustomEvent('selectedPointChanged', { detail: null }));
   } catch (error) {
     console.error('Error clearing cart:', error);
@@ -123,12 +125,15 @@ export function setProducerLock(producerSlug) {
  */
 export function addItemToCart(item) {
   const cart = getCart();
-  const existingIndex = cart.findIndex(cartItem => cartItem.productId === item.productId);
+  const existingIndex = cart.items.findIndex(cartItem => cartItem.productId === item.productId);
   
   if (existingIndex >= 0) {
-    cart[existingIndex].qty += item.qty;
+    cart.items[existingIndex] = {
+      ...cart.items[existingIndex],
+      qty: cart.items[existingIndex].qty + item.qty
+    };
   } else {
-    cart.push(item);
+    cart.items.push(item);
   }
   
   setCart(cart);
@@ -140,8 +145,8 @@ export function addItemToCart(item) {
  */
 export function removeItemFromCart(productId) {
   const cart = getCart();
-  const filtered = cart.filter(item => item.productId !== productId);
-  setCart(filtered);
+  cart.items = cart.items.filter(item => item.productId !== productId);
+  setCart(cart);
 }
 
 /**
@@ -156,9 +161,9 @@ export function updateItemQuantity(productId, qty) {
   }
   
   const cart = getCart();
-  const item = cart.find(cartItem => cartItem.productId === productId);
-  if (item) {
-    item.qty = qty;
+  const itemIndex = cart.items.findIndex(cartItem => cartItem.productId === productId);
+  if (itemIndex >= 0) {
+    cart.items[itemIndex] = { ...cart.items[itemIndex], qty };
     setCart(cart);
   }
 }
@@ -169,15 +174,15 @@ export function updateItemQuantity(productId, qty) {
  */
 export function getCartTotals() {
   const cart = getCart();
-  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+  const total = cart.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const itemCount = cart.items.reduce((sum, item) => sum + item.qty, 0);
   
   return { total, itemCount };
 }
 
 /**
  * Listen to cart changes
- * @param {(cart: CartItem[]) => void} callback
+ * @param {(cart: {items: CartItem[]}) => void} callback
  * @returns {() => void} unsubscribe function
  */
 export function onCartChange(callback) {

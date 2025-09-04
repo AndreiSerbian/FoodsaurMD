@@ -1,8 +1,8 @@
 // @ts-check
 
 import { supabase } from '@/integrations/supabase/client';
-import { validateCart } from './cartRules.js';
 import { getCart, getSelectedPoint, clearCart } from './cartState.js';
+import { checkMultipleStock } from './inventoryApi.js';
 
 /**
  * @typedef {Object} CustomerInfo
@@ -33,28 +33,39 @@ import { getCart, getSelectedPoint, clearCart } from './cartState.js';
  */
 export async function createPreorder({ customer, pickupTime }) {
   try {
-    // Validate cart first
-    const validation = await validateCart();
-    if (!validation.isValid) {
-      return {
-        success: false,
-        message: 'Ошибки в корзине',
-        errors: validation.errors
-      };
-    }
-
     const cart = getCart();
     const selectedPoint = getSelectedPoint();
     
-    if (!selectedPoint || cart.length === 0) {
+    if (!cart.items || cart.items.length === 0) {
       return {
         success: false,
-        message: 'Корзина пуста или не выбрана точка получения'
+        message: 'Корзина пуста'
+      };
+    }
+    
+    if (!selectedPoint) {
+      return {
+        success: false,
+        message: 'Не выбрана точка получения'
+      };
+    }
+    
+    // Повторная проверка остатков
+    const stockCheck = await checkMultipleStock(
+      selectedPoint.pointId,
+      cart.items.map(item => ({ productId: item.productId, qty: item.qty }))
+    );
+    
+    const unavailableItems = stockCheck.filter(check => !check.available);
+    if (unavailableItems.length > 0) {
+      return { 
+        success: false, 
+        message: 'Недостаточно товара в наличии'
       };
     }
 
     // Get producer ID from the first item
-    const firstItem = cart[0];
+    const firstItem = cart.items[0];
     const { data: producerData, error: producerError } = await supabase
       .from('producer_profiles')
       .select('id')
@@ -69,7 +80,7 @@ export async function createPreorder({ customer, pickupTime }) {
     }
 
     // Calculate total
-    const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const totalAmount = cart.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     // Generate order code
     const orderCode = await generateOrderCode();
@@ -103,7 +114,7 @@ export async function createPreorder({ customer, pickupTime }) {
     }
 
     // Create order items
-    const orderItems = cart.map(item => ({
+    const orderItems = cart.items.map(item => ({
       order_id: order.id,
       product_id: item.productId,
       qty: item.qty,
@@ -131,7 +142,7 @@ export async function createPreorder({ customer, pickupTime }) {
     }
 
     // Update stock for items that have point inventory records
-    for (const item of cart) {
+    for (const item of cart.items) {
       const { error: stockError } = await supabase
         .from('point_inventory')
         .update({

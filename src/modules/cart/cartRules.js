@@ -1,189 +1,172 @@
 // @ts-check
 
-import { getCart, getSelectedPoint, getProducerLock } from './cartState.js';
-import { fetchPointStock, canFulfill } from './availability.js';
+import { getMaxAddable } from './inventoryApi.js';
+import { getStep, clampQty, normalizeQty } from './quantity.js';
+import { getCart, setCart } from './cartState.js';
 
 /**
- * @typedef {Object} AddItemParams
- * @property {Object} item
- * @property {string} item.productId
- * @property {string} item.producerSlug
- * @property {string} item.pointId
- * @property {number} item.qty
- * @property {Object} item.product
- * @property {Function} [resolveConflict] - Function to handle conflicts
- */
-
-/**
- * @typedef {Object} AddItemResult
+ * @typedef {Object} TrySetQtyResult
  * @property {boolean} ok
- * @property {string} [message]
- * @property {string} [conflictType] - 'producer' | 'point' | 'stock'
- * @property {Object} [conflictData]
+ * @property {number} qty
+ * @property {string} [reason]
  */
 
 /**
- * Check if an item can be added to cart with business rules
- * @param {AddItemParams} params
- * @returns {Promise<AddItemResult>}
+ * Пытается установить qty для позиции с учётом лимита точки.
+ * Возвращает { ok, qty, reason? } без раскрытия чисел stock.
+ * @param {Object} params
+ * @param {Object} params.item - товар
+ * @param {number} params.nextQty - желаемое количество
+ * @param {string} params.pointId - ID точки
+ * @returns {Promise<TrySetQtyResult>}
  */
-export async function canAddItem({ item, resolveConflict }) {
-  const selectedPoint = getSelectedPoint();
-  const producerLock = getProducerLock();
-  const currentCart = getCart();
-
-  // 1. Check producer conflict
-  if (producerLock && producerLock !== item.producerSlug) {
-    const conflictData = {
-      currentProducer: producerLock,
-      newProducer: item.producerSlug
-    };
-
-    if (resolveConflict) {
-      const resolved = await resolveConflict('producer', conflictData);
-      if (!resolved) {
-        return { 
-          ok: false, 
-          message: `В корзине уже есть товары от производителя "${producerLock}". Очистите корзину, чтобы продолжить.`,
-          conflictType: 'producer',
-          conflictData
-        };
-      }
-    } else {
-      return { 
-        ok: false, 
-        message: `В корзине уже есть товары от производителя "${producerLock}". Очистите корзину, чтобы продолжить.`,
-        conflictType: 'producer',
-        conflictData
-      };
-    }
-  }
-
-  // 2. Check point conflict (only if producer is same)
-  if (selectedPoint && selectedPoint.pointId !== item.pointId) {
-    const conflictData = {
-      currentPoint: selectedPoint,
-      newPointId: item.pointId
-    };
-
-    if (resolveConflict) {
-      const resolved = await resolveConflict('point', conflictData);
-      if (!resolved) {
-        return { 
-          ok: false, 
-          message: `В корзине уже есть товары из точки "${selectedPoint.pointName}". Очистите корзину, чтобы продолжить.`,
-          conflictType: 'point',
-          conflictData
-        };
-      }
-    } else {
-      return { 
-        ok: false, 
-        message: `В корзине уже есть товары из точки "${selectedPoint.pointName}". Очистите корзину, чтобы продолжить.`,
-        conflictType: 'point',
-        conflictData
-      };
-    }
-  }
-
-  // 3. Check stock availability
-  const stockInfo = await fetchPointStock(item.pointId, item.productId);
-  if (!stockInfo) {
-    return {
-      ok: false,
-      message: 'Не удалось проверить наличие товара',
-      conflictType: 'stock'
-    };
-  }
-
-  // Calculate total quantity needed (existing + new)
-  const existingItem = currentCart.find(cartItem => cartItem.productId === item.productId);
-  const totalNeeded = (existingItem ? existingItem.qty : 0) + item.qty;
-
-  if (!canFulfill(totalNeeded, stockInfo.stock)) {
-    return {
-      ok: false,
-      message: `Недостаточно товара в наличии. Доступно: ${stockInfo.stock}, требуется: ${totalNeeded}`,
-      conflictType: 'stock',
-      conflictData: { available: stockInfo.stock, requested: totalNeeded }
-    };
-  }
-
-  return { ok: true };
-}
-
-/**
- * Add item to cart with all business rule checks
- * @param {AddItemParams} params
- * @returns {Promise<AddItemResult>}
- */
-export async function addItemWithRules(params) {
-  const result = await canAddItem(params);
-  
-  if (!result.ok) {
-    return result;
-  }
-
-  // If we get here, item can be added
-  return { ok: true };
-}
-
-/**
- * Validate current cart against business rules
- * @returns {Promise<{isValid: boolean, errors: string[]}>}
- */
-export async function validateCart() {
+export async function trySetQty({ item, nextQty, pointId }) {
+  const step = getStep(item.unit);
   const cart = getCart();
-  const selectedPoint = getSelectedPoint();
-  const errors = [];
+  const currentItem = cart.items.find(i => i.productId === item.productId);
+  const currentInCart = currentItem ? currentItem.qty : 0;
 
-  if (cart.length === 0) {
-    errors.push('Корзина пуста');
-    return { isValid: false, errors };
+  const maxAddable = await getMaxAddable({ 
+    pointId, 
+    productId: item.productId, 
+    currentInCart 
+  });
+  const maxAllowed = currentInCart + maxAddable; // сколько максимум может быть в корзине по итогу
+
+  // Нормализуем и ограничиваем, не раскрывая конкретные числа пользователю в UI
+  const bounded = Math.min(nextQty, maxAllowed);
+  const clamped = clampQty(bounded, { unit: item.unit, min: step, max: maxAllowed || step });
+
+  if (normalizeQty(nextQty, item.unit) > clamped) {
+    return { ok: false, qty: clamped, reason: 'LIMIT' }; // лимит превышен, но без цифр
   }
-
-  if (!selectedPoint) {
-    errors.push('Не выбрана точка получения');
-    return { isValid: false, errors };
-  }
-
-  // Check if all items are from same producer and point
-  const firstItem = cart[0];
-  for (const item of cart) {
-    if (item.producerSlug !== firstItem.producerSlug) {
-      errors.push('В корзине товары от разных производителей');
-    }
-    if (item.pointId !== firstItem.pointId) {
-      errors.push('В корзине товары из разных точек');
-    }
-  }
-
-  // Check stock for all items
-  for (const item of cart) {
-    const stockInfo = await fetchPointStock(item.pointId, item.productId);
-    if (!stockInfo || !canFulfill(item.qty, stockInfo.stock)) {
-      errors.push(`Недостаточно товара "${item.product?.name || item.productId}" в наличии`);
-    }
-  }
-
-  return { isValid: errors.length === 0, errors };
+  return { ok: true, qty: clamped };
 }
 
 /**
- * Get conflict message for UI display
- * @param {string} conflictType
- * @param {Object} conflictData
- * @returns {string}
+ * Инкремент с учётом лимита точки (скрытый лимит)
+ * @param {Object} params
+ * @param {string} params.productId
+ * @param {string} params.unit
+ * @param {string} params.pointId
+ * @returns {Promise<TrySetQtyResult>}
  */
-export function getConflictMessage(conflictType, conflictData) {
-  switch (conflictType) {
-    case 'producer':
-      return `В корзине уже есть товары от производителя "${conflictData.currentProducer}". Чтобы добавить товары от "${conflictData.newProducer}", нужно очистить корзину.`;
-    case 'point':
-      return `В корзине уже есть товары из точки "${conflictData.currentPoint.pointName}". Чтобы продолжить, нужно очистить корзину.`;
-    case 'stock':
-      return `Недостаточно товара в наличии. Доступно: ${conflictData.available}, требуется: ${conflictData.requested}`;
-    default:
-      return 'Конфликт с текущей корзиной. Очистите корзину, чтобы продолжить.';
+export async function incWithLimit({ productId, unit, pointId }) {
+  const cart = getCart();
+  const idx = cart.items.findIndex(i => i.productId === productId);
+  if (idx < 0) return { ok: false, reason: 'NOT_FOUND' };
+  
+  const item = cart.items[idx];
+  const step = getStep(unit);
+  const res = await trySetQty({ item, nextQty: (item.qty || 0) + step, pointId });
+  
+  cart.items[idx] = { ...item, qty: res.qty };
+  setCart({ ...cart, totals: undefined });
+  return res;
+}
+
+/**
+ * Декремент с учётом минимального шага
+ * @param {Object} params
+ * @param {string} params.productId
+ * @param {string} params.unit
+ * @param {string} params.pointId
+ * @returns {Promise<TrySetQtyResult>}
+ */
+export async function decWithLimit({ productId, unit, pointId }) {
+  const cart = getCart();
+  const idx = cart.items.findIndex(i => i.productId === productId);
+  if (idx < 0) return { ok: false, reason: 'NOT_FOUND' };
+  
+  const item = cart.items[idx];
+  const step = getStep(unit);
+  const newQty = Math.max(0, (item.qty || 0) - step);
+  
+  if (newQty === 0) {
+    // Удаляем товар из корзины
+    cart.items.splice(idx, 1);
+    setCart({ ...cart, totals: undefined });
+    return { ok: true, qty: 0 };
   }
+  
+  const res = await trySetQty({ item, nextQty: newQty, pointId });
+  cart.items[idx] = { ...item, qty: res.qty };
+  setCart({ ...cart, totals: undefined });
+  return res;
+}
+
+/**
+ * Установка точного количества с валидацией
+ * @param {Object} params
+ * @param {string} params.productId
+ * @param {number} params.qty
+ * @param {string} params.unit
+ * @param {string} params.pointId
+ * @returns {Promise<TrySetQtyResult>}
+ */
+export async function setExactQty({ productId, qty, unit, pointId }) {
+  const cart = getCart();
+  const idx = cart.items.findIndex(i => i.productId === productId);
+  if (idx < 0) return { ok: false, reason: 'NOT_FOUND' };
+  
+  const item = cart.items[idx];
+  
+  if (qty === 0) {
+    // Удаляем товар из корзины
+    cart.items.splice(idx, 1);
+    setCart({ ...cart, totals: undefined });
+    return { ok: true, qty: 0 };
+  }
+  
+  const res = await trySetQty({ item, nextQty: qty, pointId });
+  cart.items[idx] = { ...item, qty: res.qty };
+  setCart({ ...cart, totals: undefined });
+  return res;
+}
+
+/**
+ * Проверка возможности добавить товар в корзину
+ * @param {Object} params
+ * @param {Object} params.product - товар
+ * @param {string} params.producerSlug - slug производителя
+ * @param {string} params.pointId - ID точки
+ * @param {number} [params.qty] - количество
+ * @returns {Promise<{ok: boolean, reason?: string}>}
+ */
+export async function canAddToCart({ product, producerSlug, pointId, qty = 1 }) {
+  const cart = getCart();
+  
+  // Проверяем блокировку производителя
+  if (cart.items.length > 0) {
+    const currentProducer = cart.items[0].producerSlug;
+    if (currentProducer !== producerSlug) {
+      return { ok: false, reason: 'DIFFERENT_PRODUCER' };
+    }
+  }
+  
+  // Проверяем блокировку точки
+  if (cart.items.length > 0) {
+    const currentPoint = cart.items[0].pointId;
+    if (currentPoint !== pointId) {
+      return { ok: false, reason: 'DIFFERENT_POINT' };
+    }
+  }
+  
+  // Проверяем остатки
+  const step = getStep(product.price_unit);
+  const normalizedQty = normalizeQty(qty, product.price_unit);
+  const currentItem = cart.items.find(i => i.productId === product.id);
+  const currentInCart = currentItem ? currentItem.qty : 0;
+  
+  const maxAddable = await getMaxAddable({ 
+    pointId, 
+    productId: product.id, 
+    currentInCart 
+  });
+  
+  if (normalizedQty > maxAddable) {
+    return { ok: false, reason: 'INSUFFICIENT_STOCK' };
+  }
+  
+  return { ok: true };
 }
