@@ -4,6 +4,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import PointsAdminTable from '../../components/points/PointsAdminTable';
 import PointModal from '../../components/points/PointModal';
 import SyncProductsButton from '../../components/SyncProductsButton';
+import ProducerInventorySync from '../../components/ProducerInventorySync';
 
 export default function ProducerPoints() {
   const { profile } = useContext(AuthContext);
@@ -45,7 +46,7 @@ export default function ProducerPoints() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="mb-6">
         <div className="flex justify-between items-start mb-2">
           <h1 className="text-3xl font-bold">
@@ -57,6 +58,9 @@ export default function ProducerPoints() {
           Управление точками выдачи вашей продукции
         </p>
       </div>
+
+      {/* Компонент синхронизации остатков */}
+      <ProducerInventorySync producerId={profile.id} />
 
       <PointsAdminTable
         key={refreshKey}

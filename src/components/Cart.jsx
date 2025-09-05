@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
+import { useInventorySync } from '../hooks/useInventorySync';
+import InventorySync from './InventorySync';
 
 const Cart = () => {
   const { 
@@ -20,10 +22,34 @@ const Cart = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [inventoryErrors, setInventoryErrors] = useState([]);
+
+  // Синхронизация остатков для товаров в корзине
+  const productIds = cartItems.map(item => item.productId);
+  const { validateCartItems, checkAvailability } = useInventorySync(
+    selectedPointInfo?.pointId, 
+    productIds
+  );
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
   };
+
+  // Проверка остатков при изменении корзины
+  useEffect(() => {
+    if (cartItems.length > 0 && selectedPointInfo?.pointId) {
+      const errors = validateCartItems(cartItems);
+      setInventoryErrors(errors);
+      
+      if (errors.length > 0) {
+        toast({
+          title: "Внимание",
+          description: `${errors.length} товар(ов) превышают доступные остатки`,
+          variant: "destructive"
+        });
+      }
+    }
+  }, [cartItems, selectedPointInfo, validateCartItems]);
 
   const handleQuantityChange = async (productId, newQuantity) => {
     const qty = Number(newQuantity);
@@ -32,27 +58,17 @@ const Cart = () => {
       return;
     }
     
-    // Check stock availability before updating quantity
-    const item = cartItems.find(item => item.productId === productId);
-    if (item && selectedPointInfo) {
-      try {
-        const { data: stock } = await supabase
-          .from('pickup_point_products')
-          .select('quantity_available')
-          .eq('pickup_point_id', selectedPointInfo.pointId)
-          .eq('product_id', productId)
-          .single();
-          
-        if (stock && qty > stock.quantity_available) {
-          toast({
-            title: "Недостаточно товара",
-            description: `Доступно только ${stock.quantity_available} шт.`,
-            variant: "destructive"
-          });
-          return;
-        }
-      } catch (error) {
-        console.warn('Could not check stock:', error);
+    // Проверяем доступность с помощью хука синхронизации
+    if (selectedPointInfo?.pointId) {
+      const availability = checkAvailability(productId, qty);
+      
+      if (!availability.available) {
+        toast({
+          title: "Недостаточно товара",
+          description: `Доступно только ${availability.stock} шт.`,
+          variant: "destructive"
+        });
+        return;
       }
     }
     
@@ -60,6 +76,17 @@ const Cart = () => {
   };
 
   const handleCheckout = async () => {
+    // Финальная проверка остатков перед оформлением заказа
+    const errors = validateCartItems(cartItems);
+    if (errors.length > 0) {
+      toast({
+        title: "Невозможно оформить заказ",
+        description: "Некоторые товары превышают доступные остатки",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
@@ -173,6 +200,19 @@ const Cart = () => {
                   <p className="text-sm text-green-700">{selectedPointInfo.pointName}</p>
                 </div>
               )}
+
+              {inventoryErrors.length > 0 && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTitle>Проблемы с остатками</AlertTitle>
+                  <AlertDescription>
+                    {inventoryErrors.map(error => (
+                      <div key={error.productId} className="text-xs">
+                        {error.name}: {error.message}
+                      </div>
+                    ))}
+                  </AlertDescription>
+                </Alert>
+              )}
               
               {cartItems.length === 0 ? (
                 <div className="text-center py-12">
@@ -189,13 +229,22 @@ const Cart = () => {
                   {cartItems.map((item, index) => (
                     <li key={item.productId || index} className="border-b pb-4">
                       <div className="flex justify-between">
-                        <div>
+                        <div className="flex-1">
                           <h3 className="font-medium">{item.product?.name}</h3>
                           <p className="text-sm text-gray-500">{item.producerSlug}</p>
                            <div className="mt-1">
                              <span className="font-semibold">
                                {item.price} MDL/{item.product?.price_unit || 'шт'}
                              </span>
+                           </div>
+                           
+                           {/* Компонент синхронизации остатков */}
+                           <div className="mt-2">
+                             <InventorySync 
+                               pointId={selectedPointInfo?.pointId}
+                               productId={item.productId}
+                               currentQty={item.qty}
+                             />
                            </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -260,10 +309,17 @@ const Cart = () => {
                 </div>
                 <button 
                   onClick={handleCheckout}
-                  disabled={isProcessing || !selectedPointInfo}
-                  className={`w-full bg-green-900 text-white py-3 rounded-lg ${isProcessing || !selectedPointInfo ? 'opacity-75 cursor-not-allowed' : 'hover:bg-green-800'} transition duration-300 mb-2 flex items-center justify-center`}
+                  disabled={isProcessing || !selectedPointInfo || inventoryErrors.length > 0}
+                  className={`w-full bg-green-900 text-white py-3 rounded-lg ${
+                    isProcessing || !selectedPointInfo || inventoryErrors.length > 0 
+                      ? 'opacity-75 cursor-not-allowed' 
+                      : 'hover:bg-green-800'
+                  } transition duration-300 mb-2 flex items-center justify-center`}
                 >
-                  {isProcessing ? 'Обработка...' : selectedPointInfo ? 'Оформить заказ' : 'Выберите точку получения'}
+                  {isProcessing ? 'Обработка...' : 
+                   !selectedPointInfo ? 'Выберите точку получения' :
+                   inventoryErrors.length > 0 ? 'Проверьте остатки' :
+                   'Оформить заказ'}
                 </button>
                 <button 
                   onClick={clearCart}
