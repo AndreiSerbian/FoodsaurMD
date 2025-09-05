@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '../integrations/supabase/client';
+import { useToast } from '../hooks/use-toast';
 
 const Cart = () => {
   const { 
@@ -14,6 +16,7 @@ const Cart = () => {
     selectedPointInfo,
     createPreOrder
   } = useCart();
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -22,8 +25,38 @@ const Cart = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleQuantityChange = (productId, newQuantity) => {
-    updateQuantity(productId, Number(newQuantity));
+  const handleQuantityChange = async (productId, newQuantity) => {
+    const qty = Number(newQuantity);
+    if (qty <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    // Check stock availability before updating quantity
+    const item = cartItems.find(item => item.productId === productId);
+    if (item && selectedPointInfo) {
+      try {
+        const { data: stock } = await supabase
+          .from('pickup_point_products')
+          .select('quantity_available')
+          .eq('pickup_point_id', selectedPointInfo.pointId)
+          .eq('product_id', productId)
+          .single();
+          
+        if (stock && qty > stock.quantity_available) {
+          toast({
+            title: "Недостаточно товара",
+            description: `Доступно только ${stock.quantity_available} шт.`,
+            variant: "destructive"
+          });
+          return;
+        }
+      } catch (error) {
+        console.warn('Could not check stock:', error);
+      }
+    }
+    
+    updateQuantity(productId, qty);
   };
 
   const handleCheckout = async () => {
@@ -93,7 +126,7 @@ const Cart = () => {
           </svg>
           {cartItems.length > 0 && (
             <span className="absolute -top-2 -right-2 bg-green-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-              {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+              {cartItems.reduce((acc, item) => acc + item.qty, 0)}
             </span>
           )}
         </div>
@@ -154,33 +187,22 @@ const Cart = () => {
               ) : (
                 <ul className="space-y-4">
                   {cartItems.map((item, index) => (
-                    <li key={item.id || index} className="border-b pb-4">
+                    <li key={item.productId || index} className="border-b pb-4">
                       <div className="flex justify-between">
                         <div>
-                          <h3 className="font-medium">{item.name}</h3>
-                          <p className="text-sm text-gray-500">Производитель</p>
+                          <h3 className="font-medium">{item.product?.name}</h3>
+                          <p className="text-sm text-gray-500">{item.producerSlug}</p>
                            <div className="mt-1">
-                             {item.price && item.originalPrice && item.price !== item.originalPrice ? (
-                               <div className="flex items-center space-x-2">
-                                 <span className="font-semibold text-green-600">
-                                   {item.price} MDL/{item.priceUnit || 'шт'}
-                                 </span>
-                                 <span className="text-sm text-gray-500 line-through">
-                                   {item.originalPrice} MDL/{item.priceUnit || 'шт'}
-                                 </span>
-                               </div>
-                             ) : (
-                               <span className="font-semibold">
-                                 {item.price || item.originalPrice} MDL/{item.priceUnit || 'шт'}
-                               </span>
-                             )}
+                             <span className="font-semibold">
+                               {item.price} MDL/{item.product?.price_unit || 'шт'}
+                             </span>
                            </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button 
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.qty - 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100"
-                            disabled={item.quantity <= 1}
+                            disabled={item.qty <= 1}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -188,13 +210,13 @@ const Cart = () => {
                           </button>
                           <input
                             type="number"
-                            value={item.quantity}
-                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                            value={item.qty}
+                            onChange={(e) => handleQuantityChange(item.productId, e.target.value)}
                             min="1"
                             className="w-12 text-center border border-gray-300 rounded p-1"
                           />
                           <button 
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                            onClick={() => handleQuantityChange(item.productId, item.qty + 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -204,7 +226,7 @@ const Cart = () => {
                         </div>
                       </div>
                       <button 
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.productId)}
                         className="text-sm text-red-500 mt-2 flex items-center"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
