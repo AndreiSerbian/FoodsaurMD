@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Clock, ArrowRight } from 'lucide-react';
 import { getPointsByProducerSlug } from '@/modules/points/pointsApi.js';
 import { getPointStatus, getTodayHours, formatDayHours } from '@/modules/points/workHoursUtil.js';
-import { canAddItemToCart, setSelectedPoint, getConflictMessage } from '@/modules/cart/cartRules.js';
+import { getCart, setSelectedPoint, clearCart } from '@/modules/cart/cartState.js';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import type { PickupPoint } from '@/types/supabase-points';
@@ -22,7 +22,6 @@ export default function PointsPublicGrid({ producerSlug, onPointSelected }: Poin
     isOpen: boolean;
     point?: PickupPoint;
     conflictType?: 'producer' | 'point';
-    currentPoint?: any;
   }>({ isOpen: false });
   const { toast } = useToast();
 
@@ -46,8 +45,45 @@ export default function PointsPublicGrid({ producerSlug, onPointSelected }: Poin
     }
   };
 
+  const checkCartConflict = (producerSlug: string, pointId: string) => {
+    const cart = getCart();
+    const items = cart.items || [];
+    
+    if (items.length === 0) {
+      return { canAdd: true };
+    }
+    
+    const firstItem = items[0];
+    
+    if (firstItem.producerSlug !== producerSlug) {
+      return { 
+        canAdd: false, 
+        conflictType: 'producer' as const,
+        currentProducer: firstItem.producerSlug 
+      };
+    }
+    
+    if (firstItem.pointId !== pointId) {
+      return { 
+        canAdd: false, 
+        conflictType: 'point' as const,
+        currentPointId: firstItem.pointId 
+      };
+    }
+    
+    return { canAdd: true };
+  };
+
+  const getConflictMessage = (conflictType: 'producer' | 'point') => {
+    if (conflictType === 'producer') {
+      return 'В корзине уже есть товары от другого производителя. Хотите очистить корзину и продолжить?';
+    } else {
+      return 'В корзине уже есть товары из другой точки выдачи. Хотите очистить корзину и продолжить?';
+    }
+  };
+
   const handleSelectPoint = (point: PickupPoint) => {
-    const result = canAddItemToCart(producerSlug, point.id);
+    const result = checkCartConflict(producerSlug, point.id);
     
     if (result.canAdd) {
       selectPoint(point);
@@ -55,8 +91,7 @@ export default function PointsPublicGrid({ producerSlug, onPointSelected }: Poin
       setConflictDialog({
         isOpen: true,
         point,
-        conflictType: result.conflictType,
-        currentPoint: result.currentPoint
+        conflictType: result.conflictType
       });
     }
   };
@@ -78,8 +113,8 @@ export default function PointsPublicGrid({ producerSlug, onPointSelected }: Poin
 
   const handleConflictConfirm = () => {
     if (conflictDialog.point) {
-      // Очищаем корзину (это должно быть реализовано в CartContext)
-      window.dispatchEvent(new CustomEvent('clearCart'));
+      // Clear the cart using the proper function
+      clearCart();
       
       selectPoint(conflictDialog.point);
     }
@@ -165,8 +200,8 @@ export default function PointsPublicGrid({ producerSlug, onPointSelected }: Poin
           <AlertDialogHeader>
             <AlertDialogTitle>Очистить корзину?</AlertDialogTitle>
             <AlertDialogDescription>
-              {conflictDialog.conflictType && conflictDialog.currentPoint && 
-                getConflictMessage(conflictDialog.conflictType, conflictDialog.currentPoint)
+              {conflictDialog.conflictType && 
+                getConflictMessage(conflictDialog.conflictType)
               }
             </AlertDialogDescription>
           </AlertDialogHeader>
