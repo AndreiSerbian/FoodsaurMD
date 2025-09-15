@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import ProductsList from '../components/ProductsList';
 import PreOrderForm from '../components/PreOrderForm';
@@ -8,7 +8,9 @@ import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 
 const Products = () => {
-  const { producerName } = useParams();
+  const { producerSlug } = useParams();
+  const [searchParams] = useSearchParams();
+  const pointId = searchParams.get('pointId');
   const [producer, setProducer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
@@ -21,13 +23,12 @@ const Products = () => {
   useEffect(() => {
     const fetchProducerData = async () => {
       try {
-        const decodedProducerName = decodeURIComponent(producerName);
         
         // Получаем данные производителя из Supabase
         const { data: producerData, error: producerError } = await supabase
           .from('producer_profiles')
           .select('*')
-          .eq('slug', decodedProducerName)
+          .eq('slug', producerSlug)
           .single();
 
         if (producerError || !producerData) {
@@ -102,7 +103,7 @@ const Products = () => {
     };
 
     fetchProducerData();
-  }, [producerName]);
+  }, [producerSlug, pointId]);
 
   const handleNextImage = (e) => {
     e.preventDefault();
@@ -146,11 +147,9 @@ const Products = () => {
         }} transition={{
           duration: 0.5
         }} className="mb-8">
-          <Link to={`/category/${encodeURIComponent(producer.categoryName)}`} className="inline-flex items-center text-green-600 hover:text-primary transition duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Назад к ресторанам
+          <Link to={`/producer/${producerSlug}/points`} className="inline-flex items-center text-green-600 hover:text-primary transition duration-200">
+            <ChevronLeft className="h-5 w-5 mr-1" />
+            Назад к выбору точки
           </Link>
         </motion.div>
         
@@ -190,7 +189,7 @@ const Products = () => {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-12"
         >
-          <PreOrderForm producer={producer} />
+          <PreOrderForm producer={producer} pointId={pointId} />
         </motion.div>
       </div>
     </div>;

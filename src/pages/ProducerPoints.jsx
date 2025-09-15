@@ -42,10 +42,8 @@ export default function ProducerPoints() {
   };
 
   const handlePointSelected = (point) => {
-    // Перенаправляем к производителю с выбранной точкой
-    navigate(`/producer/${producerSlug}`, { 
-      state: { selectedPointId: point.id }
-    });
+    // Navigate to products page with selected point
+    navigate(`/producer/${producerSlug}/products?pointId=${point.id}`);
   };
 
   const handleBackToProducer = () => {

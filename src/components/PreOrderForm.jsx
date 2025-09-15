@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, MapPin, Clock, Percent, Receipt } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const PreOrderForm = () => {
+const PreOrderForm = ({ producer, pointId }) => {
   const {
     cartItems,
     cartTotal,
@@ -18,6 +18,11 @@ const PreOrderForm = () => {
   
   const [isCreating, setIsCreating] = useState(false);
   const [orderCode, setOrderCode] = useState(null);
+  const [customerData, setCustomerData] = useState({
+    name: '',
+    phone: '',
+    email: ''
+  });
   const { toast } = useToast();
 
   const handleCreateOrder = async () => {
@@ -30,7 +35,7 @@ const PreOrderForm = () => {
       return;
     }
 
-    if (!selectedPointInfo) {
+    if (!pointId) {
       toast({
         title: "Точка не выбрана",
         description: "Выберите точку получения",
@@ -39,10 +44,10 @@ const PreOrderForm = () => {
       return;
     }
 
-    if (!selectedPickupTime) {
+    if (!customerData.name || !customerData.phone) {
       toast({
-        title: "Время не выбрано",
-        description: "Выберите время получения",
+        title: "Заполните данные",
+        description: "Имя и телефон обязательны",
         variant: "destructive"
       });
       return;
@@ -51,14 +56,8 @@ const PreOrderForm = () => {
     setIsCreating(true);
     
     try {
-      // Call createPreOrder with customer info - this should be collected from a form
-      const customerInfo = {
-        name: 'Test Customer', // This should come from a form
-        phone: '+373123456789', // This should come from a form
-        email: 'test@example.com' // This should come from a form
-      };
-      
-      const order = await createPreOrder(customerInfo);
+      // Use the pointId from props and customer data from state
+      const order = await createPreOrder(customerData);
       if (order) {
         setOrderCode(order.orderCode);
       }
@@ -147,6 +146,51 @@ const PreOrderForm = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Customer Data Form */}
+        <div className="space-y-4 border rounded-lg p-4">
+          <h3 className="font-medium">Данные для получения:</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Имя *
+              </label>
+              <input
+                type="text"
+                value={customerData.name}
+                onChange={(e) => setCustomerData(prev => ({...prev, name: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="Ваше имя"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Телефон *
+              </label>
+              <input
+                type="tel"
+                value={customerData.phone}
+                onChange={(e) => setCustomerData(prev => ({...prev, phone: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="+373..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Email (опционально)
+              </label>
+              <input
+                type="email"
+                value={customerData.email}
+                onChange={(e) => setCustomerData(prev => ({...prev, email: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                placeholder="your@email.com"
+              />
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
         {/* Order Summary */}
         <div className="space-y-3">
           <h3 className="font-medium">Состав заказа:</h3>
@@ -230,7 +274,7 @@ const PreOrderForm = () => {
         {/* Create Order Button */}
         <Button 
           onClick={handleCreateOrder}
-          disabled={isCreating || cartItems.length === 0 || !selectedPointInfo || !selectedPickupTime}
+          disabled={isCreating || cartItems.length === 0 || !pointId || !customerData.name || !customerData.phone}
           className="w-full"
           size="lg"
         >
