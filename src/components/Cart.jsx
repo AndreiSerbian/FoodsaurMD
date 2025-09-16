@@ -247,32 +247,13 @@ const Cart = () => {
                              />
                            </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <button 
-                            onClick={() => handleQuantityChange(item.productId, item.qty - 1)}
-                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100"
-                            disabled={item.qty <= 1}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                            </svg>
-                          </button>
-                          <input
-                            type="number"
-                            value={item.qty}
-                            onChange={(e) => handleQuantityChange(item.productId, e.target.value)}
-                            min="1"
-                            className="w-12 text-center border border-gray-300 rounded p-1"
-                          />
-                          <button 
-                            onClick={() => handleQuantityChange(item.productId, item.qty + 1)}
-                            className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                          </button>
-                        </div>
+                        <QuantityInput
+                          value={item.qty}
+                          unit={item.unit || 'шт'}
+                          onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
+                          max={getStock(item.productId)}
+                          className="w-32"
+                        />
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.productId)}

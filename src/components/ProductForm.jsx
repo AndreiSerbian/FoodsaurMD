@@ -6,6 +6,9 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { X, Upload, Trash2 } from 'lucide-react';
+import { getAvailableUnits, validateQty, formatQty } from '../modules/cart/quantity';
+import { getGroupedUnits, getUnitTypeIcon } from '../utils/unitUtils';
+import QuantityInput from './QuantityInput';
 const ProductForm = ({
   product,
   onSave,
@@ -171,9 +174,21 @@ const ProductForm = ({
       type,
       checked
     } = e.target;
+    
+    let processedValue = type === 'checkbox' ? checked : value;
+    
+    // Валидация количества при изменении
+    if (name === 'quantity' && value && formData.price_unit) {
+      const qty = parseFloat(value);
+      const validation = validateQty(qty, formData.price_unit);
+      if (!validation.valid) {
+        console.warn('Validation error:', validation.error);
+      }
+    }
+    
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: processedValue
     });
   };
   return <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -223,7 +238,13 @@ const ProductForm = ({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="quantity">Остаток</Label>
-              <Input id="quantity" name="quantity" type="number" value={formData.quantity} onChange={handleChange} required />
+              <QuantityInput
+                value={parseFloat(formData.quantity) || 0}
+                unit={formData.price_unit}
+                onChange={(newQty) => setFormData({...formData, quantity: newQty.toString()})}
+                showButtons={false}
+                className="w-full"
+              />
             </div>
             <div>
               <Label htmlFor="weight">Вес товара (г)</Label>
@@ -239,12 +260,18 @@ const ProductForm = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="шт">шт</SelectItem>
-                  <SelectItem value="кг">кг</SelectItem>
-                  <SelectItem value="г">г</SelectItem>
-                  <SelectItem value="л">л</SelectItem>
-                  <SelectItem value="мл">мл</SelectItem>
-                  <SelectItem value="упаковка">упаковка</SelectItem>
+                  {Object.entries(getGroupedUnits()).map(([type, units]) => (
+                    <div key={type}>
+                      <div className="px-2 py-1 text-xs text-gray-500 bg-gray-50 font-medium">
+                        {getUnitTypeIcon(type)} {type === 'piece' ? 'Штучные' : type === 'weight' ? 'Весовые' : 'Объемные'}
+                      </div>
+                      {units.map(unit => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))}
+                    </div>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

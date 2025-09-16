@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { supabase } from '../integrations/supabase/client'
 import { Button } from './ui/button'
 import { Edit, Trash2, Package } from 'lucide-react'
+import { formatPrice, formatQuantity } from '../utils/unitUtils'
 
 const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
   const [products, setProducts] = useState([])
@@ -129,17 +130,16 @@ const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
                 <div className="flex items-center mt-2 space-x-4">
                   <div className="flex items-center space-x-2">
                     <span className="text-lg font-semibold text-green-600">
-                      {product.price_discount || product.price_regular} лей
+                      {formatPrice(product.price_discount || product.price_regular, product.price_unit)}
                     </span>
                     {product.price_discount && (
                       <span className="text-sm text-gray-500 line-through">
-                        {product.price_regular} лей
+                        {formatPrice(product.price_regular, product.price_unit)}
                       </span>
                     )}
-                    <span className="text-sm text-gray-500">/ {product.price_unit}</span>
                   </div>
                   <div className="text-sm text-gray-500">
-                    Остаток: {product.quantity} {product.price_unit}
+                    Остаток: {formatQuantity(product.quantity, product.price_unit)}
                   </div>
                   {product.discount_size && (
                     <div className="text-xs text-orange-600">
