@@ -6,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Trash2, Clock, Package } from 'lucide-react';
 import { createPoint, updatePoint } from '@/modules/points/pointsApi.js';
 import { createDefaultWorkHours, validateDayHours, WEEKDAYS_FULL } from '@/modules/points/workHoursUtil.js';
 import { useToast } from '@/hooks/use-toast';
+import PointInventoryManager from './PointInventoryManager';
 import type { PickupPoint, WorkHours, TimeRange } from '@/types/supabase-points';
 
 interface PointModalProps {
@@ -32,6 +34,7 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [savedPointId, setSavedPointId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -115,20 +118,25 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
 
       if (point) {
         await updatePoint(point.id, payload);
+        setSavedPointId(point.id);
         toast({
           title: 'Успешно',
           description: 'Точка выдачи обновлена',
         });
       } else {
-        await createPoint(payload);
+        const result = await createPoint(payload);
+        setSavedPointId(result.id);
         toast({
           title: 'Успешно',
           description: 'Точка выдачи создана',
         });
       }
 
-      onSuccess();
-      onClose();
+      // Не закрываем сразу, даем возможность управлять товарами
+      if (point) {
+        onSuccess();
+        onClose();
+      }
     } catch (error) {
       toast({
         title: 'Ошибка',
@@ -170,14 +178,27 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {point ? 'Редактировать точку выдачи' : 'Добавить точку выдачи'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="general" className="gap-2">
+              <Clock className="h-4 w-4" />
+              Основные данные
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="gap-2" disabled={!savedPointId && !point}>
+              <Package className="h-4 w-4" />
+              Управление товарами
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general">
+            <form onSubmit={handleSubmit} className="space-y-6">
           {/* Основная информация */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -317,15 +338,39 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
             </CardContent>
           </Card>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Отмена
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Сохранение...' : point ? 'Обновить' : 'Создать'}
-            </Button>
-          </DialogFooter>
-        </form>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Отмена
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Сохранение...' : point ? 'Обновить' : 'Создать'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="inventory" className="space-y-4">
+            {(savedPointId || point) && (
+              <PointInventoryManager
+                pointId={savedPointId || point?.id || ''}
+                producerId={producerId}
+                isNewPoint={!point && !savedPointId}
+              />
+            )}
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button 
+                type="button" 
+                onClick={() => {
+                  onSuccess();
+                  onClose();
+                }}
+              >
+                Завершить
+              </Button>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
