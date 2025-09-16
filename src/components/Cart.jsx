@@ -6,6 +6,7 @@ import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
 import { useInventorySync } from '../hooks/useInventorySync';
 import InventorySync from './InventorySync';
+import QuantityInput from './QuantityInput';
 
 const Cart = () => {
   const { 
@@ -26,7 +27,7 @@ const Cart = () => {
 
   // Синхронизация остатков для товаров в корзине
   const productIds = cartItems.map(item => item.productId);
-  const { validateCartItems, checkAvailability } = useInventorySync(
+  const { validateCartItems, checkAvailability, getStock } = useInventorySync(
     selectedPointInfo?.pointId, 
     productIds
   );
@@ -228,13 +229,13 @@ const Cart = () => {
                 <ul className="space-y-4">
                   {cartItems.map((item, index) => (
                     <li key={item.productId || index} className="border-b pb-4">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="font-medium">{item.product?.name}</h3>
+                          <h3 className="font-medium">{item.name || item.product?.name || 'Товар'}</h3>
                           <p className="text-sm text-gray-500">{item.producerSlug}</p>
                            <div className="mt-1">
                              <span className="font-semibold">
-                               {item.price} MDL/{item.product?.price_unit || 'шт'}
+                               {item.price} MDL/{item.unit || item.product?.price_unit || 'шт'}
                              </span>
                            </div>
                            
@@ -247,13 +248,16 @@ const Cart = () => {
                              />
                            </div>
                         </div>
-                        <QuantityInput
-                          value={item.qty}
-                          unit={item.unit || 'шт'}
-                          onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
-                          max={getStock(item.productId)}
-                          className="w-32"
-                        />
+                        <div className="ml-4">
+                          <QuantityInput
+                            value={item.qty}
+                            unit={item.unit || item.product?.price_unit || 'шт'}
+                            onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
+                            max={getStock ? getStock(item.productId) : 999}
+                            className="w-32"
+                            showButtons={true}
+                          />
+                        </div>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.productId)}
