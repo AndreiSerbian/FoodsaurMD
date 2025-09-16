@@ -44,6 +44,120 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string
+          price: number
+          product_id: string
+          product_snapshot: Json
+          qty: number
+          subtotal: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id: string
+          price: number
+          product_id: string
+          product_snapshot: Json
+          qty: number
+          subtotal: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string
+          price?: number
+          product_id?: string
+          product_snapshot?: Json
+          qty?: number
+          subtotal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string | null
+          currency: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          meta: Json | null
+          pickup_time: string | null
+          point_id: string
+          producer_id: string
+          status: string
+          total_amount: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          meta?: Json | null
+          pickup_time?: string | null
+          point_id: string
+          producer_id: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          meta?: Json | null
+          pickup_time?: string | null
+          point_id?: string
+          producer_id?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_point_id_fkey"
+            columns: ["point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pickup_point_products: {
         Row: {
           created_at: string
@@ -174,6 +288,45 @@ export type Database = {
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      point_inventory: {
+        Row: {
+          is_listed: boolean
+          point_id: string
+          product_id: string
+          stock: number
+          updated_at: string | null
+        }
+        Insert: {
+          is_listed?: boolean
+          point_id: string
+          product_id: string
+          stock?: number
+          updated_at?: string | null
+        }
+        Update: {
+          is_listed?: boolean
+          point_id?: string
+          product_id?: string
+          stock?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_inventory_point_id_fkey"
+            columns: ["point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -622,6 +775,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_point_inventory: {
+        Args: { point_id_param: string; producer_id_param: string }
+        Returns: number
+      }
+      rpc_cancel_preorder: {
+        Args: { order_id_param: string }
+        Returns: Json
+      }
+      rpc_create_preorder_and_decrement: {
+        Args: { order_payload: Json }
+        Returns: Json
       }
     }
     Enums: {
