@@ -9,7 +9,8 @@ import InventorySync from './InventorySync';
 import QuantityInput from './QuantityInput';
 
 const Cart = () => {
-  const { 
+  console.log('Cart component rendering...');
+  const {
     cartItems, 
     cartTotal, 
     discountTotal,
@@ -33,7 +34,9 @@ const Cart = () => {
   );
 
   const toggleCart = () => {
+    console.log('Cart toggle clicked, current state:', isOpen);
     setIsOpen(!isOpen);
+    console.log('Cart toggle new state:', !isOpen);
   };
 
   // Проверка остатков при изменении корзины
