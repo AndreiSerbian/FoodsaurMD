@@ -7,7 +7,6 @@ import LanguageSelector from './LanguageSelector';
 import MobileMenu from './MobileMenu';
 import Cart from './Cart';
 const Layout = ({ children }) => {
-  console.log('Layout component rendering...');
   const { user, userRole, signOut } = useAuth();
   const {
     t
@@ -69,7 +68,6 @@ const Layout = ({ children }) => {
         </div>
       </footer>
       
-      {console.log('About to render Cart component')}
       <Cart />
     </div>;
 };

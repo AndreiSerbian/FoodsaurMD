@@ -71,11 +71,12 @@ export const useInventorySync = (pointId, productIds = []) => {
   useEffect(() => {
     fetchInventory();
 
-    if (!pointId) return;
+    if (!pointId || productIds.length === 0) return;
 
-    // Подписка на изменения в реальном времени
+    // Подписка на изменения в реальном времени с уникальным именем канала
+    const channelName = `inventory-sync-${pointId}-${productIds.join('-')}`;
     const channel = supabase
-      .channel(`inventory-sync-${pointId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -138,7 +139,7 @@ export const useInventorySync = (pointId, productIds = []) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [pointId, productIds, fetchInventory]);
+  }, [pointId, JSON.stringify(productIds), fetchInventory]);
 
   const getStock = useCallback((productId) => {
     return inventory.get(productId)?.stock || 0;

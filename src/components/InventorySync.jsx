@@ -58,9 +58,12 @@ const InventorySync = ({ pointId, productId, currentQty = 0 }) => {
   useEffect(() => {
     fetchStock();
 
-    // Подписка на изменения остатков в реальном времени
+    if (!pointId || !productId) return;
+
+    // Подписка на изменения остатков в реальном времени с уникальным именем канала
+    const channelName = `inventory-sync-${pointId}-${productId}`;
     const channel = supabase
-      .channel('inventory-sync')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

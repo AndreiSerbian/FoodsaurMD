@@ -8,10 +8,7 @@ import { useInventorySync } from '../hooks/useInventorySync';
 import InventorySync from './InventorySync';
 import QuantityInput from './QuantityInput';
 
-console.log('Cart.jsx: Module loaded successfully');
-
 const Cart = () => {
-  console.log('Cart component rendering...');
   const {
     cartItems, 
     cartTotal, 
