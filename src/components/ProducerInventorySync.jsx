@@ -192,9 +192,12 @@ const ProducerInventorySync = ({ producerId }) => {
   useEffect(() => {
     fetchLowStockProducts();
 
-    // Подписка на изменения товаров для отслеживания синхронизации
+    if (!producerId) return;
+
+    // Подписка на изменения товаров для отслеживания синхронизации с уникальным каналом
+    const channelName = `producer-inventory-sync-${producerId}-${Date.now()}`;
     const channel = supabase
-      .channel('producer-inventory-sync')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

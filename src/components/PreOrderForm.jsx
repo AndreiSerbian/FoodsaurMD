@@ -202,7 +202,7 @@ const PreOrderForm = ({ producer, pointId }) => {
             cartItems.map((item) => (
               <div key={item.productId} className="flex justify-between items-center py-2">
                  <div className="flex-1">
-                   <div className="font-medium text-sm">{item.product?.name || item.name || 'Товар'}</div>
+                   <div className="font-medium text-sm">{item.product?.name || item.name || 'Товар без названия'}</div>
                    <div className="text-xs text-muted-foreground">
                      {item.price} MDL/{item.priceUnit || 'шт'} × {item.quantity || item.qty} = {formatPrice((item.price || 0) * (item.quantity || item.qty || 0))}
                    </div>
