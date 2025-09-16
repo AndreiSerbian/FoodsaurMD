@@ -149,20 +149,35 @@ export async function getCities() {
  * @returns {Promise<PickupPoint[]>}
  */
 export async function getPointsByProducerSlug(producerSlug) {
+  // Сначала получаем ID производителя по slug
+  const { data: producerData, error: producerError } = await supabase
+    .from('producer_profiles')
+    .select('id')
+    .eq('slug', producerSlug)
+    .single();
+
+  if (producerError) {
+    console.error('Error fetching producer by slug:', producerError);
+    throw new Error(`Ошибка при получении производителя: ${producerError.message}`);
+  }
+
+  if (!producerData) {
+    return [];
+  }
+
+  // Затем получаем точки по producer_id
   const { data, error } = await supabase
     .from('pickup_points')
-    .select(`
-      *,
-      producer_profiles!inner(slug)
-    `)
-    .eq('producer_profiles.slug', producerSlug)
+    .select('*')
+    .eq('producer_id', producerData.id)
     .eq('is_active', true)
     .order('name');
 
   if (error) {
-    console.error('Error fetching points by producer slug:', error);
+    console.error('Error fetching points by producer id:', error);
     throw new Error(`Ошибка при получении точек производителя: ${error.message}`);
   }
 
+  console.log(`Found ${data?.length || 0} active points for producer ${producerSlug}`);
   return data || [];
 }
