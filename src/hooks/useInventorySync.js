@@ -74,7 +74,8 @@ export const useInventorySync = (pointId, productIds = []) => {
     if (!pointId || productIds.length === 0) return;
 
     // Подписка на изменения в реальном времени с уникальным именем канала
-    const channelName = `inventory-sync-${pointId}-${productIds.join('-')}`;
+    const channelId = Math.random().toString(36).substring(7);
+    const channelName = `inventory-sync-${pointId}-${productIds.join('-')}-${channelId}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -133,13 +134,20 @@ export const useInventorySync = (pointId, productIds = []) => {
             });
           }
         }
-      )
-      .subscribe();
+      );
+
+    // Подписываемся на канал
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`Subscribed to inventory sync channel: ${channelName}`);
+      }
+    });
 
     return () => {
+      console.log(`Cleaning up channel: ${channelName}`);
       supabase.removeChannel(channel);
     };
-  }, [pointId, JSON.stringify(productIds), fetchInventory]);
+  }, [pointId, productIds.length]);
 
   const getStock = useCallback((productId) => {
     return inventory.get(productId)?.stock || 0;

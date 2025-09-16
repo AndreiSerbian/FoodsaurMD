@@ -195,7 +195,8 @@ const ProducerInventorySync = ({ producerId }) => {
     if (!producerId) return;
 
     // Подписка на изменения товаров для отслеживания синхронизации с уникальным каналом
-    const channelName = `producer-inventory-sync-${producerId}-${Date.now()}`;
+    const channelId = Math.random().toString(36).substring(7);
+    const channelName = `producer-inventory-sync-${producerId}-${channelId}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -212,10 +213,17 @@ const ProducerInventorySync = ({ producerId }) => {
             setTimeout(() => syncAllProductsToAllPoints(), 1000);
           }
         }
-      )
-      .subscribe();
+      );
+
+    // Подписываемся на канал
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`Subscribed to producer inventory sync channel: ${channelName}`);
+      }
+    });
 
     return () => {
+      console.log(`Cleaning up channel: ${channelName}`);
       supabase.removeChannel(channel);
     };
   }, [producerId, isAutoSyncEnabled]);

@@ -61,7 +61,8 @@ const InventorySync = ({ pointId, productId, currentQty = 0 }) => {
     if (!pointId || !productId) return;
 
     // Подписка на изменения остатков в реальном времени с уникальным именем канала
-    const channelName = `inventory-sync-${pointId}-${productId}`;
+    const channelId = Math.random().toString(36).substring(7);
+    const channelName = `inventory-sync-${pointId}-${productId}-${channelId}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -93,10 +94,17 @@ const InventorySync = ({ pointId, productId, currentQty = 0 }) => {
             setLastUpdate(new Date(payload.new.updated_at));
           }
         }
-      )
-      .subscribe();
+      );
+
+    // Подписываемся на канал
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log(`Subscribed to inventory sync channel: ${channelName}`);
+      }
+    });
 
     return () => {
+      console.log(`Cleaning up channel: ${channelName}`);
       supabase.removeChannel(channel);
     };
   }, [pointId, productId]);
