@@ -86,13 +86,13 @@ export const CartProvider = ({ children }) => {
       }
 
       const item = {
-        productId: product.id,
+        productId: product.id || `product-${Date.now()}-${Math.random()}`,
         producerSlug: actualProducerSlug,
         pointId: actualPointId,
-        qty: product.min_order_qty || 1,
-        price: product.priceDiscount || product.priceRegular,
-        unit: product.price_unit || 'шт',
-        name: product.name || `Товар #${product.id}`,
+        qty: 1, // ВСЕГДА добавляем 1 штуку за раз
+        price: product.priceDiscount || product.priceRegular || product.price,
+        unit: product.priceUnit || product.price_unit || 'шт',
+        name: product.productName || product.name || 'Товар без названия',
         product: product
       };
 

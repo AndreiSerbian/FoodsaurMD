@@ -1,4 +1,3 @@
-
 import { getCategoryImage, getProducerImage, getProductImage } from '../utils/imageUtils';
 
 export const producersData = [
@@ -16,17 +15,21 @@ export const producersData = [
     discountAvailableTime: "с 18:00 до 21:00",
     products: [
       {
+        id: "md-001-placinta-brynza",
         productName: "Плацинда с брынзой",
         get image() { return getProductImage("placinta-with-brynza"); },
         priceRegular: 50,
         priceDiscount: 40,
+        priceUnit: "шт",
         description: "Традиционная молдавская выпечка с брынзой, хрустящая снаружи и нежная внутри."
       },
       {
+        id: "md-002-mamaliga-brynza",
         productName: "Мамалыга с брынзой",
         get image() { return getProductImage("mamaliga-with-brynza"); },
         priceRegular: 60,
         priceDiscount: 55,
+        priceUnit: "шт",
         description: "Классическая молдавская кукурузная каша, подаётся с брынзой и сметаной."
       }
     ]
@@ -45,17 +48,21 @@ export const producersData = [
     discountAvailableTime: "с 17:00 до 20:00",
     products: [
       {
+        id: "md-003-sarma",
         productName: "Сарма",
         get image() { return getProductImage("sarma"); },
         priceRegular: 70,
         priceDiscount: 65,
+        priceUnit: "шт",
         description: "Молдавские голубцы, приготовленные с мясным фаршем, рисом и специями, завернутые в капустные листья."
       },
       {
+        id: "md-004-zama",
         productName: "Зама",
         get image() { return getProductImage("zama"); },
         priceRegular: 55,
         priceDiscount: 50,
+        priceUnit: "шт",
         description: "Традиционный молдавский куриный суп с домашней лапшой и зеленью."
       }
     ]
@@ -74,17 +81,21 @@ export const producersData = [
     discountAvailableTime: "с 17:00 до 20:00",
     products: [
       {
+        id: "eu-001-pizza-margherita",
         productName: "Пицца Маргарита",
         get image() { return getProductImage("pizza-margherita"); },
         priceRegular: 120,
         priceDiscount: 100,
+        priceUnit: "шт",
         description: "Классическая итальянская пицца с томатным соусом, моцареллой и свежим базиликом."
       },
       {
+        id: "eu-002-pasta-carbonara",
         productName: "Паста Карбонара",
         get image() { return getProductImage("pasta-carbonara"); },
         priceRegular: 110,
         priceDiscount: 90,
+        priceUnit: "шт",
         description: "Паста с беконом, пармезаном и соусом на основе яиц и сливок."
       }
     ]
@@ -103,17 +114,21 @@ export const producersData = [
     discountAvailableTime: "с 16:00 до 19:00",
     products: [
       {
+        id: "eu-003-quiche-lorraine",
         productName: "Киш Лорен",
         get image() { return getProductImage("quiche-lorraine"); },
         priceRegular: 95,
         priceDiscount: 85,
+        priceUnit: "шт",
         description: "Французский открытый пирог с хрустящим тестом и начинкой из яиц, сливок и бекона."
       },
       {
+        id: "eu-004-croissant",
         productName: "Круассан",
         get image() { return getProductImage("croissant"); },
         priceRegular: 40,
         priceDiscount: 35,
+        priceUnit: "шт",
         description: "Классический французский слойный круассан с хрустящей корочкой и нежным тестом."
       }
     ]
@@ -132,17 +147,21 @@ export const producersData = [
     discountAvailableTime: "с 19:00 до 22:00",
     products: [
       {
+        id: "pa-001-philadelphia-roll",
         productName: "Филадельфия ролл",
         get image() { return getProductImage("philadelphia-roll"); },
         priceRegular: 150,
         priceDiscount: 130,
+        priceUnit: "шт",
         description: "Популярные роллы с нежным лососем, сливочным сыром и авокадо."
       },
       {
+        id: "pa-002-salmon-maki",
         productName: "Сяке маки",
         get image() { return getProductImage("salmon-maki"); },
         priceRegular: 90,
         priceDiscount: 75,
+        priceUnit: "шт",
         description: "Классические японские роллы с лососем, рисом и нори."
       }
     ]
@@ -161,17 +180,21 @@ export const producersData = [
     discountAvailableTime: "с 20:00 до 23:00",
     products: [
       {
+        id: "pa-003-udon-chicken",
         productName: "Удон с курицей",
         get image() { return getProductImage("udon-with-chicken"); },
         priceRegular: 130,
         priceDiscount: 110,
+        priceUnit: "шт",
         description: "Японская лапша удон с жареной курицей, овощами и соевым соусом."
       },
       {
+        id: "pa-004-ramen",
         productName: "Лапша Рамен",
         get image() { return getProductImage("ramen"); },
         priceRegular: 140,
         priceDiscount: 120,
+        priceUnit: "шт",
         description: "Пряный бульон с яичной лапшой, говядиной, яйцом и овощами."
       }
     ]
@@ -190,17 +213,21 @@ export const producersData = [
     discountAvailableTime: "с 18:00 до 21:00",
     products: [
       {
+        id: "ds-001-ny-cheesecake",
         productName: "Чизкейк Нью-Йорк",
         get image() { return getProductImage("new-york-cheesecake"); },
         priceRegular: 80,
         priceDiscount: 70,
+        priceUnit: "шт",
         description: "Классический американский чизкейк с нежной текстурой и сливочным вкусом."
       },
       {
+        id: "ds-002-macaron",
         productName: "Макарон",
         get image() { return getProductImage("macaron"); },
         priceRegular: 45,
         priceDiscount: 40,
+        priceUnit: "шт",
         description: "Французские миндальные пирожные с различными вкусами."
       }
     ]
@@ -219,17 +246,21 @@ export const producersData = [
     discountAvailableTime: "с 17:00 до 20:00",
     products: [
       {
+        id: "ds-003-croissant-cp",
         productName: "Круассан",
         get image() { return getProductImage("croissant-2"); },
         priceRegular: 40,
         priceDiscount: 25,
+        priceUnit: "шт",
         description: "Воздушный французский круассан с хрустящей корочкой."
       },
       {
+        id: "ds-004-cappuccino",
         productName: "Капучино",
         get image() { return getProductImage("cappuccino"); },
         priceRegular: 45,
         priceDiscount: 20,
+        priceUnit: "шт",
         description: "Ароматный итальянский капучино с молочной пеной."
       }
     ]
@@ -248,17 +279,21 @@ export const producersData = [
     discountAvailableTime: "с 15:00 до 18:00",
     products: [
       {
+        id: "dr-001-orange-juice",
         productName: "Фреш апельсиновый",
         get image() { return getProductImage("fresh-orange-juice"); },
         priceRegular: 35,
         priceDiscount: 30,
+        priceUnit: "шт",
         description: "Свежевыжатый апельсиновый сок без добавления сахара."
       },
       {
+        id: "dr-002-latte",
         productName: "Кофе Латте",
         get image() { return getProductImage("latte"); },
         priceRegular: 50,
         priceDiscount: 45,
+        priceUnit: "шт",
         description: "Нежный кофейный напиток с молоком и легкой пенкой."
       }
     ]
@@ -277,17 +312,21 @@ export const producersData = [
     discountAvailableTime: "с 20:00 до 23:00",
     products: [
       {
+        id: "dr-003-sauvignon-blanc",
         productName: "Совиньон Блан (Новая Зеландия)",
         get image() { return getProductImage("sauvignon-blanc-new-zealand"); },
         priceRegular: 120,
         priceDiscount: 110,
+        priceUnit: "шт",
         description: "Освежающее белое вино с цитрусовыми нотками и легким послевкусием."
       },
       {
+        id: "dr-004-armagnac",
         productName: "Арманьяк (Франция)",
         get image() { return getProductImage("armagnac-france"); },
         priceRegular: 250,
         priceDiscount: 230,
+        priceUnit: "шт",
         description: "Французский крепкий напиток с насыщенным вкусом и ароматом выдержанного дуба."
       }
     ]
