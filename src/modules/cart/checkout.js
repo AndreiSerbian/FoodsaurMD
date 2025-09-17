@@ -50,17 +50,19 @@ export async function createPreorder({ customer, pickupTime }) {
       };
     }
     
-    // Повторная проверка остатков
-    const stockCheck = await checkMultipleStock(
+    // Повторная проверка остатков перед созданием заказа
+    const { validateCart } = await import('./inventorySync.js');
+    const validation = await validateCart(
       selectedPoint.pointId,
       cart.items.map(item => ({ productId: item.productId, qty: item.qty }))
     );
     
-    const unavailableItems = stockCheck.filter(check => !check.available);
-    if (unavailableItems.length > 0) {
+    if (!validation.valid) {
+      const errorMessages = validation.errors.map(err => err.message).join('; ');
       return { 
         success: false, 
-        message: 'Недостаточно товара в наличии'
+        message: `Превышен лимит доступного товара: ${errorMessages}`,
+        errors: validation.errors
       };
     }
 
@@ -141,21 +143,12 @@ export async function createPreorder({ customer, pickupTime }) {
       };
     }
 
-    // Update stock for items that have point inventory records
-    for (const item of cart.items) {
-      const { error: stockError } = await supabase
-        .from('point_inventory')
-        .update({
-          stock: supabase.raw(`stock - ${item.qty}`)
-        })
-        .eq('point_id', selectedPoint.pointId)
-        .eq('product_id', item.productId);
-
-      if (stockError) {
-        console.warn('Failed to update stock for item:', item.productId, stockError);
-        // Don't fail the order for stock update errors
-      }
-    }
+    // Обновление остатков происходит только при подтверждении заказа производителем
+    // Здесь создаем заказ со статусом 'preorder' без списания остатков
+    console.log('Order created with status: preorder. Stock will be updated when producer confirms.');
+    
+    // TODO: При подтверждении заказа производителем нужно будет обновить остатки
+    // Это будет происходить через отдельную функцию confirmOrder
 
     // Clear cart on successful order
     clearCart();

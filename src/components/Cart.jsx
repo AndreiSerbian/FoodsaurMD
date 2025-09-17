@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
-import { useInventorySync } from '../hooks/useInventorySync';
-import InventorySync from './InventorySync';
-import QuantityInput from './QuantityInput';
+import CartCalculator from './CartCalculator';
+import StockAwareQuantityInput from './StockAwareQuantityInput';
+import { validateCart } from '../modules/cart/inventorySync';
 
 const Cart = () => {
   const {
@@ -23,56 +22,43 @@ const Cart = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [inventoryErrors, setInventoryErrors] = useState([]);
-
-  // Синхронизация остатков для товаров в корзине
-  const productIds = cartItems.map(item => item.productId);
-  const { validateCartItems, checkAvailability, getStock } = useInventorySync(
-    selectedPointInfo?.pointId, 
-    productIds
-  );
+  const [cartValid, setCartValid] = useState(true);
+  const [validationErrors, setValidationErrors] = useState([]);
 
   const toggleCart = () => {
-    console.log('Cart toggle clicked, current state:', isOpen);
     setIsOpen(!isOpen);
-    console.log('Cart toggle new state:', !isOpen);
   };
 
   // Проверка остатков при изменении корзины
   useEffect(() => {
-    if (cartItems.length > 0 && selectedPointInfo?.pointId) {
-      const errors = validateCartItems(cartItems);
-      setInventoryErrors(errors);
-      
-      if (errors.length > 0) {
-        toast({
-          title: "Внимание",
-          description: `${errors.length} товар(ов) превышают доступные остатки`,
-          variant: "destructive"
-        });
+    const checkCartValidity = async () => {
+      if (cartItems.length > 0 && selectedPointInfo?.pointId) {
+        const validation = await validateCart(
+          selectedPointInfo.pointId,
+          cartItems.map(item => ({ productId: item.productId, qty: item.qty }))
+        );
+        
+        setCartValid(validation.valid);
+        setValidationErrors(validation.errors);
+        
+        if (!validation.valid) {
+          toast({
+            title: "Внимание",
+            description: `${validation.errors.length} товар(ов) превышают доступные остатки`,
+            variant: "destructive"
+          });
+        }
       }
-    }
-  }, [cartItems, selectedPointInfo, validateCartItems]);
+    };
+    
+    checkCartValidity();
+  }, [cartItems, selectedPointInfo]);
 
-  const handleQuantityChange = async (productId, newQuantity) => {
+  const handleQuantityChange = (productId, newQuantity) => {
     const qty = Number(newQuantity);
     if (qty <= 0) {
       removeFromCart(productId);
       return;
-    }
-    
-    // Проверяем доступность с помощью хука синхронизации
-    if (selectedPointInfo?.pointId) {
-      const availability = checkAvailability(productId, qty);
-      
-      if (!availability.available) {
-        toast({
-          title: "Недостаточно товара",
-          description: `Доступно только ${availability.stock} шт.`,
-          variant: "destructive"
-        });
-        return;
-      }
     }
     
     updateQuantity(productId, qty);
@@ -80,8 +66,7 @@ const Cart = () => {
 
   const handleCheckout = async () => {
     // Финальная проверка остатков перед оформлением заказа
-    const errors = validateCartItems(cartItems);
-    if (errors.length > 0) {
+    if (!cartValid) {
       toast({
         title: "Невозможно оформить заказ",
         description: "Некоторые товары превышают доступные остатки",
@@ -204,13 +189,13 @@ const Cart = () => {
                 </div>
               )}
 
-              {inventoryErrors.length > 0 && (
+              {validationErrors.length > 0 && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertTitle>Проблемы с остатками</AlertTitle>
                   <AlertDescription>
-                    {inventoryErrors.map(error => (
+                    {validationErrors.map(error => (
                       <div key={error.productId} className="text-xs">
-                        {error.name}: {error.message}
+                        Товар: {error.message}
                       </div>
                     ))}
                   </AlertDescription>
@@ -240,26 +225,16 @@ const Cart = () => {
                                {item.price} MDL/{item.unit || item.product?.price_unit || 'шт'}
                              </span>
                            </div>
-                           
-                           {/* Компонент синхронизации остатков */}
-                           <div className="mt-2">
-                             <InventorySync 
-                               pointId={selectedPointInfo?.pointId}
-                               productId={item.productId}
-                               currentQty={item.qty}
-                             />
-                           </div>
-                        </div>
-                        <div className="ml-4">
-                          <QuantityInput
-                            value={item.qty}
-                            unit={item.unit || item.product?.price_unit || 'шт'}
-                            onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
-                            max={getStock ? getStock(item.productId) : 999}
-                            className="w-32"
-                            showButtons={true}
-                          />
-                        </div>
+                         </div>
+                         <div className="ml-4">
+                           <StockAwareQuantityInput
+                             productId={item.productId}
+                             value={item.qty}
+                             unit={item.unit || item.product?.price_unit || 'шт'}
+                             onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
+                             className="w-32"
+                           />
+                         </div>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.productId)}
@@ -278,34 +253,26 @@ const Cart = () => {
 
             {cartItems.length > 0 && (
               <div className="p-6 border-t">
-                {discountTotal > 0 && (
-                  <div className="mb-3 p-2 bg-green-50 rounded-lg">
-                    <div className="flex justify-between text-sm">
-                      <span>Обычная цена:</span>
-                      <span className="line-through text-gray-500">{cartTotal + discountTotal} MDL</span>
-                    </div>
-                    <div className="flex justify-between text-sm font-medium text-green-600">
-                      <span>Скидка:</span>
-                      <span>-{discountTotal} MDL</span>
-                    </div>
-                  </div>
-                )}
-                <div className="flex justify-between mb-4">
-                  <span className="font-medium">Итого к оплате:</span>
-                  <span className="font-bold text-lg">{cartTotal} MDL</span>
-                </div>
+                <CartCalculator 
+                  cartItems={cartItems}
+                  onValidationChange={(valid, errors) => {
+                    setCartValid(valid);
+                    setValidationErrors(errors);
+                  }}
+                />
+                
                 <button 
                   onClick={handleCheckout}
-                  disabled={isProcessing || !selectedPointInfo || inventoryErrors.length > 0}
-                  className={`w-full bg-green-900 text-white py-3 rounded-lg ${
-                    isProcessing || !selectedPointInfo || inventoryErrors.length > 0 
+                  disabled={isProcessing || !selectedPointInfo || !cartValid}
+                  className={`w-full bg-green-900 text-white py-3 rounded-lg mt-4 ${
+                    isProcessing || !selectedPointInfo || !cartValid 
                       ? 'opacity-75 cursor-not-allowed' 
                       : 'hover:bg-green-800'
                   } transition duration-300 mb-2 flex items-center justify-center`}
                 >
                   {isProcessing ? 'Обработка...' : 
                    !selectedPointInfo ? 'Выберите точку получения' :
-                   inventoryErrors.length > 0 ? 'Проверьте остатки' :
+                   !cartValid ? 'Превышен лимит товара' :
                    'Оформить заказ'}
                 </button>
                 <button 

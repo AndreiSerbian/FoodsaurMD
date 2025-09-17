@@ -1,18 +1,20 @@
 // @ts-check
 
 /**
- * Конфигурация единиц измерения
+ * Конфигурация единиц измерения (поддержка разных типов фасовки)
  */
 const UNIT_CONFIG = {
-  'шт': { step: 1, minStep: 1, decimals: 0, type: 'piece' },
-  'pcs': { step: 1, minStep: 1, decimals: 0, type: 'piece' },
-  'упаковка': { step: 1, minStep: 1, decimals: 0, type: 'piece' },
-  'кг': { step: 0.1, minStep: 0.1, decimals: 1, type: 'weight' },
-  'kg': { step: 0.1, minStep: 0.1, decimals: 1, type: 'weight' },
-  'г': { step: 50, minStep: 50, decimals: 0, type: 'weight' },
-  'g': { step: 50, minStep: 50, decimals: 0, type: 'weight' },
-  'л': { step: 0.1, minStep: 0.1, decimals: 1, type: 'volume' },
-  'мл': { step: 50, minStep: 50, decimals: 0, type: 'volume' },
+  'шт': { step: 1, minStep: 1, decimals: 0, type: 'piece', label: 'шт' },
+  'pcs': { step: 1, minStep: 1, decimals: 0, type: 'piece', label: 'шт' },
+  'упаковка': { step: 1, minStep: 1, decimals: 0, type: 'piece', label: 'упак' },
+  'упак': { step: 1, minStep: 1, decimals: 0, type: 'piece', label: 'упак' },
+  'packs': { step: 1, minStep: 1, decimals: 0, type: 'piece', label: 'упак' },
+  'кг': { step: 0.1, minStep: 0.1, decimals: 1, type: 'weight', label: 'кг' },
+  'kg': { step: 0.1, minStep: 0.1, decimals: 1, type: 'weight', label: 'кг' },
+  'г': { step: 50, minStep: 50, decimals: 0, type: 'weight', label: 'г' },
+  'g': { step: 50, minStep: 50, decimals: 0, type: 'weight', label: 'г' },
+  'л': { step: 0.1, minStep: 0.1, decimals: 1, type: 'volume', label: 'л' },
+  'мл': { step: 50, minStep: 50, decimals: 0, type: 'volume', label: 'мл' },
 };
 
 /**
@@ -62,9 +64,13 @@ export function getUnitType(unit) {
 export function getAvailableUnits() {
   return [
     { value: 'шт', label: 'шт', type: 'piece' },
-    { value: 'упаковка', label: 'упаковка', type: 'piece' },
+    { value: 'pcs', label: 'шт', type: 'piece' },
+    { value: 'упак', label: 'упак', type: 'piece' },
+    { value: 'packs', label: 'упак', type: 'piece' },
     { value: 'кг', label: 'кг', type: 'weight' },
+    { value: 'kg', label: 'кг', type: 'weight' },
     { value: 'г', label: 'г', type: 'weight' },
+    { value: 'g', label: 'г', type: 'weight' },
     { value: 'л', label: 'л', type: 'volume' },
     { value: 'мл', label: 'мл', type: 'volume' },
   ];
