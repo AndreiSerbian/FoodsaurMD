@@ -89,7 +89,7 @@ export const CartProvider = ({ children }) => {
         productId: product.id,
         producerSlug: actualProducerSlug,
         pointId: actualPointId,
-        qty: 1,
+        qty: product.min_order_qty || 1,
         price: product.priceDiscount || product.priceRegular,
         product: product
       };

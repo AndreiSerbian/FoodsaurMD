@@ -126,10 +126,6 @@ const StockAwareQuantityInput = ({
         <Plus className="h-3 w-3" />
       </Button>
       
-      {/* Индикатор загрузки - едва заметный */}
-      {isLoading && (
-        <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
-      )}
     </div>
   );
 };
