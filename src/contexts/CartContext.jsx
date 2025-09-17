@@ -91,6 +91,8 @@ export const CartProvider = ({ children }) => {
         pointId: actualPointId,
         qty: product.min_order_qty || 1,
         price: product.priceDiscount || product.priceRegular,
+        unit: product.price_unit || 'шт',
+        name: product.name || `Товар #${product.id}`,
         product: product
       };
 
@@ -112,7 +114,7 @@ export const CartProvider = ({ children }) => {
           });
         }
         
-        addItemToCart(item);
+        // НЕ вызываем addItemToCart здесь - товар уже добавлен в addItemWithRules
         
         toast({
           title: "Товар добавлен",

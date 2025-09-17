@@ -218,13 +218,13 @@ const Cart = () => {
                     <li key={item.productId || index} className="border-b pb-4">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <h3 className="font-medium">{item.product?.name || item.name || `Товар #${item.productId}`}</h3>
-                          <p className="text-sm text-gray-500">{item.producerSlug}</p>
-                           <div className="mt-1">
-                             <span className="font-semibold">
-                               {item.price} MDL/{item.unit || item.product?.price_unit || 'шт'}
-                             </span>
-                           </div>
+                           <h3 className="font-medium">{item.name || item.product?.name || `Товар #${item.productId}`}</h3>
+                           <p className="text-sm text-gray-500">{item.producerSlug}</p>
+                            <div className="mt-1">
+                              <span className="font-semibold">
+                                {item.price} MDL/{item.unit || item.product?.price_unit || 'шт'}
+                              </span>
+                            </div>
                          </div>
                          <div className="ml-4">
                            <StockAwareQuantityInput
