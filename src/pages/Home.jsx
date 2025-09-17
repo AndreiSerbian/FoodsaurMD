@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import HeroSection from '../components/HeroSection';
 import CategoryList from '../components/CategoryList';
@@ -95,7 +96,7 @@ const Home = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <a href={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
+                    <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
                       <div className="relative">
                         <img 
                           src={producer.producerImage.exterior || "/placeholder.svg"} 
@@ -108,7 +109,7 @@ const Home = () => {
                         <h3 className="text-xl font-semibold mb-2">{producer.producerName}</h3>
                         <p className="text-gray-600 text-sm">{producer.address}</p>
                       </div>
-                    </a>
+                    </Link>
                   </motion.div>
                 ))}
               </div>
