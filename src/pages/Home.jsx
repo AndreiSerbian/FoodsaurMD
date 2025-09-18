@@ -53,14 +53,21 @@ const Home = () => {
         .ilike('producer_name', `%${searchQuery}%`);
       
       if (!error && data) {
-        const formatted = data.map(producer => ({
-          producerName: producer.producer_name,
-          address: producer.address,
-          categoryName: producer.producer_categories?.[0]?.categories?.name || 'Без категории',
-          producerImage: {
-            exterior: producer.exterior_image_url || '/placeholder.svg'
-          }
-        }));
+        const formatted = data.map(producer => {
+          // Собираем все категории производителя
+          const allCategories = producer.producer_categories?.map(pc => pc.categories?.name).filter(Boolean) || [];
+          const categoryString = allCategories.length > 0 ? allCategories.join(', ') : 'Без категории';
+          
+          return {
+            producerName: producer.producer_name,
+            address: producer.address,
+            categoryName: categoryString,
+            slug: producer.slug,
+            producerImage: {
+              exterior: producer.exterior_image_url || '/placeholder.svg'
+            }
+          };
+        });
         setFilteredProducers(formatted);
       }
     } catch (error) {
@@ -96,7 +103,7 @@ const Home = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <Link to={`/producer/${encodeURIComponent(producer.producerName)}`} className="block">
+                    <Link to={`/producer/${producer.slug || encodeURIComponent(producer.producerName)}`} className="block">
                       <div className="relative">
                         <img 
                           src={producer.producerImage.exterior || "/placeholder.svg"} 
