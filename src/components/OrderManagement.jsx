@@ -22,34 +22,19 @@ const OrderManagement = ({ producerProfile }) => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      // Сначала получаем ID точек выдачи этого производителя
-      const { data: pickupPoints, error: ppError } = await supabase
-        .from('pickup_points')
-        .select('id')
-        .eq('producer_id', producerProfile.id);
-      
-      if (ppError) throw ppError;
-      
-      const pickupPointIds = pickupPoints.map(pp => pp.id);
-      
-      if (pickupPointIds.length === 0) {
-        setOrders([]);
-        return;
-      }
-
       let query = supabase
-        .from('pre_orders')
+        .from('orders')
         .select(`
           *,
-          pickup_points!fk_pre_orders_pickup_point_id(name, address),
-          pre_order_items(
-            quantity,
-            price_regular,
-            price_discount,
-            products(name, description)
+          pickup_points!orders_point_id_fkey(name, address),
+          order_items(
+            qty,
+            price,
+            subtotal,
+            product_snapshot
           )
         `)
-        .in('pickup_point_id', pickupPointIds)
+        .eq('producer_id', producerProfile.id)
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
@@ -75,7 +60,7 @@ const OrderManagement = ({ producerProfile }) => {
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const { error } = await supabase
-        .from('pre_orders')
+        .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId);
 
@@ -98,11 +83,12 @@ const OrderManagement = ({ producerProfile }) => {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      created: { label: 'Создан', variant: 'secondary' },
+      preorder: { label: 'Предзаказ', variant: 'secondary' },
       confirmed: { label: 'Подтвержден', variant: 'default' },
       ready: { label: 'Готов', variant: 'outline' },
       completed: { label: 'Выдан', variant: 'default' },
-      cancelled: { label: 'Отменен', variant: 'destructive' }
+      cancelled: { label: 'Отменен', variant: 'destructive' },
+      rejected: { label: 'Отклонен', variant: 'destructive' }
     };
 
     const statusInfo = statusMap[status] || { label: status, variant: 'secondary' };
@@ -113,27 +99,7 @@ const OrderManagement = ({ producerProfile }) => {
     const { status } = order;
     const actions = [];
 
-    if (status === 'created') {
-      actions.push(
-        <Button
-          key="confirm"
-          size="sm"
-          onClick={() => updateOrderStatus(order.id, 'confirmed')}
-        >
-          Подтвердить
-        </Button>
-      );
-      actions.push(
-        <Button
-          key="cancel"
-          size="sm"
-          variant="destructive"
-          onClick={() => updateOrderStatus(order.id, 'cancelled')}
-        >
-          Отменить
-        </Button>
-      );
-    } else if (status === 'confirmed') {
+    if (status === 'confirmed') {
       actions.push(
         <Button
           key="ready"
@@ -195,11 +161,12 @@ const OrderManagement = ({ producerProfile }) => {
             </SelectTrigger>
             <SelectContent className="w-40">
               <SelectItem value="all">Все заказы</SelectItem>
-              <SelectItem value="created">Новые</SelectItem>
+              <SelectItem value="preorder">Предзаказы</SelectItem>
               <SelectItem value="confirmed">Подтвержденные</SelectItem>
               <SelectItem value="ready">Готовые</SelectItem>
               <SelectItem value="completed">Выданные</SelectItem>
               <SelectItem value="cancelled">Отмененные</SelectItem>
+              <SelectItem value="rejected">Отклоненные</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -219,10 +186,20 @@ const OrderManagement = ({ producerProfile }) => {
               <div key={order.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-semibold">Заказ #{order.order_code}</h4>
+                    <h4 className="font-semibold">
+                      Заказ #{order.meta?.order_code || order.id.slice(0, 8)}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      {order.pickup_points.name}
+                      {order.pickup_points?.name}
                     </p>
+                    <p className="text-sm text-muted-foreground">
+                      Клиент: {order.customer_name}
+                    </p>
+                    {order.customer_phone && (
+                      <p className="text-sm text-muted-foreground">
+                        Тел: {order.customer_phone}
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(order.status)}
@@ -241,22 +218,19 @@ const OrderManagement = ({ producerProfile }) => {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Сумма заказа</p>
-                    <p className="text-lg font-bold">{order.total_amount} MDL</p>
-                    {order.discount_amount > 0 && (
-                      <p className="text-sm text-green-600">
-                        Скидка: -{order.discount_amount} MDL
-                      </p>
-                    )}
+                    <p className="text-lg font-bold">{order.total_amount} {order.currency}</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <h5 className="font-medium mb-2">Состав заказа:</h5>
                   <div className="space-y-1">
-                    {order.pre_order_items.map((item, index) => (
+                    {order.order_items.map((item, index) => (
                       <div key={index} className="flex justify-between text-sm">
-                        <span>{item.products.name} × {item.quantity}</span>
-                        <span>{(item.price_discount || item.price_regular) * item.quantity} MDL</span>
+                        <span>
+                          {item.product_snapshot?.name || 'Товар'} × {item.qty}
+                        </span>
+                        <span>{item.subtotal} {order.currency}</span>
                       </div>
                     ))}
                   </div>
