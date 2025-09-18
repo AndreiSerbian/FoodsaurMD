@@ -122,7 +122,12 @@ export async function createPreorder({ customer, pickupTime }) {
       qty: item.qty,
       price: item.price,
       subtotal: item.price * item.qty,
-      product_snapshot: item.product
+      product_snapshot: {
+        name: item.name,
+        price: item.price,
+        unit: item.unit || 'шт',
+        producerSlug: item.producerSlug
+      }
     }));
 
     const { error: itemsError } = await supabase

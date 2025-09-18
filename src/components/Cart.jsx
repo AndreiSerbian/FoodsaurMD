@@ -5,6 +5,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '../hooks/use-toast';
 import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
+import OrderCheckout from './OrderCheckout';
 import { validateCart } from '../modules/cart/inventorySync';
 
 const Cart = () => {
@@ -15,13 +16,12 @@ const Cart = () => {
     removeFromCart, 
     updateQuantity, 
     clearCart,
-    selectedPointInfo,
-    createPreOrder
+    selectedPointInfo
   } = useCart();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
   const [cartValid, setCartValid] = useState(true);
   const [validationErrors, setValidationErrors] = useState([]);
 
@@ -75,26 +75,8 @@ const Cart = () => {
       return;
     }
 
-    setIsProcessing(true);
-    
-    try {
-      const order = await createPreOrder();
-      if (order) {
-        setIsProcessing(false);
-        setShowOrderAlert(true);
-        setIsOpen(false);
-        
-        // Auto-hide the alert after 5 seconds
-        setTimeout(() => {
-          setShowOrderAlert(false);
-        }, 5000);
-      } else {
-        setIsProcessing(false);
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      setIsProcessing(false);
-    }
+    // Открываем окно оформления заказа
+    setShowCheckout(true);
   };
 
   const cartVariants = {
@@ -263,15 +245,14 @@ const Cart = () => {
                 
                 <button 
                   onClick={handleCheckout}
-                  disabled={isProcessing || !selectedPointInfo || !cartValid}
+                  disabled={!selectedPointInfo || !cartValid}
                   className={`w-full bg-green-900 text-white py-3 rounded-lg mt-4 ${
-                    isProcessing || !selectedPointInfo || !cartValid 
+                    !selectedPointInfo || !cartValid 
                       ? 'opacity-75 cursor-not-allowed' 
                       : 'hover:bg-green-800'
                   } transition duration-300 mb-2 flex items-center justify-center`}
                 >
-                  {isProcessing ? 'Обработка...' : 
-                   !selectedPointInfo ? 'Выберите точку получения' :
+                  {!selectedPointInfo ? 'Выберите точку получения' :
                    !cartValid ? 'Превышен лимит товара' :
                    'Оформить заказ'}
                 </button>
@@ -286,6 +267,12 @@ const Cart = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Order Checkout Modal */}
+      <OrderCheckout 
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+      />
     </>
   );
 };
