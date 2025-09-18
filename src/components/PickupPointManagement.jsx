@@ -4,9 +4,10 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
-import { ChevronDown, Plus, Edit, Trash2, MapPin, Clock } from 'lucide-react';
+import { ChevronDown, Plus, Edit, Trash2, MapPin, Clock, Package } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import PointForm from './PointForm';
+import PointInventoryManager from './points/PointInventoryManager';
 
 const PickupPointManagement = ({ producerProfile }) => {
   const [pickupPoints, setPickupPoints] = useState([]);
@@ -15,6 +16,7 @@ const PickupPointManagement = ({ producerProfile }) => {
   const [editingPoint, setEditingPoint] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [viewingInventoryPointId, setViewingInventoryPointId] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -99,7 +101,18 @@ const PickupPointManagement = ({ producerProfile }) => {
     if (!isOpen) {
       setShowAddForm(false);
       setEditingPoint(null);
+      setViewingInventoryPointId(null);
     }
+  };
+
+  const handleViewInventory = (pointId) => {
+    setViewingInventoryPointId(pointId);
+    setShowAddForm(false);
+    setEditingPoint(null);
+  };
+
+  const handleCloseInventory = () => {
+    setViewingInventoryPointId(null);
   };
 
   const formatWorkHours = (workHours) => {
@@ -179,6 +192,9 @@ const PickupPointManagement = ({ producerProfile }) => {
                         <Badge variant={point.is_active ? "default" : "secondary"}>
                           {point.is_active ? 'Активна' : 'Неактивна'}
                         </Badge>
+                        <Button size="sm" variant="outline" onClick={() => handleViewInventory(point.id)}>
+                          <Package className="h-4 w-4" />
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => handleEditPoint(point)}>
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -203,6 +219,21 @@ const PickupPointManagement = ({ producerProfile }) => {
                 onSave={handleSavePoint} 
                 onCancel={handleCloseForm} 
               />
+            )}
+
+            {viewingInventoryPointId && (
+              <div className="mt-6 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-lg font-medium">Остатки товаров в точке</h4>
+                  <Button variant="outline" onClick={handleCloseInventory}>
+                    Закрыть
+                  </Button>
+                </div>
+                <PointInventoryManager 
+                  pointId={viewingInventoryPointId}
+                  producerId={producerProfile.id}
+                />
+              </div>
             )}
           </CollapsibleContent>
         </div>
