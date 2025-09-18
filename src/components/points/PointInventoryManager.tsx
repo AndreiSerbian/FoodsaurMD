@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Package, Copy, Plus, Search, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { getPointInventory, updatePointStock, syncProductsToPoint } from '@/modules/inventory/inventorySync.js';
-import { formatPrice, formatQuantityWithUnit } from '@/utils/unitUtils.js';
+import { formatPrice, formatQuantity } from '@/utils/unitUtils.js';
 import { useToast } from '@/hooks/use-toast';
 import QuantityInput from '@/components/QuantityInput';
 import type { PickupPoint } from '@/types/supabase-points';
@@ -318,7 +318,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                           {formatPrice(product.price_regular)} / {product.price_unit}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Основной остаток: {formatQuantityWithUnit(product.quantity, product.price_unit)}
+                          Основной остаток: {formatQuantity(product.quantity, product.price_unit)}
                         </p>
                       </div>
                       <Button 
@@ -385,7 +385,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                               {formatPrice(item.products.price_regular)} / {item.products.price_unit}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Остаток в источнике: {formatQuantityWithUnit(item.stock, item.products.price_unit)}
+                              Остаток в источнике: {formatQuantity(item.stock, item.products.price_unit)}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
