@@ -22,7 +22,6 @@ const ProductForm = ({
     allergen_info: '',
     price_regular: '',
     price_discount: '',
-    discount_size: '',
     quantity: '',
     weight: '',
     price_unit: 'шт',
@@ -41,7 +40,6 @@ const ProductForm = ({
         allergen_info: product.allergen_info || '',
         price_regular: product.price_regular || '',
         price_discount: product.price_discount || '',
-        discount_size: product.discount_size || '',
         quantity: product.quantity || '',
         weight: product.weight || '',
         price_unit: product.price_unit || 'шт',
@@ -123,11 +121,16 @@ const ProductForm = ({
     setLoading(true);
     try {
       const productData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        ingredients: formData.ingredients,
+        allergen_info: formData.allergen_info,
         producer_id: producerProfile.id,
         price_regular: parseFloat(formData.price_regular),
         price_discount: formData.price_discount ? parseFloat(formData.price_discount) : null,
-        quantity: parseInt(formData.quantity)
+        quantity: parseInt(formData.quantity),
+        price_unit: formData.price_unit,
+        in_stock: formData.in_stock
       };
       let savedProduct;
       if (product?.id) {
