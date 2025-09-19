@@ -1,124 +1,154 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useCart } from '../contexts/CartContext';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../integrations/supabase/client';
+import { Alert, AlertDescription } from './ui/alert';
+import PickupPointSelector from './PickupPointSelector';
+import ProductCardWithPricing from './ProductCardWithPricing';
+import { usePointProducts } from '../hooks/usePointProducts';
 
-const ProductsList = ({
-  products,
-  producer
-}) => {
-  const {
-    addToCart
-  } = useCart();
-  
-  const container = {
-    hidden: {
-      opacity: 0
-    },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 20
-    },
-    show: {
-      opacity: 1,
-      y: 0
-    }
-  };
-  
-  const handleAddToCart = product => {
-    // Pass the producer object which should include slug
-    addToCart(product, producer.slug || producer.producerName);
-  };
+const ProductsList = ({ producerSlug, selectedCategory }) => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [producerProfile, setProducerProfile] = useState(null);
+  const [selectedPointId, setSelectedPointId] = useState('');
 
-  // Calculate discount percentage
-  const calculateDiscount = (regular, discounted) => {
-    return Math.round((1 - discounted / regular) * 100);
-  };
-  
-  return (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 text-center text-green-900">{producer.producerName}</h2>
-          <p className="text-gray-600 text-center">{producer.address}</p>
-          <p className="text-gray-500 text-center mt-2">Скидки доступны {producer.discountAvailableTime}</p>
-        </div>
+  const { pointProducts, loading: pointProductsLoading } = usePointProducts(selectedPointId);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
         
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" 
-          variants={container} 
-          initial="hidden" 
-          animate="show"
-        >
-          {products.map((product, index) => (
-            <motion.div 
-              key={index} 
-              variants={item} 
-              className="product-card"
-            >
-              <div className="relative">
-                 <img 
-                   src={product.image} 
-                   alt={product.productName || product.name} 
-                   className="w-full h-48 object-cover rounded-t-2xl"
-                   onError={(e) => {
-                     console.error('Failed to load image:', product.image, 'for product:', product.productName || product.name);
-                     e.currentTarget.src = "/placeholder.svg";
-                   }}
-                 />
-                {product.priceDiscount < product.priceRegular && (
-                  <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
-                    -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
-                  </div>
-                )}
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-2">{product.productName || product.name}</h3>
-                <p className="text-gray-600 text-sm mb-4 h-20 overflow-hidden">{product.description}</p>
-                
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    {product.price_discount && product.price_discount < product.price_regular ? (
-                      <>
-                        <span className="text-lg font-bold text-green-600">
-                          {product.price_discount} MDL/{product.price_unit || 'шт'}
-                        </span>
-                        <span className="text-sm text-gray-500 line-through ml-2">
-                          {product.price_regular} MDL/{product.price_unit || 'шт'}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-lg font-bold text-green-600">
-                        {product.price_regular} MDL/{product.price_unit || 'шт'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={() => handleAddToCart(product)} 
-                  className="w-full text-white py-2 px-4 rounded-lg hover:bg-opacity-90 transition duration-300 flex items-center justify-center btn-hover bg-green-900 hover:bg-green-800"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  Добавить в корзину
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        // Get the producer profile by slug
+        const { data: profileData, error: profileError } = await supabase
+          .from('producer_profiles')
+          .select('id, producer_name, category_name')
+          .eq('slug', producerSlug)
+          .single();
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        setProducerProfile(profileData);
+
+        // Get products for this producer (without prices)
+        let query = supabase
+          .from('products')
+          .select(`
+            *,
+            product_images (
+              image_url,
+              is_primary
+            )
+          `)
+          .eq('producer_id', profileData.id)
+          .eq('in_stock', true);
+
+        // Apply category filter if selected
+        if (selectedCategory) {
+          query = query.eq('category', selectedCategory);
+        }
+
+        const { data: productsData, error: productsError } = await query
+          .order('name');
+
+        if (productsError) throw productsError;
+
+        setProducts(productsData || []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (producerSlug) {
+      fetchData();
+    }
+  }, [producerSlug, selectedCategory]);
+
+  // Merge products with point products
+  const getProductsWithPricing = () => {
+    if (!selectedPointId) return [];
+    
+    return products.map(product => {
+      const pointProduct = pointProducts.find(pp => pp.product_id === product.id);
+      return pointProduct ? { ...pointProduct, products: product } : null;
+    }).filter(Boolean);
+  };
+
+  const productsWithPricing = getProductsWithPricing();
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 bg-muted rounded"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-64 bg-muted rounded-lg"></div>
+            ))}
+          </div>
+        </div>
       </div>
-    </section>
+    );
+  }
+
+  if (!producerProfile) {
+    return (
+      <Alert>
+        <AlertDescription>
+          Производитель не найден
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Pickup Point Selector */}
+      <PickupPointSelector
+        producerId={producerProfile.id}
+        onPointChange={setSelectedPointId}
+        selectedPointId={selectedPointId}
+      />
+
+      {/* Products Display */}
+      {!selectedPointId ? (
+        <Alert>
+          <AlertDescription>
+            Выберите точку выдачи для просмотра товаров и цен
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <>
+          {pointProductsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-64 bg-muted rounded-lg animate-pulse"></div>
+              ))}
+            </div>
+          ) : productsWithPricing.length === 0 ? (
+            <Alert>
+              <AlertDescription>
+                В выбранной точке выдачи пока нет доступных товаров
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {productsWithPricing.map((pointProduct) => (
+                <ProductCardWithPricing
+                  key={pointProduct.id}
+                  pointProduct={pointProduct}
+                  selectedPointId={selectedPointId}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 

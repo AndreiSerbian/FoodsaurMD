@@ -367,6 +367,63 @@ export type Database = {
           },
         ]
       }
+      point_products: {
+        Row: {
+          created_at: string
+          discount_end: string | null
+          discount_start: string | null
+          id: string
+          is_active: boolean
+          point_id: string
+          price_discount: number | null
+          price_regular: number
+          product_id: string
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_end?: string | null
+          discount_start?: string | null
+          id?: string
+          is_active?: boolean
+          point_id: string
+          price_discount?: number | null
+          price_regular: number
+          product_id: string
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_end?: string | null
+          discount_start?: string | null
+          id?: string
+          is_active?: boolean
+          point_id?: string
+          price_discount?: number | null
+          price_regular?: number
+          product_id?: string
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_products_point_id_fkey"
+            columns: ["point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pre_order_items: {
         Row: {
           created_at: string
@@ -749,48 +806,45 @@ export type Database = {
           allergen_info: string | null
           created_at: string | null
           description: string
-          discount_size: number | null
           id: string
           in_stock: boolean | null
           ingredients: string | null
           name: string
-          price_discount: number | null
-          price_regular: number
           price_unit: string
           producer_id: string
           quantity: number
+          sku: string | null
+          unit_type: string
           updated_at: string | null
         }
         Insert: {
           allergen_info?: string | null
           created_at?: string | null
           description: string
-          discount_size?: number | null
           id?: string
           in_stock?: boolean | null
           ingredients?: string | null
           name: string
-          price_discount?: number | null
-          price_regular: number
           price_unit?: string
           producer_id: string
           quantity?: number
+          sku?: string | null
+          unit_type?: string
           updated_at?: string | null
         }
         Update: {
           allergen_info?: string | null
           created_at?: string | null
           description?: string
-          discount_size?: number | null
           id?: string
           in_stock?: boolean | null
           ingredients?: string | null
           name?: string
-          price_discount?: number | null
-          price_regular?: number
           price_unit?: string
           producer_id?: string
           quantity?: number
+          sku?: string | null
+          unit_type?: string
           updated_at?: string | null
         }
         Relationships: [
