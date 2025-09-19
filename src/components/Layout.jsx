@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
     t
   } = useLanguage();
   return <div className="min-h-screen flex flex-col bg-background">
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm z-header relative">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="text-2xl font-bold text-green-900">Foodsaur</Link>
           
@@ -59,7 +59,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
       
-      <footer className="bg-white border-t py-8">
+      <footer className="bg-white border-t py-8 z-footer relative">
         <div className="container mx-auto px-4">
           <div className="text-center text-green-600 text-sm">
             <p>&copy; {new Date().getFullYear()} Foodsaur. {t('rightsReserved')}</p>

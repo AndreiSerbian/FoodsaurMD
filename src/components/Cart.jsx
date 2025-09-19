@@ -96,7 +96,7 @@ const Cart = () => {
       <AnimatePresence>
         {showOrderAlert && (
           <motion.div
-            className="fixed left-8 top-8 z-50 max-w-xs"
+            className="fixed left-8 top-8 z-alert max-w-xs"
             variants={alertVariants}
             initial="hidden"
             animate="visible"
@@ -115,7 +115,7 @@ const Cart = () => {
       {/* Cart Button */}
       <button 
         onClick={toggleCart}
-        className="fixed bottom-8 right-8 bg-green-900 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center btn-hover z-50"
+        className="fixed bottom-8 right-8 bg-green-900 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center btn-hover z-cart"
       >
         <div className="relative">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -133,7 +133,7 @@ const Cart = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black bg-opacity-50 z-cart"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -146,7 +146,7 @@ const Cart = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full sm:w-96 bg-white shadow-xl z-cart flex flex-col"
             variants={cartVariants}
             initial="hidden"
             animate="visible"

@@ -31,10 +31,15 @@ import { checkMultipleStock } from './inventoryApi.js';
  * @param {PreorderParams} params
  * @returns {Promise<PreorderResult>}
  */
-export async function createPreorder({ customer, pickupTime }) {
+export async function createPreorder({ customer, pickupTime, pointId }) {
   try {
     const cart = getCart();
-    const selectedPoint = getSelectedPoint();
+    let selectedPoint = getSelectedPoint();
+    
+    // Use provided pointId or fall back to selected point
+    if (pointId) {
+      selectedPoint = { pointId };
+    }
     
     if (!cart.items || cart.items.length === 0) {
       return {
@@ -43,7 +48,7 @@ export async function createPreorder({ customer, pickupTime }) {
       };
     }
     
-    if (!selectedPoint) {
+    if (!selectedPoint || !selectedPoint.pointId) {
       return {
         success: false,
         message: 'Не выбрана точка получения'

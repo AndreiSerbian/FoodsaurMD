@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      discounts: {
+        Row: {
+          created_at: string
+          discount_amount: number | null
+          discount_percent: number
+          end_time: string
+          id: string
+          is_active: boolean
+          product_id: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_amount?: number | null
+          discount_percent: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          product_id: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number | null
+          discount_percent?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          product_id?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -598,6 +634,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      producer_time_slots: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          is_discount_time: boolean
+          producer_id: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          is_discount_time?: boolean
+          producer_id: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          is_discount_time?: boolean
+          producer_id?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       producers: {
         Row: {

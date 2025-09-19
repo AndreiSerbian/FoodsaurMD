@@ -61,6 +61,14 @@
 }
 
 @layer components {
+  /* Z-index hierarchy */
+  .z-header { @apply z-10; }
+  .z-footer { @apply z-10; }
+  .z-content { @apply z-20; }
+  .z-cart { @apply z-20; }
+  .z-modal { @apply z-50; }
+  .z-alert { @apply z-[9999]; }
+  
   .card-hover {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
   }
@@ -79,5 +87,17 @@
   
   .btn-hover {
     @apply transition-all duration-300 hover:shadow-md;
+  }
+  
+  .discount-highlight {
+    @apply bg-green-100 border-green-300 text-green-800;
+  }
+  
+  .price-original {
+    @apply line-through text-muted-foreground;
+  }
+  
+  .price-discount {
+    @apply text-green-600 font-semibold;
   }
 }

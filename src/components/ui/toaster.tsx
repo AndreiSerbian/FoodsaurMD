@@ -28,7 +28,7 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport />
+      <ToastViewport className="z-alert" />
     </ToastProvider>
   )
 }
