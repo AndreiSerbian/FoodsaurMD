@@ -68,13 +68,16 @@ const ProductsList = ({ producerSlug, selectedCategory }) => {
     }
   }, [producerSlug, selectedCategory]);
 
-  // Merge products with point products
+  // Merge products with point products - show all products but only those with point_products have prices
   const getProductsWithPricing = () => {
     if (!selectedPointId) return [];
     
     return products.map(product => {
       const pointProduct = pointProducts.find(pp => pp.product_id === product.id);
-      return pointProduct ? { ...pointProduct, products: product } : null;
+      if (pointProduct) {
+        return { ...pointProduct, products: product };
+      }
+      return null; // Don't show products without point_products data
     }).filter(Boolean);
   };
 
@@ -132,7 +135,7 @@ const ProductsList = ({ producerSlug, selectedCategory }) => {
           ) : productsWithPricing.length === 0 ? (
             <Alert>
               <AlertDescription>
-                В выбранной точке выдачи пока нет доступных товаров
+                В выбранной точке выдачи пока нет доступных товаров. Производитель должен добавить товары в эту точку выдачи через админ-панель.
               </AlertDescription>
             </Alert>
           ) : (
