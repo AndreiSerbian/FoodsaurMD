@@ -17,24 +17,48 @@ export function usePointProducts(pointId) {
       setError(null);
 
       try {
+        // Fetch products with their pricing info from point_products table
         const { data, error } = await supabase
           .from('point_products')
           .select(`
-            *,
+            id,
+            stock,
+            price_regular,
+            price_discount,
+            discount_start,
+            discount_end,
+            is_active,
             products (
               id,
               name,
               description,
               unit_type,
               ingredients,
-              allergen_info
+              allergen_info,
+              images,
+              sku
             )
           `)
           .eq('point_id', pointId)
           .eq('is_active', true);
 
         if (error) throw error;
-        setPointProducts(data || []);
+        
+        // Transform data to match expected format
+        const transformedData = (data || []).map(item => ({
+          ...item.products,
+          point: {
+            point_product_id: item.id,
+            stock: item.stock,
+            price_regular: item.price_regular,
+            price_discount: item.price_discount,
+            discount_start: item.discount_start,
+            discount_end: item.discount_end,
+            is_active: item.is_active
+          }
+        }));
+
+        setPointProducts(transformedData);
       } catch (err) {
         setError(err.message);
         console.error('Error fetching point products:', err);
@@ -48,26 +72,26 @@ export function usePointProducts(pointId) {
 
   // Helper function to check if discount is active
   const isDiscountActive = (pointProduct) => {
-    if (!pointProduct.price_discount || !pointProduct.discount_start || !pointProduct.discount_end) {
+    if (!pointProduct.point?.price_discount || !pointProduct.point?.discount_start || !pointProduct.point?.discount_end) {
       return false;
     }
 
     const now = new Date();
-    const discountStart = new Date(pointProduct.discount_start);
-    const discountEnd = new Date(pointProduct.discount_end);
+    const discountStart = new Date(pointProduct.point.discount_start);
+    const discountEnd = new Date(pointProduct.point.discount_end);
 
     return now >= discountStart && now <= discountEnd;
   };
 
   // Helper function to get current price
   const getCurrentPrice = (pointProduct) => {
-    return isDiscountActive(pointProduct) ? pointProduct.price_discount : pointProduct.price_regular;
+    return isDiscountActive(pointProduct) ? pointProduct.point.price_discount : pointProduct.point.price_regular;
   };
 
   // Helper function to calculate discount percentage
   const getDiscountPercentage = (pointProduct) => {
     if (!isDiscountActive(pointProduct)) return 0;
-    return Math.round(((pointProduct.price_regular - pointProduct.price_discount) / pointProduct.price_regular) * 100);
+    return Math.round(((pointProduct.point.price_regular - pointProduct.point.price_discount) / pointProduct.point.price_regular) * 100);
   };
 
   return { 

@@ -807,10 +807,11 @@ export type Database = {
           created_at: string | null
           description: string
           id: string
+          images: Json | null
           in_stock: boolean | null
           ingredients: string | null
+          is_active: boolean | null
           name: string
-          price_unit: string
           producer_id: string
           quantity: number
           sku: string | null
@@ -822,10 +823,11 @@ export type Database = {
           created_at?: string | null
           description: string
           id?: string
+          images?: Json | null
           in_stock?: boolean | null
           ingredients?: string | null
+          is_active?: boolean | null
           name: string
-          price_unit?: string
           producer_id: string
           quantity?: number
           sku?: string | null
@@ -837,10 +839,11 @@ export type Database = {
           created_at?: string | null
           description?: string
           id?: string
+          images?: Json | null
           in_stock?: boolean | null
           ingredients?: string | null
+          is_active?: boolean | null
           name?: string
-          price_unit?: string
           producer_id?: string
           quantity?: number
           sku?: string | null

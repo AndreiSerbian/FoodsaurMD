@@ -1,96 +1,65 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../integrations/supabase/client';
-import { Alert, AlertDescription } from './ui/alert';
-import PickupPointSelector from './PickupPointSelector';
-import ProductCardWithPricing from './ProductCardWithPricing';
 import { usePointProducts } from '../hooks/usePointProducts';
+import { useGlobalCatalog } from '../hooks/useGlobalCatalog';
+import ProductCardWithPricing from './ProductCardWithPricing';
+import PickupPointSelector from './PickupPointSelector';
+import { Skeleton } from './ui/skeleton';
+import { Alert, AlertDescription } from './ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 const ProductsList = ({ producerSlug, selectedCategory }) => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [producerProfile, setProducerProfile] = useState(null);
-  const [selectedPointId, setSelectedPointId] = useState('');
+  const [selectedPointId, setSelectedPointId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const { pointProducts, loading: pointProductsLoading } = usePointProducts(selectedPointId);
+  // Get global catalog (no prices)
+  const { products: catalogProducts, loading: catalogLoading } = useGlobalCatalog(producerProfile?.id);
+  
+  // Get point-specific products with pricing
+  const { pointProducts, loading: pointLoading } = usePointProducts(selectedPointId);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducerProfile = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        
-        // Get the producer profile by slug
-        const { data: profileData, error: profileError } = await supabase
+        const { data, error } = await supabase
           .from('producer_profiles')
-          .select('id, producer_name, category_name')
+          .select('*')
           .eq('slug', producerSlug)
           .single();
 
-        if (profileError) {
-          throw profileError;
-        }
-
-        setProducerProfile(profileData);
-
-        // Get products for this producer (without prices)
-        let query = supabase
-          .from('products')
-          .select(`
-            *,
-            product_images (
-              image_url,
-              is_primary
-            )
-          `)
-          .eq('producer_id', profileData.id)
-          .eq('in_stock', true);
-
-        // Apply category filter if selected
-        if (selectedCategory) {
-          query = query.eq('category', selectedCategory);
-        }
-
-        const { data: productsData, error: productsError } = await query
-          .order('name');
-
-        if (productsError) throw productsError;
-
-        setProducts(productsData || []);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        if (error) throw error;
+        setProducerProfile(data);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching producer profile:', err);
       } finally {
         setLoading(false);
       }
     };
 
     if (producerSlug) {
-      fetchData();
+      fetchProducerProfile();
     }
-  }, [producerSlug, selectedCategory]);
+  }, [producerSlug]);
 
-  // Merge products with point products - show all products but only those with point_products have prices
-  const getProductsWithPricing = () => {
-    if (!selectedPointId) return [];
-    
-    return products.map(product => {
-      const pointProduct = pointProducts.find(pp => pp.product_id === product.id);
-      if (pointProduct) {
-        return { ...pointProduct, products: product };
-      }
-      return null; // Don't show products without point_products data
-    }).filter(Boolean);
-  };
+  // Filter catalog products by category if specified
+  const filteredCatalogProducts = selectedCategory 
+    ? catalogProducts.filter(product => product.category === selectedCategory)
+    : catalogProducts;
 
-  const productsWithPricing = getProductsWithPricing();
-
-  if (loading) {
+  if (loading || catalogLoading) {
     return (
-      <div className="space-y-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-10 bg-muted rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-64 bg-muted rounded-lg"></div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-64 w-full" />
             ))}
           </div>
         </div>
@@ -98,58 +67,75 @@ const ProductsList = ({ producerSlug, selectedCategory }) => {
     );
   }
 
-  if (!producerProfile) {
+  if (error || !producerProfile) {
     return (
-      <Alert>
-        <AlertDescription>
-          Производитель не найден
-        </AlertDescription>
-      </Alert>
+      <div className="container mx-auto px-4 py-8">
+        <Alert variant="destructive">
+          <AlertDescription>
+            {error || 'Производитель не найден'}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Pickup Point Selector */}
-      <PickupPointSelector
-        producerId={producerProfile.id}
-        onPointChange={setSelectedPointId}
-        selectedPointId={selectedPointId}
-      />
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-4">{producerProfile.producer_name}</h1>
+        <PickupPointSelector 
+          producerId={producerProfile.id}
+          selectedPointId={selectedPointId}
+          onPointChange={setSelectedPointId}
+        />
+      </div>
 
-      {/* Products Display */}
       {!selectedPointId ? (
-        <Alert>
-          <AlertDescription>
-            Выберите точку выдачи для просмотра товаров и цен
-          </AlertDescription>
-        </Alert>
+        <div className="space-y-6">
+          <Alert>
+            <AlertDescription>
+              Выберите точку выдачи для просмотра цен и добавления товаров в корзину
+            </AlertDescription>
+          </Alert>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCatalogProducts.map((product) => (
+              <ProductCardWithPricing 
+                key={product.id} 
+                product={product}
+                selectedPointId={null}
+              />
+            ))}
+          </div>
+        </div>
       ) : (
-        <>
-          {pointProductsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-64 bg-muted rounded-lg animate-pulse"></div>
+        <div className="space-y-6">
+          {pointLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Skeleton key={i} className="h-64 w-full" />
               ))}
             </div>
-          ) : productsWithPricing.length === 0 ? (
+          ) : pointProducts.length === 0 ? (
             <Alert>
               <AlertDescription>
-                В выбранной точке выдачи пока нет доступных товаров. Производитель должен добавить товары в эту точку выдачи через админ-панель.
+                В данной точке нет доступных товаров
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {productsWithPricing.map((pointProduct) => (
-                <ProductCardWithPricing
-                  key={pointProduct.id}
-                  pointProduct={pointProduct}
-                  selectedPointId={selectedPointId}
-                />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pointProducts
+                .filter(product => !selectedCategory || product.category === selectedCategory)
+                .map((product) => (
+                  <ProductCardWithPricing 
+                    key={product.id} 
+                    product={product}
+                    selectedPointId={selectedPointId}
+                  />
+                ))}
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

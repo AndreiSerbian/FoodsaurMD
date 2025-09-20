@@ -7,74 +7,124 @@ import { Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
-const ProductCardWithPricing = ({ pointProduct, selectedPointId }) => {
-  const { cart, addToCart, updateQuantity } = useCart();
+const ProductCardWithPricing = ({ product, selectedPointId }) => {
+  const { cartItems, handleAddToCart, handleUpdateQuantity } = useCart();
   const { toast } = useToast();
   
-  if (!pointProduct || !selectedPointId) {
-    return null;
-  }
+  // Guard: only show pricing if pickup point is selected and product has point data
+  if (!selectedPointId || !product.point) {
+    return (
+      <Card className="h-full flex flex-col">
+        <CardHeader>
+          <CardTitle className="text-lg">{product.name}</CardTitle>
+          {product.description && (
+            <p className="text-sm text-muted-foreground">{product.description}</p>
+          )}
+        </CardHeader>
+        
+        <CardContent className="flex-1 flex flex-col justify-between">
+          <div className="space-y-3">
+            {product.ingredients && (
+              <div className="text-xs">
+                <span className="font-medium">Состав:</span> {product.ingredients}
+              </div>
+            )}
+            
+            {product.allergen_info && (
+              <Alert className="py-2">
+                <AlertDescription className="text-xs">
+                  <span className="font-medium">Аллергены:</span> {product.allergen_info}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
-  const { products: product } = pointProduct;
-  const cartItem = cart.find(item => item.productId === product.id);
+          <div className="mt-4 text-center text-muted-foreground text-sm">
+            Выберите точку выдачи для просмотра цен
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  const cartItem = cartItems.find(item => item.id === product.id);
   const cartQuantity = cartItem?.qty || 0;
 
   // Check if discount is active
   const isDiscountActive = () => {
-    if (!pointProduct.price_discount || !pointProduct.discount_start || !pointProduct.discount_end) {
+    if (!product.point.price_discount || !product.point.discount_start || !product.point.discount_end) {
       return false;
     }
 
     const now = new Date();
-    const discountStart = new Date(pointProduct.discount_start);
-    const discountEnd = new Date(pointProduct.discount_end);
+    const discountStart = new Date(product.point.discount_start);
+    const discountEnd = new Date(product.point.discount_end);
 
     return now >= discountStart && now <= discountEnd;
   };
 
   const getCurrentPrice = () => {
-    return isDiscountActive() ? pointProduct.price_discount : pointProduct.price_regular;
+    return isDiscountActive() ? product.point.price_discount : product.point.price_regular;
   };
 
   const getDiscountPercentage = () => {
     if (!isDiscountActive()) return 0;
-    return Math.round(((pointProduct.price_regular - pointProduct.price_discount) / pointProduct.price_regular) * 100);
+    return Math.round(((product.point.price_regular - product.point.price_discount) / product.point.price_regular) * 100);
   };
 
-  const handleAddToCart = () => {
-    if (cartQuantity >= pointProduct.stock) {
+  const handleAddToCartClick = () => {
+    if (cartQuantity >= product.point.stock) {
       toast({
         title: "Недостаточно товара",
-        description: `Доступно только ${pointProduct.stock} ${product.unit_type}`,
+        description: `Доступно только ${product.point.stock} ${product.unit_type}`,
         variant: "destructive"
       });
       return;
     }
 
-    addToCart({
-      productId: product.id,
-      product: product,
-      qty: 1,
-      price: getCurrentPrice(),
-      pointId: selectedPointId,
-      unit_type: product.unit_type
-    });
+    try {
+      handleAddToCart({
+        id: product.id,
+        name: product.name,
+        price: getCurrentPrice(),
+        unit_type: product.unit_type,
+        description: product.description,
+        ingredients: product.ingredients,
+        allergen_info: product.allergen_info,
+        point_product_id: product.point.point_product_id,
+        stock: product.point.stock
+      }, selectedPointId);
+
+      toast({
+        title: "Товар добавлен в корзину",
+        description: `${product.name} добавлен в корзину`,
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleUpdateQuantity = (newQty) => {
-    if (newQty > pointProduct.stock) {
+  const handleUpdateQuantityClick = (newQty) => {
+    if (newQty > product.point.stock) {
       toast({
         title: "Недостаточно товара", 
-        description: `Доступно только ${pointProduct.stock} ${product.unit_type}`,
+        description: `Доступно только ${product.point.stock} ${product.unit_type}`,
         variant: "destructive"
       });
       return;
     }
 
-    if (newQty <= 0) {
-      updateQuantity(product.id, 0);
-    } else {
-      updateQuantity(product.id, newQty);
+    try {
+      handleUpdateQuantity(product.id, newQty);
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -98,17 +148,17 @@ const ProductCardWithPricing = ({ pointProduct, selectedPointId }) => {
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold text-primary">
-                    {pointProduct.price_discount} лей/{product.unit_type}
+                    {Number(product.point.price_discount).toFixed(2)} лей/{product.unit_type}
                   </span>
                   <Badge variant="destructive">-{discountPercentage}%</Badge>
                 </div>
                 <div className="text-sm line-through text-muted-foreground">
-                  {pointProduct.price_regular} лей/{product.unit_type}
+                  {Number(product.point.price_regular).toFixed(2)} лей/{product.unit_type}
                 </div>
               </div>
             ) : (
               <div className="text-2xl font-bold">
-                {pointProduct.price_regular} лей/{product.unit_type}
+                {Number(product.point.price_regular).toFixed(2)} лей/{product.unit_type}
               </div>
             )}
           </div>
@@ -133,19 +183,19 @@ const ProductCardWithPricing = ({ pointProduct, selectedPointId }) => {
         <div className="mt-4">
           {cartQuantity === 0 ? (
             <Button 
-              onClick={handleAddToCart}
+              onClick={handleAddToCartClick}
               className="w-full"
-              disabled={pointProduct.stock === 0}
+              disabled={product.point.stock === 0}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
-              {pointProduct.stock === 0 ? 'Нет в наличии' : 'В корзину'}
+              {product.point.stock === 0 ? 'Нет в наличии' : 'В корзину'}
             </Button>
           ) : (
             <div className="flex items-center justify-between bg-muted rounded-lg p-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleUpdateQuantity(cartQuantity - 1)}
+                onClick={() => handleUpdateQuantityClick(cartQuantity - 1)}
               >
                 <Minus className="w-4 h-4" />
               </Button>
@@ -157,8 +207,8 @@ const ProductCardWithPricing = ({ pointProduct, selectedPointId }) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleUpdateQuantity(cartQuantity + 1)}
-                disabled={cartQuantity >= pointProduct.stock}
+                onClick={() => handleUpdateQuantityClick(cartQuantity + 1)}
+                disabled={cartQuantity >= product.point.stock}
               >
                 <Plus className="w-4 h-4" />
               </Button>
