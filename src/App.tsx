@@ -14,7 +14,7 @@ import Home from "./pages/Home";
 import Producers from "./pages/Producers";
 import ProducerProfile from "./pages/ProducerProfile";
 import ProducerPoints from "./pages/ProducerPoints";
-import Products from "./pages/Products";
+import Products from "./pages/Products.jsx";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
