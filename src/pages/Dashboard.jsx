@@ -6,6 +6,8 @@ import CategoryManagement from '../components/CategoryManagement';
 import PickupPointManagement from '../components/PickupPointManagement';
 import OrderManagement from '../components/OrderManagement';
 import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
+import PointProductsManagement from '../components/admin/PointProductsManagement';
+import GlobalCatalogManagement from '../components/admin/GlobalCatalogManagement';
 import CategorySelector from '../components/CategorySelector';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -198,8 +200,11 @@ const Dashboard = () => {
       {/* Управление категориями */}
       {profile && <CategoryManagement producerProfile={profile} />}
 
-      {/* Управление товарами */}
-      <ProductManagement profile={profile} />
+      {/* Управление глобальным каталогом */}
+      {profile && <GlobalCatalogManagement producerProfile={profile} />}
+
+      {/* Управление товарами в точках выдачи */}
+      {profile && <PointProductsManagement producerProfile={profile} />}
 
       {/* Управление точками выдачи */}
       <PickupPointManagement producerProfile={profile} />
