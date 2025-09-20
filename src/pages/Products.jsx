@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
@@ -23,7 +22,6 @@ const Products = () => {
   useEffect(() => {
     const fetchProducerData = async () => {
       try {
-        
         // Получаем данные производителя из Supabase
         const { data: producerData, error: producerError } = await supabase
           .from('producer_profiles')
@@ -37,28 +35,7 @@ const Products = () => {
           return;
         }
 
-        // Получаем продукты этого производителя
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select(`
-            *,
-            product_images (
-              image_url,
-              is_primary
-            )
-          `)
-          .eq('producer_id', producerData.id);
-
         console.log('Producer data:', producerData);
-        console.log('Products data:', productsData);
-        console.log('Products error:', productsError);
-
-        if (productsError) {
-          console.error('Error fetching products:', productsError);
-          setProducer(null);
-          setLoading(false);
-          return;
-        }
 
          // Форматируем данные для компонента
           const formattedProducer = {
@@ -71,27 +48,10 @@ const Products = () => {
            producerImage: {
              exterior: producerData.exterior_image_url || '/placeholder.svg',
              interior: producerData.interior_image_url || '/placeholder.svg'
-           },
-           products: productsData.map(product => {
-             const primaryImage = product.product_images?.find(img => img.is_primary);
-             console.log(`Product: ${product.name}, Primary image:`, primaryImage);
-             
-             return {
-               id: product.id,
-               productName: product.name,
-               description: product.description,
-               priceRegular: parseFloat(product.price_regular),
-               priceDiscount: parseFloat(product.price_discount || product.price_regular),
-               image: primaryImage?.image_url || '/placeholder.svg',
-               ingredients: product.ingredients,
-               allergen_info: product.allergen_info,
-               quantity: product.quantity,
-               in_stock: product.in_stock
-             };
-           })
-         };
+           }
+          };
 
-         console.log('Formatted producer with products:', formattedProducer);
+         console.log('Formatted producer:', formattedProducer);
 
         setProducer(formattedProducer);
       } catch (error) {
@@ -180,7 +140,8 @@ const Products = () => {
           </div>
         </motion.div>
         
-        <ProductsList products={producer.products} producer={producer} />
+        {/* Новый ProductsList компонент */}
+        <ProductsList producerId={producer.id} />
         
         {/* Форма предзаказа */}
         <motion.div 
