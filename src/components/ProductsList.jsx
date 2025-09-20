@@ -47,9 +47,15 @@ const ProductsList = ({ producerSlug, selectedCategory }) => {
     }
   }, [producerSlug]);
 
-  // Filter catalog products by category if specified
+  // Filter products by category if specified
   const filteredCatalogProducts = selectedCategory 
-    ? catalogProducts.filter(product => product.category === selectedCategory)
+    ? catalogProducts.filter(product => {
+        // Check if product has categories array or single category field
+        if (Array.isArray(product.categories)) {
+          return product.categories.includes(selectedCategory);
+        }
+        return product.category === selectedCategory;
+      })
     : catalogProducts;
 
   if (loading || catalogLoading) {
@@ -125,7 +131,14 @@ const ProductsList = ({ producerSlug, selectedCategory }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {pointProducts
-                .filter(product => !selectedCategory || product.category === selectedCategory)
+                .filter(product => {
+                  if (!selectedCategory) return true;
+                  // Check if product has categories array or single category field
+                  if (Array.isArray(product.categories)) {
+                    return product.categories.includes(selectedCategory);
+                  }
+                  return product.category === selectedCategory;
+                })
                 .map((product) => (
                   <ProductCardWithPricing 
                     key={product.id} 

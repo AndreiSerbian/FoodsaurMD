@@ -17,8 +17,16 @@ export const useInventorySync = (pointId, productIds = []) => {
     
     setIsLoading(true);
     try {
-      // Получаем остатки для всех товаров
+      // Получаем остатки из новой таблицы point_products
       const { data: pointProducts } = await supabase
+        .from('point_products')
+        .select('product_id, stock, updated_at')
+        .eq('point_id', pointId)
+        .in('product_id', productIds)
+        .eq('is_active', true);
+
+      // Fallback на старые таблицы
+      const { data: legacyPointProducts } = await supabase
         .from('pickup_point_products')
         .select('product_id, quantity_available, updated_at')
         .eq('pickup_point_id', pointId)
@@ -35,16 +43,27 @@ export const useInventorySync = (pointId, productIds = []) => {
       // Создаем карту остатков
       const newInventory = new Map();
       
-      // Приоритет pickup_point_products
+      // Приоритет point_products (новая структура)
       pointProducts?.forEach(item => {
         newInventory.set(item.product_id, {
-          stock: item.quantity_available,
+          stock: item.stock,
           updatedAt: new Date(item.updated_at),
-          source: 'pickup_point_products'
+          source: 'point_products'
         });
       });
 
-      // Fallback на point_inventory для товаров, которых нет в pickup_point_products
+      // Fallback на pickup_point_products (старая структура)
+      legacyPointProducts?.forEach(item => {
+        if (!newInventory.has(item.product_id)) {
+          newInventory.set(item.product_id, {
+            stock: item.quantity_available,
+            updatedAt: new Date(item.updated_at),
+            source: 'pickup_point_products'
+          });
+        }
+      });
+
+      // Fallback на point_inventory для товаров, которых нет в других таблицах
       pointInventory?.forEach(item => {
         if (!newInventory.has(item.product_id)) {
           newInventory.set(item.product_id, {
@@ -83,8 +102,8 @@ export const useInventorySync = (pointId, productIds = []) => {
         {
           event: '*',
           schema: 'public',
-          table: 'pickup_point_products',
-          filter: `pickup_point_id=eq.${pointId}`
+          table: 'point_products',
+          filter: `point_id=eq.${pointId}`
         },
         (payload) => {
           const productId = payload.new?.product_id || payload.old?.product_id;
@@ -95,10 +114,40 @@ export const useInventorySync = (pointId, productIds = []) => {
                 newMap.delete(productId);
               } else {
                 newMap.set(productId, {
-                  stock: payload.new?.quantity_available || 0,
+                  stock: payload.new?.stock || 0,
                   updatedAt: new Date(payload.new?.updated_at || Date.now()),
-                  source: 'pickup_point_products'
+                  source: 'point_products'
                 });
+              }
+              return newMap;
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pickup_point_products',
+          filter: `pickup_point_id=eq.${pointId}`
+        },
+        (payload) => {
+          const productId = payload.new?.product_id || payload.old?.product_id;
+          if (productIds.includes(productId)) {
+            setInventory(prev => {
+              const newMap = new Map(prev);
+              // Только обновляем если нет записи в point_products
+              if (!newMap.has(productId) || newMap.get(productId)?.source !== 'point_products') {
+                if (payload.eventType === 'DELETE') {
+                  newMap.delete(productId);
+                } else {
+                  newMap.set(productId, {
+                    stock: payload.new?.quantity_available || 0,
+                    updatedAt: new Date(payload.new?.updated_at || Date.now()),
+                    source: 'pickup_point_products'
+                  });
+                }
               }
               return newMap;
             });
@@ -118,8 +167,9 @@ export const useInventorySync = (pointId, productIds = []) => {
           if (productIds.includes(productId)) {
             setInventory(prev => {
               const newMap = new Map(prev);
-              // Только обновляем если нет записи в pickup_point_products
-              if (!newMap.has(productId) || newMap.get(productId)?.source !== 'pickup_point_products') {
+              // Только обновляем если нет записи в point_products или pickup_point_products
+              const currentSource = newMap.get(productId)?.source;
+              if (!newMap.has(productId) || (currentSource !== 'point_products' && currentSource !== 'pickup_point_products')) {
                 if (payload.eventType === 'DELETE') {
                   newMap.delete(productId);
                 } else {

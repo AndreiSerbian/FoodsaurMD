@@ -67,66 +67,29 @@ export const CartProvider = ({ children }) => {
     setCartTotal(total);
   }, [cartItems]);
 
-  const handleAddToCart = async (product, producerSlug, pointId, pointName) => {
+  const handleAddToCart = (product, pointId) => {
     try {
-      // If no pointId provided, try to get it automatically
-      let actualPointId = pointId;
-      let actualPointName = pointName;
-      let actualProducerSlug = producerSlug;
-      
-      // If missing parameters, try to get them from product context
-      if (!actualPointId || !actualProducerSlug || !actualPointName) {
-        // This should be handled by the calling component
-        toast({
-          title: "Ошибка",
-          description: "Недостаточно данных для добавления товара",
-          variant: "destructive"
-        });
-        return;
-      }
-
+      // Simplified add to cart - directly add to state
       const item = {
-        productId: product.id || `product-${Date.now()}-${Math.random()}`,
-        producerSlug: actualProducerSlug,
-        pointId: actualPointId,
-        qty: 1, // ВСЕГДА добавляем 1 штуку за раз
-        price: product.priceDiscount || product.priceRegular || product.price,
-        unit: product.priceUnit || product.price_unit || 'шт',
-        name: product.productName || product.name || 'Товар без названия',
-        product: product
+        id: product.id,
+        name: product.name,
+        price: product.price || 0,
+        unit_type: product.unit_type || 'шт',
+        qty: 1,
+        description: product.description,
+        ingredients: product.ingredients,
+        allergen_info: product.allergen_info,
+        point_product_id: product.point_product_id,
+        stock: product.stock,
+        pointId: pointId
       };
 
-      const result = await addItemWithRules({
-        item,
-        resolveConflict: async (conflictType, conflictData) => {
-          // For now, just show error - UI will handle conflict resolution
-          return false;
-        }
+      addItemToCart(item);
+      
+      toast({
+        title: "Товар добавлен",
+        description: `${product.name} добавлен в корзину`
       });
-
-      if (result.ok) {
-        // Set selected point if not set
-        if (!selectedPointInfo) {
-          setSelectedPoint({ 
-            producerSlug: actualProducerSlug, 
-            pointId: actualPointId, 
-            pointName: actualPointName 
-          });
-        }
-        
-        // НЕ вызываем addItemToCart здесь - товар уже добавлен в addItemWithRules
-        
-        toast({
-          title: "Товар добавлен",
-          description: `${product.name} добавлен в корзину`
-        });
-      } else {
-        toast({
-          title: "Ошибка",
-          description: result.message,
-          variant: "destructive"
-        });
-      }
     } catch (error) {
       console.error('Error adding to cart:', error);
       toast({
@@ -241,6 +204,10 @@ export const CartProvider = ({ children }) => {
   };
 
   const handleUpdateQuantity = (productId, qty) => {
+    if (qty <= 0) {
+      handleRemoveFromCart(productId);
+      return;
+    }
     updateItemQuantity(productId, qty);
   };
 
@@ -296,9 +263,11 @@ export const CartProvider = ({ children }) => {
       selectedPickupTime,
       selectedPointInfo,
       setSelectedPickupTime,
-      addToCart: legacyAddToCart, // Use legacy function for backward compatibility
+      handleAddToCart, // New simplified function
+      addToCart: legacyAddToCart, // Legacy function for backward compatibility
       removeFromCart: handleRemoveFromCart,
       updateQuantity: handleUpdateQuantity,
+      handleUpdateQuantity, // Expose both names for compatibility
       clearCart: handleClearCart,
       createPreOrder: handleCreatePreOrder,
       isWithinDiscountTime

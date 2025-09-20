@@ -6,6 +6,7 @@ import { useToast } from '../hooks/use-toast';
 import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
 import OrderCheckout from './OrderCheckout';
+import CartDebugger from './debug/CartDebugger';
 import { validateCart } from '../modules/cart/inventorySync';
 
 const Cart = () => {
@@ -267,6 +268,15 @@ const Cart = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Cart Debug Panel - only in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 left-4 w-96 z-50">
+          <div className="bg-white border rounded-lg shadow-lg p-4 max-h-96 overflow-y-auto">
+            <CartDebugger />
+          </div>
+        </div>
+      )}
 
       {/* Order Checkout Modal */}
       <OrderCheckout 

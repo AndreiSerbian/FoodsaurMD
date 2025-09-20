@@ -81,30 +81,17 @@ const ProductCardWithPricing = ({ product, selectedPointId }) => {
       return;
     }
 
-    try {
-      handleAddToCart({
-        id: product.id,
-        name: product.name,
-        price: getCurrentPrice(),
-        unit_type: product.unit_type,
-        description: product.description,
-        ingredients: product.ingredients,
-        allergen_info: product.allergen_info,
-        point_product_id: product.point.point_product_id,
-        stock: product.point.stock
-      }, selectedPointId);
-
-      toast({
-        title: "Товар добавлен в корзину",
-        description: `${product.name} добавлен в корзину`,
-      });
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    handleAddToCart({
+      id: product.id,
+      name: product.name,
+      price: getCurrentPrice(),
+      unit_type: product.unit_type,
+      description: product.description,
+      ingredients: product.ingredients,
+      allergen_info: product.allergen_info,
+      point_product_id: product.point.point_product_id,
+      stock: product.point.stock
+    }, selectedPointId);
   };
 
   const handleUpdateQuantityClick = (newQty) => {
@@ -117,15 +104,7 @@ const ProductCardWithPricing = ({ product, selectedPointId }) => {
       return;
     }
 
-    try {
-      handleUpdateQuantity(product.id, newQty);
-    } catch (error) {
-      toast({
-        title: "Ошибка",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    handleUpdateQuantity(product.id, newQty);
   };
 
   const discountActive = isDiscountActive();
