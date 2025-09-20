@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import LanguageSelector from './LanguageSelector';
 import MobileMenu from './MobileMenu';
 import Cart from './Cart';
+import NewCart from './NewCart';
 const Layout = ({ children }) => {
   const { user, userRole, signOut } = useAuth();
   const {
@@ -68,7 +69,13 @@ const Layout = ({ children }) => {
         </div>
       </footer>
       
-      <Cart />
+      {/* Корзины */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <Cart />
+      </div>
+      <div className="fixed bottom-4 left-4 z-50">
+        <NewCart />
+      </div>
     </div>;
 };
 export default Layout;

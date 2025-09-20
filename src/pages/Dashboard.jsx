@@ -8,6 +8,8 @@ import OrderManagement from '../components/OrderManagement';
 import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
 import PointProductsManagement from '../components/admin/PointProductsManagement';
 import GlobalCatalogManagement from '../components/admin/GlobalCatalogManagement';
+import InventoryManagement from '../components/admin/InventoryManagement';
+import SampleData from '../components/fixtures/SampleData';
 import DataDebugPanel from '../components/debug/DataDebugPanel';
 import CategorySelector from '../components/CategorySelector';
 import { Button } from '../components/ui/button';
@@ -207,6 +209,9 @@ const Dashboard = () => {
       {/* Управление товарами в точках выдачи */}
       {profile && <PointProductsManagement producerProfile={profile} />}
 
+      {/* Управление остатками и вариантами */}
+      {profile && <InventoryManagement producerPointId={null} />}
+
       {/* Управление точками выдачи */}
       <PickupPointManagement producerProfile={profile} />
 
@@ -220,6 +225,7 @@ const Dashboard = () => {
       {profile && (
         <div className="bg-white overflow-hidden shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
+            <SampleData />
             <DataDebugPanel 
               producerSlug={profile.slug}
               pointId={null}
