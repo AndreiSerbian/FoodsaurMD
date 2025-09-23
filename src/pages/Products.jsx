@@ -76,18 +76,19 @@ const Products = () => {
              const primaryImage = product.product_images?.find(img => img.is_primary);
              console.log(`Product: ${product.name}, Primary image:`, primaryImage);
              
-             return {
-               id: product.id,
-               productName: product.name,
-               description: product.description,
-               priceRegular: parseFloat(product.price_regular),
-               priceDiscount: parseFloat(product.price_discount || product.price_regular),
-               image: primaryImage?.image_url || '/placeholder.svg',
-               ingredients: product.ingredients,
-               allergen_info: product.allergen_info,
-               quantity: product.quantity,
-               in_stock: product.in_stock
-             };
+              return {
+                id: product.id,
+                productName: product.name,
+                description: product.description,
+                price_regular: parseFloat(product.price_regular || 0),
+                price_discount: product.price_discount ? parseFloat(product.price_discount) : null,
+                price_unit: product.price_unit || 'шт',
+                image: primaryImage?.image_url || '/placeholder.svg',
+                ingredients: product.ingredients,
+                allergen_info: product.allergen_info,
+                quantity: product.quantity,
+                in_stock: product.in_stock
+              };
            })
          };
 
