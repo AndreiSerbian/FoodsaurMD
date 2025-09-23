@@ -63,7 +63,7 @@ const CartCalculator = ({ cartItems, onValidationChange }) => {
 
     cartItems.forEach(item => {
       const productData = inventory.get(item.productId);
-      const price = Number(productData?.price || item.price || 0);
+      const price = productData?.price || item.price || 0;
       totalAmount += price * item.qty;
       totalItems += item.qty;
     });
@@ -91,7 +91,7 @@ const CartCalculator = ({ cartItems, onValidationChange }) => {
         <h3 className="font-semibold text-foreground">Состав заказа:</h3>
         {cartItems.map(item => {
           const productData = inventory.get(item.productId);
-          const price = Number(productData?.price || item.price || 0);
+          const price = productData?.price || item.price || 0;
           const unit = productData?.unit || 'шт';
           const subtotal = price * item.qty;
 

@@ -6,11 +6,6 @@ import CategoryManagement from '../components/CategoryManagement';
 import PickupPointManagement from '../components/PickupPointManagement';
 import OrderManagement from '../components/OrderManagement';
 import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
-import PointProductsManagement from '../components/admin/PointProductsManagement';
-import GlobalCatalogManagement from '../components/admin/GlobalCatalogManagement';
-import InventoryManagement from '../components/admin/InventoryManagement';
-import SampleData from '../components/fixtures/SampleData';
-import DataDebugPanel from '../components/debug/DataDebugPanel';
 import CategorySelector from '../components/CategorySelector';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -203,14 +198,8 @@ const Dashboard = () => {
       {/* Управление категориями */}
       {profile && <CategoryManagement producerProfile={profile} />}
 
-      {/* Управление глобальным каталогом */}
-      {profile && <GlobalCatalogManagement producerProfile={profile} />}
-
-      {/* Управление товарами в точках выдачи */}
-      {profile && <PointProductsManagement producerProfile={profile} />}
-
-      {/* Управление остатками и вариантами */}
-      {profile && <InventoryManagement producerPointId={null} />}
+      {/* Управление товарами */}
+      <ProductManagement profile={profile} />
 
       {/* Управление точками выдачи */}
       <PickupPointManagement producerProfile={profile} />
@@ -220,19 +209,6 @@ const Dashboard = () => {
 
       {/* Управление заказами */}
       <OrderManagement producerProfile={profile} />
-
-      {/* Панель отладки данных */}
-      {profile && (
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <SampleData />
-            <DataDebugPanel 
-              producerSlug={profile.slug}
-              pointId={null}
-            />
-          </div>
-        </div>
-      )}
     </div>;
 };
 export default Dashboard;

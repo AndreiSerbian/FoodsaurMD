@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
-import { NewCartProvider } from "./contexts/NewCartContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Layout from "./components/Layout";
@@ -14,7 +13,7 @@ import Home from "./pages/Home";
 import Producers from "./pages/Producers";
 import ProducerProfile from "./pages/ProducerProfile";
 import ProducerPoints from "./pages/ProducerPoints";
-import Products from "./pages/Products.jsx";
+import Products from "./pages/Products";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -29,8 +28,7 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <AuthProvider>
-          <NewCartProvider>
-            <CartProvider>
+          <CartProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -68,8 +66,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
-            </CartProvider>
-          </NewCartProvider>
+          </CartProvider>
         </AuthProvider>
       </LanguageProvider>
     </TooltipProvider>

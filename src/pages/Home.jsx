@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
@@ -111,16 +112,16 @@ const Home = () => {
                         />
                       </div>
                       <div className="p-6">
-                        <div className="text-sm font-medium text-primary mb-1">{producer.categoryName}</div>
+                        <div className="text-sm font-medium text-blue-500 mb-1">{producer.categoryName}</div>
                         <h3 className="text-xl font-semibold mb-2">{producer.producerName}</h3>
-                        <p className="text-muted-foreground text-sm">{producer.address}</p>
+                        <p className="text-gray-600 text-sm">{producer.address}</p>
                       </div>
                     </Link>
                   </motion.div>
                 ))}
               </div>
             ) : (
-              <p className="text-center text-muted-foreground">По вашему запросу ничего не найдено.</p>
+              <p className="text-center text-gray-500">По вашему запросу ничего не найдено.</p>
             )}
           </motion.div>
         )}

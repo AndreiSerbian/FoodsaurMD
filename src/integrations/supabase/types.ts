@@ -194,6 +194,65 @@ export type Database = {
           },
         ]
       }
+      pickup_point_products: {
+        Row: {
+          created_at: string
+          id: string
+          is_available: boolean
+          pickup_point_id: string
+          product_id: string
+          quantity_available: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          pickup_point_id: string
+          product_id: string
+          quantity_available?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          pickup_point_id?: string
+          product_id?: string
+          quantity_available?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pickup_point_products_pickup_point_id"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pickup_point_products_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickup_point_products_pickup_point_id_fkey"
+            columns: ["pickup_point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pickup_point_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pickup_points: {
         Row: {
           address: string
@@ -271,81 +330,42 @@ export type Database = {
       }
       point_inventory: {
         Row: {
-          bulk_qty: number
-          id: string
+          is_listed: boolean
           point_id: string
           product_id: string
-          updated_at: string
+          stock: number
+          updated_at: string | null
         }
         Insert: {
-          bulk_qty?: number
-          id?: string
+          is_listed?: boolean
           point_id: string
           product_id: string
-          updated_at?: string
+          stock?: number
+          updated_at?: string | null
         }
         Update: {
-          bulk_qty?: number
-          id?: string
+          is_listed?: boolean
           point_id?: string
           product_id?: string
-          updated_at?: string
+          stock?: number
+          updated_at?: string | null
         }
-        Relationships: []
-      }
-      point_variants: {
-        Row: {
-          created_at: string
-          discount_end: string | null
-          discount_start: string | null
-          id: string
-          is_active: boolean
-          pack_size_base: number | null
-          point_id: string
-          price_discount: number | null
-          price_per_kg: number | null
-          price_per_pack: number | null
-          price_per_unit: number | null
-          product_id: string
-          sale_mode: Database["public"]["Enums"]["sale_mode"]
-          updated_at: string
-          variant_name: string
-        }
-        Insert: {
-          created_at?: string
-          discount_end?: string | null
-          discount_start?: string | null
-          id?: string
-          is_active?: boolean
-          pack_size_base?: number | null
-          point_id: string
-          price_discount?: number | null
-          price_per_kg?: number | null
-          price_per_pack?: number | null
-          price_per_unit?: number | null
-          product_id: string
-          sale_mode: Database["public"]["Enums"]["sale_mode"]
-          updated_at?: string
-          variant_name: string
-        }
-        Update: {
-          created_at?: string
-          discount_end?: string | null
-          discount_start?: string | null
-          id?: string
-          is_active?: boolean
-          pack_size_base?: number | null
-          point_id?: string
-          price_discount?: number | null
-          price_per_kg?: number | null
-          price_per_pack?: number | null
-          price_per_unit?: number | null
-          product_id?: string
-          sale_mode?: Database["public"]["Enums"]["sale_mode"]
-          updated_at?: string
-          variant_name?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "point_inventory_point_id_fkey"
+            columns: ["point_id"]
+            isOneToOne: false
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "point_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pre_order_items: {
         Row: {
@@ -727,56 +747,50 @@ export type Database = {
       products: {
         Row: {
           allergen_info: string | null
-          base_unit: Database["public"]["Enums"]["base_unit"] | null
           created_at: string | null
           description: string
+          discount_size: number | null
           id: string
-          images: Json | null
           in_stock: boolean | null
           ingredients: string | null
-          is_active: boolean | null
-          measure_kind: Database["public"]["Enums"]["measure_kind"] | null
           name: string
+          price_discount: number | null
+          price_regular: number
+          price_unit: string
           producer_id: string
           quantity: number
-          sku: string | null
-          unit_type: string
           updated_at: string | null
         }
         Insert: {
           allergen_info?: string | null
-          base_unit?: Database["public"]["Enums"]["base_unit"] | null
           created_at?: string | null
           description: string
+          discount_size?: number | null
           id?: string
-          images?: Json | null
           in_stock?: boolean | null
           ingredients?: string | null
-          is_active?: boolean | null
-          measure_kind?: Database["public"]["Enums"]["measure_kind"] | null
           name: string
+          price_discount?: number | null
+          price_regular: number
+          price_unit?: string
           producer_id: string
           quantity?: number
-          sku?: string | null
-          unit_type?: string
           updated_at?: string | null
         }
         Update: {
           allergen_info?: string | null
-          base_unit?: Database["public"]["Enums"]["base_unit"] | null
           created_at?: string | null
           description?: string
+          discount_size?: number | null
           id?: string
-          images?: Json | null
           in_stock?: boolean | null
           ingredients?: string | null
-          is_active?: boolean | null
-          measure_kind?: Database["public"]["Enums"]["measure_kind"] | null
           name?: string
+          price_discount?: number | null
+          price_regular?: number
+          price_unit?: string
           producer_id?: string
           quantity?: number
-          sku?: string | null
-          unit_type?: string
           updated_at?: string | null
         }
         Relationships: [
@@ -815,14 +829,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      atomic_inventory_deduction: {
-        Args: {
-          p_deduct_amount: number
-          p_point_id: string
-          p_product_id: string
-        }
-        Returns: Json
-      }
       generate_order_code: {
         Args: { length_param?: number }
         Returns: string
@@ -857,9 +863,6 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "producer"
-      base_unit: "g" | "pcs"
-      measure_kind: "mass" | "unit"
-      sale_mode: "per_pack" | "per_weight" | "per_unit"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -988,9 +991,6 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "producer"],
-      base_unit: ["g", "pcs"],
-      measure_kind: ["mass", "unit"],
-      sale_mode: ["per_pack", "per_weight", "per_unit"],
     },
   },
 } as const

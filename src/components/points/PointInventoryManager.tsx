@@ -37,7 +37,8 @@ interface InventoryItem {
 interface Product {
   id: string;
   name: string;
-  unit_type: string;
+  price_regular: number;
+  price_unit: string;
   quantity: number;
 }
 
@@ -83,7 +84,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, unit_type, quantity')
+        .select('id, name, price_regular, price_unit, quantity')
         .eq('producer_id', producerId);
 
       if (error) throw error;
@@ -314,10 +315,10 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                       <div className="flex-1">
                         <h4 className="font-medium">{product.name}</h4>
                         <p className="text-sm text-muted-foreground">
-                          Фасовка: {product.unit_type}
+                          {formatPrice(product.price_regular)} / {product.price_unit}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          Основной остаток: {formatQuantity(product.quantity, product.unit_type)}
+                          Основной остаток: {formatQuantity(product.quantity, product.price_unit)}
                         </p>
                       </div>
                       <Button 

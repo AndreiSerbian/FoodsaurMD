@@ -5,7 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collap
 import { ChevronDown } from 'lucide-react';
 import ProductList from './ProductList';
 import ProductForm from './ProductForm';
-import PointProductsManagement from './PointProductsManagement';
+import ProductInventoryManager from './ProductInventoryManager';
 const ProductManagement = ({
   profile
 }) => {
@@ -83,7 +83,7 @@ const ProductManagement = ({
             <ProductList key={refreshKey} producerProfile={profile} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
             
             <div className="mt-8">
-              <PointProductsManagement producerProfile={profile} />
+              <ProductInventoryManager producerProfile={profile} />
             </div>
 
             {showAddForm && <ProductForm product={editingProduct} producerProfile={profile} onSave={handleSaveProduct} onCancel={handleCloseForm} />}
