@@ -18,7 +18,7 @@ export function getUnitLabel(unit) {
  * @returns {string}
  */
 export function formatPrice(price, unit) {
-  return `${price.toFixed(2)} лей/${getUnitLabel(unit)}`;
+  return `${(price || 0).toFixed(2)} лей/${getUnitLabel(unit)}`;
 }
 
 /**

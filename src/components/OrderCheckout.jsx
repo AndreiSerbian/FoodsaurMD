@@ -310,19 +310,19 @@ const OrderCheckout = ({ isOpen, onClose }) => {
                             <>
                               <div className="flex items-center gap-2">
                                 <span className="price-original">
-                                  {item.originalPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                  {(item.originalPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
                                 </span>
                                 <Badge variant="secondary" className="discount-highlight">
-                                  -{item.discountPercent}%
+                                  -{item.discountPercent || 0}%
                                 </Badge>
                               </div>
                               <div className="price-discount">
-                                {item.finalPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                {(item.finalPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
                               </div>
                             </>
                           ) : (
                             <div className="font-semibold">
-                              {item.finalPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                              {(item.finalPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
                             </div>
                           )}
                         </div>
@@ -332,15 +332,15 @@ const OrderCheckout = ({ isOpen, onClose }) => {
                         {item.hasDiscount ? (
                           <>
                             <div className="price-original text-sm">
-                              {(item.originalPrice * item.qty).toFixed(2)} MDL
+                              {((item.originalPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
                             </div>
                             <div className="price-discount font-bold">
-                              {(item.finalPrice * item.qty).toFixed(2)} MDL
+                              {((item.finalPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
                             </div>
                           </>
                         ) : (
                           <div className="font-bold">
-                            {(item.finalPrice * item.qty).toFixed(2)} MDL
+                            {((item.finalPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
                           </div>
                         )}
                       </div>
@@ -355,17 +355,17 @@ const OrderCheckout = ({ isOpen, onClose }) => {
                   <>
                     <div className="flex justify-between items-center text-muted-foreground">
                       <span>Сумма без скидки:</span>
-                      <span className="price-original">{originalTotal.toFixed(2)} MDL</span>
+                      <span className="price-original">{(originalTotal || 0).toFixed(2)} MDL</span>
                     </div>
                     <div className="flex justify-between items-center text-green-600">
                       <span>Экономия:</span>
-                      <span>-{totalSavings.toFixed(2)} MDL</span>
+                      <span>-{(totalSavings || 0).toFixed(2)} MDL</span>
                     </div>
                   </>
                 )}
                 <div className="flex justify-between items-center font-bold text-lg">
                   <span>Итого к оплате:</span>
-                  <span className="price-discount">{discountedTotal.toFixed(2)} MDL</span>
+                  <span className="price-discount">{(discountedTotal || 0).toFixed(2)} MDL</span>
                 </div>
               </div>
             </CardContent>
@@ -441,7 +441,7 @@ const OrderCheckout = ({ isOpen, onClose }) => {
                 disabled={isProcessing || !selectedPickupPoint || !selectedDate || !selectedTime}
                 className="flex-1"
               >
-                {isProcessing ? 'Создание заказа...' : `Оформить заказ на ${discountedTotal.toFixed(2)} MDL`}
+                {isProcessing ? 'Создание заказа...' : `Оформить заказ на ${(discountedTotal || 0).toFixed(2)} MDL`}
               </Button>
             </div>
           </form>
