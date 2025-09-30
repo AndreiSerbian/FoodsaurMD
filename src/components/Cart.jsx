@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '../hooks/use-toast';
 import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
 import OrderCheckout from './OrderCheckout';
 import { validateCart } from '../modules/cart/inventorySync';
+import { useDiscounts, isDiscountActive, calculateDiscountedPrice } from '@/hooks/useDiscounts';
 
 const Cart = () => {
   const {
@@ -24,6 +26,10 @@ const Cart = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [cartValid, setCartValid] = useState(true);
   const [validationErrors, setValidationErrors] = useState([]);
+  
+  // Получаем скидки для товаров в корзине
+  const productIds = cartItems.map(item => item.productId);
+  const { discounts } = useDiscounts(productIds);
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -196,39 +202,62 @@ const Cart = () => {
                 </div>
               ) : (
                 <ul className="space-y-4">
-                  {cartItems.map((item, index) => (
-                    <li key={item.productId || index} className="border-b pb-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                           <h3 className="font-medium">{item.name || item.product?.name || `Товар #${item.productId}`}</h3>
-                           <p className="text-sm text-gray-500">{item.producerSlug}</p>
-                            <div className="mt-1">
-                              <span className="font-semibold">
-                                {item.price} MDL/{item.unit || item.product?.price_unit || 'шт'}
-                              </span>
-                            </div>
-                         </div>
-                         <div className="ml-4">
-                           <StockAwareQuantityInput
-                             productId={item.productId}
-                             value={item.qty}
-                             unit={item.unit || item.product?.price_unit || 'шт'}
-                             onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
-                             className="w-32"
-                           />
-                         </div>
-                      </div>
-                      <button 
-                        onClick={() => removeFromCart(item.productId)}
-                        className="text-sm text-red-500 mt-2 flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        Удалить
-                      </button>
-                    </li>
-                  ))}
+                  {cartItems.map((item, index) => {
+                    const discount = discounts.find(d => d.product_id === item.productId);
+                    const hasActiveDiscount = discount && isDiscountActive(discount);
+                    const originalPrice = item.price || 0;
+                    const discountedPrice = hasActiveDiscount ? calculateDiscountedPrice(originalPrice, discount) : originalPrice;
+                    
+                    return (
+                      <li key={item.productId || index} className="border-b pb-4">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                             <h3 className="font-medium">{item.name || item.product?.name || `Товар #${item.productId}`}</h3>
+                             <p className="text-sm text-gray-500">{item.producerSlug}</p>
+                              <div className="mt-1 space-y-1">
+                                {hasActiveDiscount ? (
+                                  <>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm line-through text-muted-foreground">
+                                        {originalPrice.toFixed(2)} MDL/{item.unit || item.product?.price_unit || 'шт'}
+                                      </span>
+                                      <Badge variant="secondary" className="text-xs">
+                                        -{discount.discount_percent}%
+                                      </Badge>
+                                    </div>
+                                    <div className="font-semibold text-green-600">
+                                      {discountedPrice.toFixed(2)} MDL/{item.unit || item.product?.price_unit || 'шт'}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <span className="font-semibold">
+                                    {originalPrice.toFixed(2)} MDL/{item.unit || item.product?.price_unit || 'шт'}
+                                  </span>
+                                )}
+                              </div>
+                           </div>
+                           <div className="ml-4">
+                             <StockAwareQuantityInput
+                               productId={item.productId}
+                               value={item.qty}
+                               unit={item.unit || item.product?.price_unit || 'шт'}
+                               onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
+                               className="w-32"
+                             />
+                           </div>
+                        </div>
+                        <button 
+                          onClick={() => removeFromCart(item.productId)}
+                          className="text-sm text-red-500 mt-2 flex items-center"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Удалить
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
@@ -237,6 +266,7 @@ const Cart = () => {
               <div className="p-6 border-t">
                 <CartCalculator 
                   cartItems={cartItems}
+                  discounts={discounts}
                   onValidationChange={(valid, errors) => {
                     setCartValid(valid);
                     setValidationErrors(errors);
