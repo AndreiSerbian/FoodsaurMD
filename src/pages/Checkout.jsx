@@ -22,7 +22,6 @@ const Checkout = () => {
   
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [orderCode, setOrderCode] = useState(null);
   const [orderId, setOrderId] = useState(null);
@@ -63,12 +62,18 @@ const Checkout = () => {
     fetchPointDetails();
   }, [selectedPointInfo, toast]);
 
-  // Generate time slots based on point's work hours
+  // Generate time slots based on point's work hours and current time (UTC+3)
   useEffect(() => {
-    if (!selectedDate || !pointDetails?.work_hours) return;
+    if (!pointDetails?.work_hours) return;
 
-    const selectedDateObj = new Date(selectedDate);
-    const dayOfWeek = selectedDateObj.getDay(); // 0 = Sunday, 6 = Saturday
+    // Get current time in UTC+3 (Moldova timezone)
+    const now = new Date();
+    const utc3Now = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+    const currentHour = utc3Now.getUTCHours();
+    const currentMinute = utc3Now.getUTCMinutes();
+    
+    // Get today's day of week (0 = Sunday, 6 = Saturday)
+    const dayOfWeek = utc3Now.getUTCDay();
     
     // work_hours format: { "0": { "start": "09:00", "end": "18:00" }, ... }
     const daySchedule = pointDetails.work_hours[dayOfWeek];
@@ -77,18 +82,51 @@ const Checkout = () => {
       setAvailableTimeSlots([]);
       toast({
         title: "Точка закрыта",
-        description: "Выбранная точка не работает в этот день",
+        description: "Точка не работает сегодня. Пожалуйста, попробуйте в другой день.",
         variant: "destructive"
       });
       return;
     }
 
-    // Generate hourly slots between start and end time
-    const slots = [];
-    const [startHour] = daySchedule.start.split(':').map(Number);
-    const [endHour] = daySchedule.end.split(':').map(Number);
+    // Parse work hours
+    const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
+    const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
 
-    for (let hour = startHour; hour < endHour; hour++) {
+    // Check if point is already closed for today
+    if (currentHour > endHour || (currentHour === endHour && currentMinute >= endMinute)) {
+      setAvailableTimeSlots([]);
+      toast({
+        title: "Точка закрыта",
+        description: "Точка уже закрыта на сегодня. Пожалуйста, вернитесь завтра.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Check if point hasn't opened yet today
+    if (currentHour < startHour || (currentHour === startHour && currentMinute < startMinute)) {
+      // Point will open later today - show all slots from opening time
+      const slots = [];
+      for (let hour = startHour; hour < endHour; hour++) {
+        const timeString = `${hour.toString().padStart(2, '0')}:00`;
+        slots.push({
+          time: timeString,
+          display: `${timeString} - ${(hour + 1).toString().padStart(2, '0')}:00`
+        });
+      }
+      setAvailableTimeSlots(slots);
+      toast({
+        title: "Точка откроется позже",
+        description: `Точка откроется в ${daySchedule.start}. Выберите время получения.`,
+      });
+      return;
+    }
+
+    // Point is open now - generate slots starting from next full hour
+    const slots = [];
+    const nextAvailableHour = currentMinute < 30 ? currentHour + 1 : currentHour + 2;
+    
+    for (let hour = nextAvailableHour; hour < endHour; hour++) {
       const timeString = `${hour.toString().padStart(2, '0')}:00`;
       slots.push({
         time: timeString,
@@ -96,8 +134,16 @@ const Checkout = () => {
       });
     }
 
+    if (slots.length === 0) {
+      toast({
+        title: "Нет доступных временных слотов",
+        description: "Точка скоро закроется. Пожалуйста, вернитесь завтра.",
+        variant: "destructive"
+      });
+    }
+
     setAvailableTimeSlots(slots);
-  }, [selectedDate, pointDetails, toast]);
+  }, [pointDetails, toast]);
 
   // Calculate totals
   const { originalTotal, discountedTotal, totalSavings } = useMemo(() => {
@@ -122,10 +168,10 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedDate || !selectedTime) {
+    if (!selectedTime) {
       toast({
         title: "Ошибка", 
-        description: "Выберите дату и время получения",
+        description: "Выберите время получения",
         variant: "destructive"
       });
       return;
@@ -134,8 +180,11 @@ const Checkout = () => {
     setIsProcessing(true);
     
     try {
-      // Combine date and time
-      const pickupDateTime = new Date(`${selectedDate}T${selectedTime}`);
+      // Get today's date in UTC+3 and combine with selected time
+      const now = new Date();
+      const utc3Now = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+      const todayDate = utc3Now.toISOString().slice(0, 10);
+      const pickupDateTime = new Date(`${todayDate}T${selectedTime}`);
       
       const result = await createPreOrder({
         customer: {
@@ -188,10 +237,11 @@ const Checkout = () => {
     navigate('/');
   };
 
-  // Get minimum date (today)
-  const getMinimumDate = () => {
-    const today = new Date();
-    return today.toISOString().slice(0, 10);
+  // Get today's date in UTC+3 (Moldova timezone)
+  const getTodayDate = () => {
+    const now = new Date();
+    const utc3Now = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+    return utc3Now.toISOString().slice(0, 10);
   };
 
   // If order is created, show success screen
@@ -242,7 +292,7 @@ const Checkout = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Дата получения:</span>
-                      <span className="font-medium">{selectedDate}</span>
+                      <span className="font-medium">{getTodayDate()}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Время:</span>
@@ -308,25 +358,23 @@ const Checkout = () => {
           <Card>
             <CardContent className="pt-6">
               <h3 className="font-medium mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Дата и время получения
+                <Clock className="h-5 w-5 text-primary" />
+                Время получения
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="pickupDate">Дата получения *</Label>
+                  <Label htmlFor="pickupDate">Дата получения</Label>
                   <Input
                     id="pickupDate"
                     type="date"
-                    value={selectedDate}
-                    onChange={(e) => {
-                      setSelectedDate(e.target.value);
-                      setSelectedTime(''); // Reset time when date changes
-                    }}
-                    min={getMinimumDate()}
-                    required
-                    className="mt-1"
+                    value={getTodayDate()}
+                    disabled
+                    className="mt-1 bg-muted"
                   />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Заказы принимаются только на сегодня
+                  </p>
                 </div>
                 
                 <div>
@@ -334,7 +382,7 @@ const Checkout = () => {
                   <Select 
                     value={selectedTime} 
                     onValueChange={setSelectedTime}
-                    disabled={!selectedDate || availableTimeSlots.length === 0}
+                    disabled={availableTimeSlots.length === 0}
                   >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Выберите время" />
@@ -347,8 +395,10 @@ const Checkout = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  {selectedDate && availableTimeSlots.length === 0 && (
-                    <p className="text-sm text-destructive mt-1">Точка не работает в этот день</p>
+                  {availableTimeSlots.length === 0 && (
+                    <p className="text-sm text-destructive mt-1">
+                      Нет доступных временных слотов
+                    </p>
                   )}
                 </div>
               </div>
@@ -447,7 +497,7 @@ const Checkout = () => {
             </Button>
             <Button
               type="submit"
-              disabled={isProcessing || !selectedDate || !selectedTime}
+              disabled={isProcessing || !selectedTime || availableTimeSlots.length === 0}
               className="flex-1"
               size="lg"
             >
