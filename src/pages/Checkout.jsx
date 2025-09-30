@@ -72,13 +72,17 @@ const Checkout = () => {
     const currentHour = utc3Now.getUTCHours();
     const currentMinute = utc3Now.getUTCMinutes();
     
-    // Get today's day of week (0 = Sunday, 6 = Saturday)
+    // Get today's day of week
     const dayOfWeek = utc3Now.getUTCDay();
     
-    // work_hours format: { "0": { "start": "09:00", "end": "18:00" }, ... }
-    const daySchedule = pointDetails.work_hours[dayOfWeek];
+    // Map day number to day name
+    const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    const dayName = dayNames[dayOfWeek];
     
-    if (!daySchedule || !daySchedule.start || !daySchedule.end) {
+    // Get today's schedule - work_hours format: { "mon": [{"open": "07:30", "close": "19:30"}], ... }
+    const daySchedule = pointDetails.work_hours[dayName];
+    
+    if (!daySchedule || !Array.isArray(daySchedule) || daySchedule.length === 0) {
       setAvailableTimeSlots([]);
       toast({
         title: "Точка закрыта",
@@ -88,9 +92,21 @@ const Checkout = () => {
       return;
     }
 
-    // Parse work hours
-    const [startHour, startMinute] = daySchedule.start.split(':').map(Number);
-    const [endHour, endMinute] = daySchedule.end.split(':').map(Number);
+    // Get first time slot (assuming single shift per day)
+    const schedule = daySchedule[0];
+    if (!schedule.open || !schedule.close) {
+      setAvailableTimeSlots([]);
+      toast({
+        title: "Точка закрыта",
+        description: "Не указано время работы на сегодня.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Parse work hours (format: "HH:MM")
+    const [startHour, startMinute] = schedule.open.split(':').map(Number);
+    const [endHour, endMinute] = schedule.close.split(':').map(Number);
 
     // Check if point is already closed for today
     if (currentHour > endHour || (currentHour === endHour && currentMinute >= endMinute)) {
@@ -117,7 +133,7 @@ const Checkout = () => {
       setAvailableTimeSlots(slots);
       toast({
         title: "Точка откроется позже",
-        description: `Точка откроется в ${daySchedule.start}. Выберите время получения.`,
+        description: `Точка откроется в ${schedule.open}. Выберите время получения.`,
       });
       return;
     }
