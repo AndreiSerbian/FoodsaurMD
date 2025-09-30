@@ -1,58 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { formatPrice, formatQuantity } from '@/utils/unitUtils';
-import { getInventoryData } from '@/modules/cart/inventorySync';
-import { getSelectedPoint } from '@/modules/cart/cartState';
 import { Badge } from '@/components/ui/badge';
 
 /**
  * Компонент для расчета корзины с учетом единиц измерения
  * Показывает итоговую сумму и количество по каждому товару
  */
-const CartCalculator = ({ cartItems, onValidationChange }) => {
-  const [inventory, setInventory] = useState(new Map());
-  const [validationErrors, setValidationErrors] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const validateAndCalculate = async () => {
-      if (!cartItems || cartItems.length === 0) {
-        onValidationChange?.(true, []);
-        return;
-      }
-
-      const selectedPoint = getSelectedPoint();
-      if (!selectedPoint) return;
-
-      setIsLoading(true);
-      try {
-        const productIds = cartItems.map(item => item.productId);
-        const inventoryData = await getInventoryData(selectedPoint.pointId, productIds);
-        setInventory(inventoryData);
-
-        // Проверка доступности
-        const errors = [];
-        cartItems.forEach(item => {
-          const productData = inventoryData.get(item.productId);
-          if (!productData || item.qty > productData.stock) {
-            errors.push({
-              productId: item.productId,
-              message: `Превышен остаток товара (доступно: ${productData?.stock || 0} ${productData?.unit || 'шт'})`
-            });
-          }
-        });
-
-        setValidationErrors(errors);
-        onValidationChange?.(errors.length === 0, errors);
-      } catch (error) {
-        console.error('Error validating cart:', error);
-        onValidationChange?.(false, []);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    validateAndCalculate();
-  }, [cartItems, onValidationChange]);
+const CartCalculator = ({ cartItems }) => {
+  if (!cartItems || cartItems.length === 0) {
+    return null;
+  }
 
   // Расчет итогов с учетом скидок из point_variants
   const calculateTotals = () => {
@@ -74,17 +31,6 @@ const CartCalculator = ({ cartItems, onValidationChange }) => {
   };
 
   const { totalAmount, originalAmount, totalItems, hasSavings } = calculateTotals();
-
-  if (isLoading) {
-    return (
-      <div className="bg-card p-4 rounded-lg">
-        <div className="animate-pulse">
-          <div className="h-4 bg-muted rounded w-1/2 mb-2"></div>
-          <div className="h-6 bg-muted rounded w-3/4"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-card p-4 rounded-lg space-y-4">
@@ -136,17 +82,6 @@ const CartCalculator = ({ cartItems, onValidationChange }) => {
         })}
       </div>
 
-      {/* Ошибки валидации */}
-      {validationErrors.length > 0 && (
-        <div className="bg-destructive/10 border border-destructive/20 p-3 rounded">
-          <h4 className="text-destructive font-medium mb-2 text-sm">⚠️ Превышен доступный остаток:</h4>
-          {validationErrors.map(error => (
-            <div key={error.productId} className="text-sm text-destructive">
-              {error.message}
-            </div>
-          ))}
-        </div>
-      )}
 
       {/* Итоги */}
       <div className="border-t pt-4 space-y-2">

@@ -118,7 +118,7 @@ export const CartProvider = ({ children }) => {
         
         toast({
           title: "Товар добавлен",
-          description: `${product.name} добавлен в корзину`
+          description: `${product.productName || product.name || 'Товар'} добавлен в корзину`
         });
       } else {
         toast({

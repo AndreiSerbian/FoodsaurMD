@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '../hooks/use-toast';
 import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
 import OrderCheckout from './OrderCheckout';
-import { validateCart } from '../modules/cart/inventorySync';
 
 const Cart = () => {
   const {
@@ -23,37 +21,10 @@ const Cart = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showOrderAlert, setShowOrderAlert] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
-  const [cartValid, setCartValid] = useState(true);
-  const [validationErrors, setValidationErrors] = useState([]);
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
   };
-
-  // Проверка остатков при изменении корзины
-  useEffect(() => {
-    const checkCartValidity = async () => {
-      if (cartItems.length > 0 && selectedPointInfo?.pointId) {
-        const validation = await validateCart(
-          selectedPointInfo.pointId,
-          cartItems.map(item => ({ productId: item.productId, qty: item.qty }))
-        );
-        
-        setCartValid(validation.valid);
-        setValidationErrors(validation.errors);
-        
-        if (!validation.valid) {
-          toast({
-            title: "Внимание",
-            description: `${validation.errors.length} товар(ов) превышают доступные остатки`,
-            variant: "destructive"
-          });
-        }
-      }
-    };
-    
-    checkCartValidity();
-  }, [cartItems, selectedPointInfo]);
 
   const handleQuantityChange = async (productId, newQuantity) => {
     const qty = Number(newQuantity);
@@ -80,17 +51,7 @@ const Cart = () => {
     updateQuantity(productId, qty);
   };
 
-  const handleCheckout = async () => {
-    // Финальная проверка остатков перед оформлением заказа
-    if (!cartValid) {
-      toast({
-        title: "Невозможно оформить заказ",
-        description: "Некоторые товары превышают доступные остатки",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleCheckout = () => {
     // Открываем окно оформления заказа
     setShowCheckout(true);
   };
@@ -186,19 +147,6 @@ const Cart = () => {
                   <p className="text-sm text-green-700">{selectedPointInfo.pointName}</p>
                 </div>
               )}
-
-              {validationErrors.length > 0 && (
-                <Alert variant="destructive" className="mb-4">
-                  <AlertTitle>Проблемы с остатками</AlertTitle>
-                  <AlertDescription>
-                    {validationErrors.map(error => (
-                      <div key={error.productId} className="text-xs">
-                        Товар: {error.message}
-                      </div>
-                    ))}
-                  </AlertDescription>
-                </Alert>
-              )}
               
               {cartItems.length === 0 ? (
                 <div className="text-center py-12">
@@ -217,17 +165,9 @@ const Cart = () => {
                     const hasActiveDiscount = item.isDiscountActive && item.discountPrice;
                     const regularPrice = item.regularPrice || item.price || 0;
                     const currentPrice = hasActiveDiscount ? item.discountPrice : regularPrice;
-                    const validationError = validationErrors.find(e => e.productId === item.productId);
                     
                     return (
                       <li key={item.productId || index} className="border-b pb-4">
-                        {validationError && (
-                          <Alert variant="destructive" className="mb-2 py-2">
-                            <AlertDescription className="text-xs">
-                              {validationError.message}
-                            </AlertDescription>
-                          </Alert>
-                        )}
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                              <h3 className="font-medium">{item.name || item.product?.name || `Товар #${item.productId}`}</h3>
@@ -294,24 +234,18 @@ const Cart = () => {
               <div className="p-6 border-t">
                 <CartCalculator 
                   cartItems={cartItems}
-                  onValidationChange={(valid, errors) => {
-                    setCartValid(valid);
-                    setValidationErrors(errors);
-                  }}
                 />
                 
                 <button 
                   onClick={handleCheckout}
-                  disabled={!selectedPointInfo || !cartValid}
+                  disabled={!selectedPointInfo}
                   className={`w-full bg-green-900 text-white py-3 rounded-lg mt-4 ${
-                    !selectedPointInfo || !cartValid 
+                    !selectedPointInfo 
                       ? 'opacity-75 cursor-not-allowed' 
                       : 'hover:bg-green-800'
                   } transition duration-300 mb-2 flex items-center justify-center`}
                 >
-                  {!selectedPointInfo ? 'Выберите точку получения' :
-                   !cartValid ? 'Превышен лимит товара' :
-                   'Оформить заказ'}
+                  {!selectedPointInfo ? 'Выберите точку получения' : 'Оформить заказ'}
                 </button>
                 <button 
                   onClick={clearCart}

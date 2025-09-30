@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Plus, Minus } from 'lucide-react';
-import { checkProductAvailability } from '@/modules/cart/inventorySync';
-import { getSelectedPoint, getCart } from '@/modules/cart/cartState';
+import { getSelectedPoint } from '@/modules/cart/cartState';
+import { getPointStock } from '@/modules/cart/inventoryApi';
 import { formatQty, normalizeQty, getStep } from '@/modules/cart/quantity';
 
 /**
@@ -19,7 +19,7 @@ const StockAwareQuantityInput = ({
   className = "" 
 }) => {
   const [inputValue, setInputValue] = useState(formatQty(value, unit));
-  const [maxAvailable, setMaxAvailable] = useState(0);
+  const [maxAvailable, setMaxAvailable] = useState(Infinity);
   const [isLoading, setIsLoading] = useState(false);
 
   const step = getStep(unit);
@@ -36,26 +36,18 @@ const StockAwareQuantityInput = ({
 
       setIsLoading(true);
       try {
-        const cart = getCart();
-        const currentInCart = cart.items?.find(item => item.productId === productId)?.qty || 0;
-        
-        const availability = await checkProductAvailability(
-          selectedPoint.pointId,
-          productId,
-          value,
-          currentInCart - value // исключаем текущее значение из расчета
-        );
-        
-        setMaxAvailable(availability.maxQty);
+        const stock = await getPointStock(selectedPoint.pointId, productId);
+        setMaxAvailable(stock);
       } catch (error) {
         console.error('Error checking availability:', error);
+        setMaxAvailable(Infinity);
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAvailability();
-  }, [productId, value]);
+  }, [productId]);
 
   const handleInputChange = (e) => {
     const inputVal = e.target.value;
@@ -64,15 +56,7 @@ const StockAwareQuantityInput = ({
     const numVal = parseFloat(inputVal) || 0;
     const normalized = normalizeQty(numVal, unit);
     
-    // Ограничиваем значение доступным количеством
-    const finalValue = Math.min(normalized, maxAvailable);
-    
-    if (finalValue !== normalized && maxAvailable > 0) {
-      // Показываем пользователю, что количество ограничено
-      setInputValue(formatQty(finalValue, unit));
-    }
-    
-    onChange?.(finalValue);
+    onChange?.(normalized);
   };
 
   const handleBlur = () => {
@@ -80,7 +64,7 @@ const StockAwareQuantityInput = ({
   };
 
   const increment = () => {
-    const newValue = Math.min(value + step, maxAvailable);
+    const newValue = value + step;
     onChange?.(newValue);
   };
 
@@ -89,8 +73,8 @@ const StockAwareQuantityInput = ({
     onChange?.(newValue);
   };
 
-  const canIncrement = value + step <= maxAvailable && !disabled;
-  const canDecrement = value >= step && !disabled;
+  const canIncrement = !disabled && !isLoading;
+  const canDecrement = value >= step && !disabled && !isLoading;
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
@@ -113,7 +97,6 @@ const StockAwareQuantityInput = ({
         className="w-20 text-center h-8"
         step={step}
         min="0"
-        max={maxAvailable}
       />
       
       <Button
