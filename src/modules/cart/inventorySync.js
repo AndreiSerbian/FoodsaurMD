@@ -21,10 +21,9 @@ export async function getInventoryData(pointId, productIds) {
     // Получаем остатки по точкам из point_inventory
     const { data: pointInventory } = await supabase
       .from('point_inventory')
-      .select('product_id, stock')
+      .select('product_id, bulk_qty')
       .eq('point_id', pointId)
-      .in('product_id', productIds)
-      .eq('is_listed', true);
+      .in('product_id', productIds);
 
     // Получаем данные товаров (цена, единица измерения)  
     const { data: products } = await supabase
@@ -36,7 +35,7 @@ export async function getInventoryData(pointId, productIds) {
     products?.forEach(product => {
       // Приоритет остаткам из point_inventory
       const pointStock = pointInventory?.find(pi => pi.product_id === product.id);
-      const stock = pointStock ? pointStock.stock : product.quantity;
+      const stock = pointStock ? pointStock.bulk_qty : product.quantity;
       
       inventoryMap.set(product.id, {
         stock: stock || 0,

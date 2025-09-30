@@ -11,30 +11,12 @@ import { supabase } from '@/integrations/supabase/client';
  */
 export async function getPointStock(pointId, productId) {
   try {
-    // Сначала пробуем найти в pickup_point_products
-    const { data: pointProduct, error: pointError } = await supabase
-      .from('pickup_point_products')
-      .select('quantity_available')
-      .eq('pickup_point_id', pointId)
-      .eq('product_id', productId)
-      .eq('is_available', true)
-      .maybeSingle();
-
-    if (pointError) {
-      console.warn('Error fetching pickup_point_products:', pointError);
-    }
-
-    if (pointProduct) {
-      return pointProduct.quantity_available || 0;
-    }
-
-    // Если нет в pickup_point_products, пробуем point_inventory
+    // Получаем остаток из point_inventory
     const { data: inventory, error: inventoryError } = await supabase
       .from('point_inventory')
-      .select('stock')
+      .select('bulk_qty')
       .eq('point_id', pointId)
       .eq('product_id', productId)
-      .eq('is_listed', true)
       .maybeSingle();
 
     if (inventoryError) {
@@ -42,7 +24,7 @@ export async function getPointStock(pointId, productId) {
     }
 
     if (inventory) {
-      return inventory.stock || 0;
+      return inventory.bulk_qty || 0;
     }
 
     // Fallback на общий остаток товара

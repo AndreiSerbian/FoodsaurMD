@@ -104,7 +104,7 @@ const CartCalculator = ({ cartItems, onValidationChange }) => {
                 </div>
               </div>
               <div className="text-right">
-                <span className="font-medium">{subtotal.toFixed(2)} лей</span>
+                <span className="font-medium">{(subtotal || 0).toFixed(2)} лей</span>
               </div>
             </div>
           );
@@ -131,7 +131,7 @@ const CartCalculator = ({ cartItems, onValidationChange }) => {
         </div>
         <div className="flex justify-between text-lg font-semibold">
           <span className="text-foreground">Итого:</span>
-          <span className="text-primary">{totalAmount.toFixed(2)} лей</span>
+          <span className="text-primary">{(totalAmount || 0).toFixed(2)} лей</span>
         </div>
       </div>
     </div>
