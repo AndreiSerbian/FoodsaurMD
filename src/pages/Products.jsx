@@ -42,7 +42,7 @@ const Products = () => {
           .from('products')
           .select(`
             *,
-            product_images (
+            product_images!fk_product_images_product_id (
               image_url,
               is_primary
             )
