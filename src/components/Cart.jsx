@@ -8,7 +8,6 @@ import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
 import OrderCheckout from './OrderCheckout';
 import { validateCart } from '../modules/cart/inventorySync';
-import { useDiscounts, isDiscountActive, calculateDiscountedPrice } from '@/hooks/useDiscounts';
 
 const Cart = () => {
   const {
@@ -26,10 +25,6 @@ const Cart = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [cartValid, setCartValid] = useState(true);
   const [validationErrors, setValidationErrors] = useState([]);
-  
-  // Получаем скидки для товаров в корзине
-  const productIds = cartItems.map(item => item.productId);
-  const { discounts } = useDiscounts(productIds);
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -60,11 +55,26 @@ const Cart = () => {
     checkCartValidity();
   }, [cartItems, selectedPointInfo]);
 
-  const handleQuantityChange = (productId, newQuantity) => {
+  const handleQuantityChange = async (productId, newQuantity) => {
     const qty = Number(newQuantity);
     if (qty <= 0) {
       removeFromCart(productId);
       return;
+    }
+    
+    // Проверяем доступность перед обновлением
+    if (selectedPointInfo?.pointId) {
+      const { getPointStock } = await import('../modules/cart/inventoryApi');
+      const availableStock = await getPointStock(selectedPointInfo.pointId, productId);
+      
+      if (qty > availableStock) {
+        toast({
+          title: "Превышен остаток",
+          description: `Доступно только ${availableStock} единиц товара в этой точке`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     updateQuantity(productId, qty);
@@ -203,13 +213,21 @@ const Cart = () => {
               ) : (
                 <ul className="space-y-4">
                   {cartItems.map((item, index) => {
-                    const discount = discounts.find(d => d.product_id === item.productId);
-                    const hasActiveDiscount = discount && isDiscountActive(discount);
-                    const originalPrice = item.price || 0;
-                    const discountedPrice = hasActiveDiscount ? calculateDiscountedPrice(originalPrice, discount) : originalPrice;
+                    // Используем цены из item, которые уже учитывают point_variants
+                    const hasActiveDiscount = item.isDiscountActive && item.discountPrice;
+                    const regularPrice = item.regularPrice || item.price || 0;
+                    const currentPrice = hasActiveDiscount ? item.discountPrice : regularPrice;
+                    const validationError = validationErrors.find(e => e.productId === item.productId);
                     
                     return (
                       <li key={item.productId || index} className="border-b pb-4">
+                        {validationError && (
+                          <Alert variant="destructive" className="mb-2 py-2">
+                            <AlertDescription className="text-xs">
+                              {validationError.message}
+                            </AlertDescription>
+                          </Alert>
+                        )}
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                              <h3 className="font-medium">{item.name || item.product?.name || `Товар #${item.productId}`}</h3>
@@ -219,20 +237,30 @@ const Cart = () => {
                                   <>
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm line-through text-muted-foreground">
-                                        {originalPrice.toFixed(2)} MDL/{item.unit || item.product?.price_unit || 'шт'}
+                                        {regularPrice.toFixed(2)} MDL/{item.unit || 'шт'}
                                       </span>
-                                      <Badge variant="secondary" className="text-xs">
-                                        -{discount.discount_percent}%
+                                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                        Скидка
                                       </Badge>
                                     </div>
                                     <div className="font-semibold text-green-600">
-                                      {discountedPrice.toFixed(2)} MDL/{item.unit || item.product?.price_unit || 'шт'}
+                                      {currentPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                    </div>
+                                    <div className="text-xs text-green-600">
+                                      Экономия: {(regularPrice - currentPrice).toFixed(2)} MDL
                                     </div>
                                   </>
                                 ) : (
-                                  <span className="font-semibold">
-                                    {originalPrice.toFixed(2)} MDL/{item.unit || item.product?.price_unit || 'шт'}
-                                  </span>
+                                  <div>
+                                    <span className="font-semibold">
+                                      {currentPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                    </span>
+                                    {item.discountPrice && (
+                                      <div className="text-xs text-amber-600 mt-1">
+                                        Доступна скидка в определенные часы
+                                      </div>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                            </div>
@@ -240,7 +268,7 @@ const Cart = () => {
                              <StockAwareQuantityInput
                                productId={item.productId}
                                value={item.qty}
-                               unit={item.unit || item.product?.price_unit || 'шт'}
+                               unit={item.unit || 'шт'}
                                onChange={(newQty) => handleQuantityChange(item.productId, newQty)}
                                className="w-32"
                              />
@@ -266,7 +294,6 @@ const Cart = () => {
               <div className="p-6 border-t">
                 <CartCalculator 
                   cartItems={cartItems}
-                  discounts={discounts}
                   onValidationChange={(valid, errors) => {
                     setCartValid(valid);
                     setValidationErrors(errors);

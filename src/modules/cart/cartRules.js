@@ -3,6 +3,7 @@
 import { getMaxAddable } from './inventoryApi.js';
 import { getStep, clampQty, normalizeQty } from './quantity.js';
 import { getCart, setCart } from './cartState.js';
+import { getPointPrice } from './pointPricing.js';
 
 /**
  * @typedef {Object} TrySetQtyResult
@@ -190,10 +191,36 @@ export async function canAddToCart({ product, producerSlug, pointId, qty = 1 }) 
  * @returns {Promise<{ok: boolean, reason?: string, message?: string}>}
  */
 export async function addItemWithRules({ item }) {
+  // Получаем актуальную цену из point_variants
+  const priceInfo = await getPointPrice(item.pointId, item.productId);
+  
+  if (!priceInfo) {
+    return { 
+      ok: false, 
+      reason: 'NO_PRICE', 
+      message: 'Не удалось получить информацию о цене товара' 
+    };
+  }
+
+  // Используем цену со скидкой, если она активна
+  const actualPrice = priceInfo.isDiscountActive && priceInfo.discountPrice 
+    ? priceInfo.discountPrice 
+    : priceInfo.regularPrice;
+
+  // Обновляем цену в item
+  const itemWithPrice = {
+    ...item,
+    price: actualPrice,
+    regularPrice: priceInfo.regularPrice,
+    discountPrice: priceInfo.discountPrice,
+    isDiscountActive: priceInfo.isDiscountActive,
+    unit: priceInfo.unit
+  };
+
   const canAdd = await canAddToCart({
     product: { 
       id: item.productId, 
-      price_unit: item.unit,
+      price_unit: priceInfo.unit,
       ...item.product 
     },
     producerSlug: item.producerSlug,
@@ -211,7 +238,7 @@ export async function addItemWithRules({ item }) {
         message = 'В корзине уже есть товары из другой точки. Очистите корзину, чтобы продолжить.';
         break;
       case 'INSUFFICIENT_STOCK':
-        message = 'Нельзя больше — достигнут лимит для этой точки';
+        message = 'Превышен доступный остаток товара в этой точке';
         break;
       default:
         message = 'Невозможно добавить товар в корзину';
@@ -233,20 +260,24 @@ export async function addItemWithRules({ item }) {
       pointId: item.pointId 
     });
     
-    cart.items[existingIndex] = { ...existingItem, qty: res.qty };
+    cart.items[existingIndex] = { 
+      ...existingItem, 
+      ...itemWithPrice, // обновляем цены
+      qty: res.qty 
+    };
     setCart(cart);
     
     if (!res.ok && res.reason === 'LIMIT') {
       return { 
         ok: false, 
         reason: 'LIMIT', 
-        message: 'Нельзя больше — достигнут лимит для этой точки' 
+        message: 'Превышен доступный остаток товара в этой точке' 
       };
     }
   } else {
     // Добавляем новый товар
     if (!cart.items) cart.items = [];
-    cart.items.push(item);
+    cart.items.push(itemWithPrice);
     setCart(cart);
   }
 

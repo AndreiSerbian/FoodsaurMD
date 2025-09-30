@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { formatPrice, formatQuantity } from '@/utils/unitUtils';
 import { getInventoryData } from '@/modules/cart/inventorySync';
 import { getSelectedPoint } from '@/modules/cart/cartState';
-import { isDiscountActive, calculateDiscountedPrice } from '@/hooks/useDiscounts';
 import { Badge } from '@/components/ui/badge';
 
 /**
  * Компонент для расчета корзины с учетом единиц измерения
  * Показывает итоговую сумму и количество по каждому товару
  */
-const CartCalculator = ({ cartItems, discounts = [], onValidationChange }) => {
+const CartCalculator = ({ cartItems, onValidationChange }) => {
   const [inventory, setInventory] = useState(new Map());
   const [validationErrors, setValidationErrors] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +36,7 @@ const CartCalculator = ({ cartItems, discounts = [], onValidationChange }) => {
           if (!productData || item.qty > productData.stock) {
             errors.push({
               productId: item.productId,
-              productName: item.product?.name || 'Товар',
-              requested: item.qty,
-              available: productData?.stock || 0,
-              unit: productData?.unit || 'шт'
+              message: `Превышен остаток товара (доступно: ${productData?.stock || 0} ${productData?.unit || 'шт'})`
             });
           }
         });
@@ -58,23 +54,19 @@ const CartCalculator = ({ cartItems, discounts = [], onValidationChange }) => {
     validateAndCalculate();
   }, [cartItems, onValidationChange]);
 
-  // Расчет итогов с учетом скидок
+  // Расчет итогов с учетом скидок из point_variants
   const calculateTotals = () => {
     let totalAmount = 0;
     let originalAmount = 0;
     let totalItems = 0;
 
     cartItems.forEach(item => {
-      const productData = inventory.get(item.productId);
-      const price = productData?.price || item.price || 0;
+      // Используем цены из item (из point_variants с учетом времени)
+      const regularPrice = item.regularPrice || item.price || 0;
+      const currentPrice = (item.isDiscountActive && item.discountPrice) ? item.discountPrice : regularPrice;
       
-      // Проверяем, есть ли активная скидка на товар
-      const discount = discounts.find(d => d.product_id === item.productId);
-      const hasActiveDiscount = discount && isDiscountActive(discount);
-      const finalPrice = hasActiveDiscount ? calculateDiscountedPrice(price, discount) : price;
-      
-      originalAmount += price * item.qty;
-      totalAmount += finalPrice * item.qty;
+      originalAmount += regularPrice * item.qty;
+      totalAmount += currentPrice * item.qty;
       totalItems += item.qty;
     });
 
@@ -100,36 +92,32 @@ const CartCalculator = ({ cartItems, discounts = [], onValidationChange }) => {
       <div className="space-y-2">
         <h3 className="font-semibold text-foreground">Состав заказа:</h3>
         {cartItems.map(item => {
-          const productData = inventory.get(item.productId);
-          const price = productData?.price || item.price || 0;
-          const unit = productData?.unit || 'шт';
-          
-          // Проверяем скидку
-          const discount = discounts.find(d => d.product_id === item.productId);
-          const hasActiveDiscount = discount && isDiscountActive(discount);
-          const finalPrice = hasActiveDiscount ? calculateDiscountedPrice(price, discount) : price;
-          const subtotal = finalPrice * item.qty;
-          const originalSubtotal = price * item.qty;
+          const unit = item.unit || 'шт';
+          const regularPrice = item.regularPrice || item.price || 0;
+          const hasActiveDiscount = item.isDiscountActive && item.discountPrice;
+          const currentPrice = hasActiveDiscount ? item.discountPrice : regularPrice;
+          const subtotal = currentPrice * item.qty;
+          const originalSubtotal = regularPrice * item.qty;
 
           return (
             <div key={item.productId} className="flex justify-between text-sm gap-2">
               <div className="flex-1">
                 <div className="flex items-center gap-1">
-                  <span className="text-foreground">{item.product?.name || 'Товар'}</span>
+                  <span className="text-foreground">{item.name || item.product?.name || 'Товар'}</span>
                   {hasActiveDiscount && (
-                    <Badge variant="secondary" className="text-xs">
-                      -{discount.discount_percent}%
+                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                      Скидка
                     </Badge>
                   )}
                 </div>
                 <div className="text-muted-foreground">
                   {formatQuantity(item.qty, unit)} × {hasActiveDiscount ? (
                     <>
-                      <span className="line-through mr-1">{formatPrice(price, unit)}</span>
-                      <span className="text-green-600 font-medium">{formatPrice(finalPrice, unit)}</span>
+                      <span className="line-through mr-1">{formatPrice(regularPrice, unit)}</span>
+                      <span className="text-green-600 font-medium">{formatPrice(currentPrice, unit)}</span>
                     </>
                   ) : (
-                    formatPrice(price, unit)
+                    formatPrice(currentPrice, unit)
                   )}
                 </div>
               </div>
@@ -151,10 +139,10 @@ const CartCalculator = ({ cartItems, discounts = [], onValidationChange }) => {
       {/* Ошибки валидации */}
       {validationErrors.length > 0 && (
         <div className="bg-destructive/10 border border-destructive/20 p-3 rounded">
-          <h4 className="text-destructive font-medium mb-2">Превышен лимит товара:</h4>
+          <h4 className="text-destructive font-medium mb-2 text-sm">⚠️ Превышен доступный остаток:</h4>
           {validationErrors.map(error => (
             <div key={error.productId} className="text-sm text-destructive">
-              {error.productName}: запрошено {error.requested}, доступно {error.available} {error.unit}
+              {error.message}
             </div>
           ))}
         </div>
@@ -172,7 +160,7 @@ const CartCalculator = ({ cartItems, discounts = [], onValidationChange }) => {
               <span className="text-muted-foreground">Сумма без скидки:</span>
               <span className="text-muted-foreground line-through">{(originalAmount || 0).toFixed(2)} лей</span>
             </div>
-            <div className="flex justify-between text-sm text-green-600">
+            <div className="flex justify-between text-sm text-green-600 font-medium">
               <span>Экономия:</span>
               <span>-{((originalAmount - totalAmount) || 0).toFixed(2)} лей</span>
             </div>

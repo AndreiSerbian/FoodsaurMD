@@ -3,8 +3,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Возвращает доступный stock по точке для товара (число), 
- * НО не показываем это пользователю в UI
+ * Возвращает доступный stock по точке для товара (число)
  * @param {string} pointId - ID точки
  * @param {string} productId - ID товара
  * @returns {Promise<number>}
@@ -21,6 +20,7 @@ export async function getPointStock(pointId, productId) {
 
     if (inventoryError) {
       console.warn('Error fetching point_inventory:', inventoryError);
+      return 0;
     }
 
     if (inventory) {
