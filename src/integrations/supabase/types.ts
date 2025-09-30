@@ -344,6 +344,44 @@ export type Database = {
           },
         ]
       }
+      point_telegram_settings: {
+        Row: {
+          bot_token: string | null
+          chat_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          point_id: string
+          updated_at: string
+        }
+        Insert: {
+          bot_token?: string | null
+          chat_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          point_id: string
+          updated_at?: string
+        }
+        Update: {
+          bot_token?: string | null
+          chat_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          point_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_telegram_settings_point_id_fkey"
+            columns: ["point_id"]
+            isOneToOne: true
+            referencedRelation: "pickup_points"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       point_variants: {
         Row: {
           created_at: string

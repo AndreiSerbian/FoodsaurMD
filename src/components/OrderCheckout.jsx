@@ -7,11 +7,10 @@ import { Label } from './ui/label';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Clock, User, Phone, Mail, MapPin, Calendar, Percent } from 'lucide-react';
+import { Clock, MapPin, Calendar, Percent, CheckCircle2, Copy } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { usePickupPoints } from '../hooks/usePickupPoints';
 import { useTimeSlots } from '../hooks/useTimeSlots';
-import { useDiscounts, isDiscountActive, calculateDiscountedPrice } from '../hooks/useDiscounts';
 import { supabase } from '@/integrations/supabase/client';
 
 const OrderCheckout = ({ isOpen, onClose }) => {
@@ -25,16 +24,13 @@ const OrderCheckout = ({ isOpen, onClose }) => {
   
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [customerData, setCustomerData] = useState({
-    name: '',
-    phone: '',
-    email: ''
-  });
   const [selectedPickupPoint, setSelectedPickupPoint] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [producerId, setProducerId] = useState(null);
   const [producerSlug, setProducerSlug] = useState(null);
+  const [orderCode, setOrderCode] = useState(null);
+  const [orderId, setOrderId] = useState(null);
 
   // Get first item's producer info
   useEffect(() => {
@@ -62,50 +58,21 @@ const OrderCheckout = ({ isOpen, onClose }) => {
   // Hooks for data fetching
   const { points: pickupPoints } = usePickupPoints(producerSlug);
   const { timeSlots } = useTimeSlots(producerId);
-  const { discounts } = useDiscounts(cartItems.map(item => item.productId));
 
-  // Calculate discounted prices for cart items
-  const cartItemsWithDiscounts = useMemo(() => {
-    const now = new Date();
-    const currentTimeStr = now.toTimeString().slice(0, 8);
-    
-    return cartItems.map(item => {
-      const discount = discounts.find(d => d.product_id === item.productId);
-      const isDiscountTime = discount && isDiscountActive(discount, now);
-      
-      let finalPrice = item.price;
-      let discountPercent = 0;
-      
-      if (isDiscountTime) {
-        finalPrice = calculateDiscountedPrice(item.price, discount);
-        if (discount.discount_percent) {
-          discountPercent = discount.discount_percent;
-        } else if (discount.discount_amount) {
-          discountPercent = Math.round((discount.discount_amount / item.price) * 100);
-        }
-      }
-      
-      return {
-        ...item,
-        originalPrice: item.price,
-        finalPrice,
-        discountPercent,
-        hasDiscount: isDiscountTime
-      };
-    });
-  }, [cartItems, discounts]);
-
-  // Calculate totals
+  // Calculate totals from cart items
   const { originalTotal, discountedTotal, totalSavings } = useMemo(() => {
-    const original = cartItemsWithDiscounts.reduce((sum, item) => sum + (item.originalPrice * item.qty), 0);
-    const discounted = cartItemsWithDiscounts.reduce((sum, item) => sum + (item.finalPrice * item.qty), 0);
+    const original = cartItems.reduce((sum, item) => sum + ((item.regularPrice || item.price || 0) * item.qty), 0);
+    const discounted = cartItems.reduce((sum, item) => {
+      const price = item.isDiscountActive ? (item.discountPrice || item.price || 0) : (item.price || 0);
+      return sum + (price * item.qty);
+    }, 0);
     
     return {
       originalTotal: original,
       discountedTotal: discounted,
       totalSavings: original - discounted
     };
-  }, [cartItemsWithDiscounts]);
+  }, [cartItems]);
 
   // Generate time options for selected date
   const availableTimeSlots = useMemo(() => {
@@ -123,25 +90,8 @@ const OrderCheckout = ({ isOpen, onClose }) => {
       }));
   }, [selectedDate, timeSlots]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCustomerData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!customerData.name || !customerData.phone) {
-      toast({
-        title: "Ошибка",
-        description: "Заполните обязательные поля: имя и телефон",
-        variant: "destructive"
-      });
-      return;
-    }
 
     if (!selectedPickupPoint || !selectedDate || !selectedTime) {
       toast({
@@ -159,24 +109,22 @@ const OrderCheckout = ({ isOpen, onClose }) => {
       const pickupDateTime = new Date(`${selectedDate}T${selectedTime}`);
       
       const result = await createPreOrder({
-        customer: customerData,
+        customer: {
+          name: 'Гость',
+          phone: 'N/A'
+        },
         pickupTime: pickupDateTime.toISOString(),
         pointId: selectedPickupPoint
       });
 
       if (result.success) {
+        setOrderCode(result.orderCode);
+        setOrderId(result.orderId);
         toast({
           title: "Заказ создан!",
           description: `Код заказа: ${result.orderCode}`,
           duration: 5000
         });
-        
-        // Reset form
-        setCustomerData({ name: '', phone: '', email: '' });
-        setSelectedPickupPoint('');
-        setSelectedDate('');
-        setSelectedTime('');
-        onClose();
       } else {
         toast({
           title: "Ошибка",
@@ -196,14 +144,101 @@ const OrderCheckout = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleCopyCode = () => {
+    if (orderCode) {
+      navigator.clipboard.writeText(orderCode);
+      toast({
+        title: "Скопировано",
+        description: "Код заказа скопирован в буфер обмена"
+      });
+    }
+  };
+
+  const handleClose = () => {
+    setOrderCode(null);
+    setOrderId(null);
+    setSelectedPickupPoint('');
+    setSelectedDate('');
+    setSelectedTime('');
+    onClose();
+  };
+
   // Generate minimum date (today)
   const getMinimumDate = () => {
     const today = new Date();
     return today.toISOString().slice(0, 10);
   };
 
+  // If order is created, show success screen
+  if (orderCode) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-md z-modal">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle2 className="h-6 w-6" />
+              Заказ успешно создан!
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="pt-6 text-center">
+                <p className="text-sm text-muted-foreground mb-2">Код заказа:</p>
+                <div className="flex items-center justify-center gap-2">
+                  <p className="text-3xl font-bold text-green-700">{orderCode}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopyCode}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4">
+                  Сохраните этот код для получения заказа
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-4">
+                <h3 className="font-medium mb-2">Детали заказа:</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Дата получения:</span>
+                    <span className="font-medium">{selectedDate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Время:</span>
+                    <span className="font-medium">{selectedTime}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t pt-2 mt-2">
+                    <span className="text-muted-foreground">Сумма заказа:</span>
+                    <span className="font-bold text-lg">{discountedTotal.toFixed(2)} MDL</span>
+                  </div>
+                  {totalSavings > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Экономия:</span>
+                      <span className="font-semibold">-{totalSavings.toFixed(2)} MDL</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button onClick={handleClose} className="w-full">
+              Закрыть
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto z-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -295,7 +330,7 @@ const OrderCheckout = ({ isOpen, onClose }) => {
             <CardContent className="pt-4">
               <h3 className="font-medium mb-4">Состав заказа:</h3>
               <div className="space-y-3">
-                {cartItemsWithDiscounts.map((item, index) => (
+                {cartItems.map((item, index) => (
                   <div key={item.productId || index} className="border rounded-lg p-3">
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
@@ -306,41 +341,41 @@ const OrderCheckout = ({ isOpen, onClose }) => {
                         
                         {/* Цены */}
                         <div className="mt-2 space-y-1">
-                          {item.hasDiscount ? (
+                          {item.isDiscountActive ? (
                             <>
                               <div className="flex items-center gap-2">
                                 <span className="price-original">
-                                  {(item.originalPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
+                                  {(item.regularPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
                                 </span>
                                 <Badge variant="secondary" className="discount-highlight">
-                                  -{item.discountPercent || 0}%
+                                  Скидка
                                 </Badge>
                               </div>
                               <div className="price-discount">
-                                {(item.finalPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
+                                {(item.discountPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
                               </div>
                             </>
                           ) : (
                             <div className="font-semibold">
-                              {(item.finalPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
+                              {(item.price || 0).toFixed(2)} MDL/{item.unit || 'шт'}
                             </div>
                           )}
                         </div>
                       </div>
                       
                       <div className="text-right">
-                        {item.hasDiscount ? (
+                        {item.isDiscountActive ? (
                           <>
                             <div className="price-original text-sm">
-                              {((item.originalPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
+                              {((item.regularPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
                             </div>
                             <div className="price-discount font-bold">
-                              {((item.finalPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
+                              {((item.discountPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
                             </div>
                           </>
                         ) : (
                           <div className="font-bold">
-                            {((item.finalPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
+                            {((item.price || 0) * (item.qty || 0)).toFixed(2)} MDL
                           </div>
                         )}
                       </div>
@@ -371,67 +406,13 @@ const OrderCheckout = ({ isOpen, onClose }) => {
             </CardContent>
           </Card>
 
-          {/* Контактная информация */}
+          {/* Кнопки действий */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Card>
-              <CardContent className="pt-4">
-                <h3 className="font-medium mb-4">Контактная информация:</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name" className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Имя *
-                    </Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={customerData.name}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Ваше имя"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="phone" className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      Телефон *
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={customerData.phone}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="+373 XX XXX XXX"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    Email (необязательно)
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={customerData.email}
-                    onChange={handleInputChange}
-                    placeholder="your@email.com"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
             <div className="flex gap-3 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={handleClose}
                 className="flex-1"
               >
                 Отмена

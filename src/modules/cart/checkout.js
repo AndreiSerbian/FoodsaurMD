@@ -6,8 +6,8 @@ import { checkMultipleStock } from './inventoryApi.js';
 
 /**
  * @typedef {Object} CustomerInfo
- * @property {string} name
- * @property {string} phone
+ * @property {string} [name]
+ * @property {string} [phone]
  * @property {string} [email]
  */
 
@@ -100,9 +100,9 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
         point_id: selectedPoint.pointId,
         status: 'preorder',
         total_amount: totalAmount,
-        customer_name: customer.name,
-        customer_phone: customer.phone,
-        customer_email: customer.email,
+        customer_name: customer?.name || null,
+        customer_phone: customer?.phone || null,
+        customer_email: customer?.email || null,
         pickup_time: pickupTime,
         meta: {
           order_code: orderCode,
