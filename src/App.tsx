@@ -19,6 +19,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import AdminPanel from "./pages/AdminPanel";
 import OrderSearchPage from "./pages/OrderSearch";
+import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
                 <Route path="/producer/:producerSlug" element={<Layout><ProducerProfile /></Layout>} />
                 <Route path="/producer/:producerSlug/points" element={<Layout><ProducerPoints /></Layout>} />
                 <Route path="/producer/:producerSlug/products" element={<Layout><Products /></Layout>} />
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 

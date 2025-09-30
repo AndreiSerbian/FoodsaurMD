@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '../hooks/use-toast';
 import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
-import OrderCheckout from './OrderCheckout';
 
 const Cart = () => {
+  const navigate = useNavigate();
   const {
     cartItems, 
     cartTotal, 
@@ -19,8 +20,6 @@ const Cart = () => {
   } = useCart();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [showOrderAlert, setShowOrderAlert] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -52,8 +51,9 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // Открываем окно оформления заказа
-    setShowCheckout(true);
+    // Переходим на страницу оформления заказа
+    setIsOpen(false);
+    navigate('/checkout');
   };
 
   const cartVariants = {
@@ -69,26 +69,6 @@ const Cart = () => {
 
   return (
     <>
-      {/* Order Success Alert */}
-      <AnimatePresence>
-        {showOrderAlert && (
-          <motion.div
-            className="fixed left-8 top-8 z-alert max-w-xs"
-            variants={alertVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <Alert className="bg-green-50 border-green-600 text-green-900">
-              <AlertTitle className="text-green-800">Заказ оформлен!</AlertTitle>
-              <AlertDescription className="text-green-700">
-                Ваш заказ успешно оформлен и будет доставлен в ближайшее время.
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Cart Button */}
       <button 
         onClick={toggleCart}
@@ -258,12 +238,6 @@ const Cart = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Order Checkout Modal */}
-      <OrderCheckout 
-        isOpen={showCheckout}
-        onClose={() => setShowCheckout(false)}
-      />
     </>
   );
 };
