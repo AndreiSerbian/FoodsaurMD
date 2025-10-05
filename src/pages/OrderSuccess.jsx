@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Copy } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { useCart } from '../contexts/CartContext';
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { clearCart } = useCart();
   
   const orderCode = location.state?.orderCode;
   const pointDetails = location.state?.pointDetails;
@@ -16,12 +18,14 @@ const OrderSuccess = () => {
   const discountedTotal = location.state?.discountedTotal;
   const totalSavings = location.state?.totalSavings;
 
-  // Redirect if no order code
+  // Clear cart on mount and redirect if no order code
   React.useEffect(() => {
     if (!orderCode) {
       navigate('/');
+    } else {
+      clearCart();
     }
-  }, [orderCode, navigate]);
+  }, [orderCode, navigate, clearCart]);
 
   const handleCopyCode = () => {
     if (orderCode) {

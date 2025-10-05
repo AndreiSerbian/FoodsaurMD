@@ -224,7 +224,6 @@ const Checkout = () => {
         }
         
         // Navigate to success page with order details
-        clearCart();
         navigate('/order-success', {
           state: {
             orderCode: result.orderCode,
