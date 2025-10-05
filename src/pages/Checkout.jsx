@@ -214,6 +214,25 @@ const Checkout = () => {
       if (result.success) {
         setOrderCode(result.orderCode);
         setOrderId(result.orderId);
+        
+        // Send Telegram notification
+        try {
+          const itemsCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
+          await supabase.functions.invoke('create-pre-order-notification', {
+            body: {
+              preOrderId: result.orderId,
+              orderCode: result.orderCode,
+              pickupPointId: selectedPointInfo.pointId,
+              totalAmount: discountedTotal.toFixed(2),
+              itemsCount
+            }
+          });
+          console.log('Telegram notification sent');
+        } catch (notifError) {
+          console.error('Error sending Telegram notification:', notifError);
+          // Don't fail the order if notification fails
+        }
+        
         toast({
           title: "Заказ создан!",
           description: `Код заказа: ${result.orderCode}`,

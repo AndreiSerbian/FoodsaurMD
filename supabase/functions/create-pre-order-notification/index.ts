@@ -1,10 +1,10 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -13,138 +13,125 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { preOrderId, orderCode, pickupPointId, totalAmount, itemsCount } = await req.json();
 
     console.log('Processing pre-order notification:', { preOrderId, orderCode, pickupPointId });
 
-    // Get pickup point and producer info
-    const { data: pickupPoint, error: pointError } = await supabaseClient
+    // Fetch pickup point and producer info
+    const { data: pointData, error: pointError } = await supabase
       .from('pickup_points')
       .select(`
-        *,
+        id,
+        name,
+        address,
+        city,
+        producer_id,
         producer_profiles!inner(
           id,
-          producer_name,
-          user_id
+          producer_name
         )
       `)
       .eq('id', pickupPointId)
       .single();
 
-    if (pointError || !pickupPoint) {
-      console.error('Error fetching pickup point:', pointError);
-      throw new Error('Pickup point not found');
+    if (pointError) {
+      console.error('Error fetching point data:', pointError);
+      throw pointError;
     }
 
-    // Get producer's telegram settings
-    const { data: telegramSettings } = await supabaseClient
+    console.log('Point data:', pointData);
+
+    // Fetch producer Telegram settings
+    const { data: telegramSettings, error: telegramError } = await supabase
       .from('producer_telegram_settings')
       .select('bot_token, chat_id, is_active')
-      .eq('producer_id', pickupPoint.producer_profiles.id)
-      .eq('is_active', true)
+      .eq('producer_id', pointData.producer_profiles.id)
       .single();
 
-    // Get order items details
-    const { data: orderItems } = await supabaseClient
+    if (telegramError) {
+      console.log('No Telegram settings found for producer:', telegramError);
+    }
+
+    // Fetch pre-order items
+    const { data: orderItems, error: itemsError } = await supabase
       .from('pre_order_items')
       .select(`
         quantity,
-        products!inner(name)
+        price_regular,
+        price_discount,
+        products!inner(
+          name,
+          price_unit
+        )
       `)
       .eq('pre_order_id', preOrderId);
 
-    const itemsList = orderItems?.map(item => 
-      `• ${item.products.name} x${item.quantity}`
-    ).join('\n') || '';
-
-    const message = `
-🛒 НОВЫЙ ПРЕДЗАКАЗ
-
-📍 Точка: ${pickupPoint.name}
-📍 Адрес: ${pickupPoint.address}
-🔢 Код заказа: ${orderCode}
-💰 Сумма: ${totalAmount} лей
-📦 Товаров: ${itemsCount}
-
-СОСТАВ ЗАКАЗА:
-${itemsList}
-
-Ожидайте клиента для получения заказа.`;
-
-    // Send telegram notification if configured
-    if (telegramSettings?.bot_token && telegramSettings?.chat_id) {
-      try {
-        const telegramResponse = await fetch(
-          `https://api.telegram.org/bot${telegramSettings.bot_token}/sendMessage`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: telegramSettings.chat_id,
-              text: message,
-              parse_mode: 'HTML'
-            })
-          }
-        );
-
-        if (!telegramResponse.ok) {
-          console.error('Telegram notification failed:', await telegramResponse.text());
-        } else {
-          console.log('Telegram notification sent successfully');
-        }
-      } catch (telegramError) {
-        console.error('Error sending telegram notification:', telegramError);
-      }
+    if (itemsError) {
+      console.error('Error fetching order items:', itemsError);
+      throw itemsError;
     }
 
-    // Send fallback notification to admin
-    const adminChatId = Deno.env.get('ADMIN_CHAT_ID');
+    // Format message
+    let message = `🛒 *Новый предзаказ*\n\n`;
+    message += `📍 *Точка:* ${pointData.name}\n`;
+    message += `📫 *Адрес:* ${pointData.address}, ${pointData.city}\n`;
+    message += `🔢 *Код заказа:* \`${orderCode}\`\n\n`;
+    message += `*Состав заказа:*\n`;
+    
+    orderItems?.forEach((item: any) => {
+      const price = item.price_discount || item.price_regular;
+      message += `• ${item.products.name} - ${item.quantity} ${item.products.price_unit} × ${price} MDL\n`;
+    });
+    
+    message += `\n💰 *Сумма:* ${totalAmount} MDL`;
+
+    // Send to producer's Telegram if configured
+    if (telegramSettings && telegramSettings.is_active && telegramSettings.bot_token && telegramSettings.chat_id) {
+      console.log('Sending to producer Telegram');
+      const telegramUrl = `https://api.telegram.org/bot${telegramSettings.bot_token}/sendMessage`;
+      
+      const telegramResponse = await fetch(telegramUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: telegramSettings.chat_id,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      });
+
+      const telegramResult = await telegramResponse.json();
+      console.log('Producer Telegram response:', telegramResult);
+    }
+
+    // Also send to admin Telegram as fallback
     const adminBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+    const adminChatId = Deno.env.get('ADMIN_CHAT_ID');
 
     if (adminBotToken && adminChatId) {
-      try {
-        const adminMessage = `
-🆕 НОВЫЙ ПРЕДЗАКАЗ (Производитель: ${pickupPoint.producer_profiles.producer_name})
+      console.log('Sending to admin Telegram');
+      const adminTelegramUrl = `https://api.telegram.org/bot${adminBotToken}/sendMessage`;
+      
+      const adminResponse = await fetch(adminTelegramUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: adminChatId,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      });
 
-📍 Точка: ${pickupPoint.name}
-📍 Адрес: ${pickupPoint.address}
-🔢 Код заказа: ${orderCode}
-💰 Сумма: ${totalAmount} лей
-📦 Товаров: ${itemsCount}
-
-СОСТАВ ЗАКАЗА:
-${itemsList}`;
-
-        await fetch(
-          `https://api.telegram.org/bot${adminBotToken}/sendMessage`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: adminChatId,
-              text: adminMessage,
-              parse_mode: 'HTML'
-            })
-          }
-        );
-        
-        console.log('Admin notification sent');
-      } catch (adminError) {
-        console.error('Error sending admin notification:', adminError);
-      }
+      const adminResult = await adminResponse.json();
+      console.log('Admin Telegram response:', adminResult);
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Notification sent',
-        orderCode 
-      }),
+      JSON.stringify({ success: true, message: 'Notification sent' }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
@@ -152,12 +139,9 @@ ${itemsList}`;
     );
 
   } catch (error) {
-    console.error('Error in pre-order notification:', error);
-    
+    console.error('Error in create-pre-order-notification:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Internal server error' 
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
