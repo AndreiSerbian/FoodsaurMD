@@ -233,11 +233,7 @@ const Checkout = () => {
           // Don't fail the order if notification fails
         }
         
-        toast({
-          title: "Заказ создан!",
-          description: `Код заказа: ${result.orderCode}`,
-          duration: 5000
-        });
+        // Success - order code will be shown on success screen
       } else {
         toast({
           title: "Ошибка",
@@ -282,84 +278,82 @@ const Checkout = () => {
   // If order is created, show success screen
   if (orderCode) {
     return (
-      <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Card className="border-green-200 bg-green-50">
-            <CardContent className="pt-6">
-              <div className="text-center mb-6">
-                <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <h1 className="text-2xl font-bold text-green-800 mb-2">
-                  Заказ успешно создан!
-                </h1>
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <div className="max-w-2xl w-full text-center">
+            <CheckCircle2 className="h-20 w-20 text-green-600 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold text-foreground mb-8">
+              Заказ успешно создан!
+            </h1>
+
+            <div className="mb-8">
+              <p className="text-muted-foreground mb-4">Ваш код заказа:</p>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <p className="text-6xl font-bold text-primary tracking-wider">{orderCode}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyCode}
+                  className="h-12 w-12 p-0"
+                >
+                  <Copy className="h-6 w-6" />
+                </Button>
               </div>
+              <p className="text-sm text-muted-foreground">
+                Код отправлен производителю в Telegram
+              </p>
+            </div>
 
-              <Card className="bg-white border-green-300 mb-6">
-                <CardContent className="pt-6 text-center">
-                  <p className="text-sm text-muted-foreground mb-2">Ваш код заказа:</p>
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <p className="text-4xl font-bold text-green-700 tracking-wider">{orderCode}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopyCode}
-                      className="h-10 w-10 p-0"
-                    >
-                      <Copy className="h-5 w-5" />
-                    </Button>
+            <Card className="mb-6">
+              <CardContent className="pt-6">
+                <h3 className="font-medium mb-4">Детали заказа:</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Точка получения:</span>
+                    <span className="font-medium">{pointDetails?.name}</span>
                   </div>
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-2">
-                    <p className="text-sm font-semibold text-amber-900 mb-1">
-                      ⚠️ Важно: Сохраните этот код!
-                    </p>
-                    <p className="text-sm text-amber-800">
-                      Сделайте скриншот или запишите код. Предъявите его производителю при получении заказа.
-                    </p>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Адрес:</span>
+                    <span className="font-medium">{pointDetails?.address}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Код также отправлен производителю в Telegram
-                  </p>
-                </CardContent>
-              </Card>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Дата получения:</span>
+                    <span className="font-medium">{getTodayDate()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Время:</span>
+                    <span className="font-medium">{selectedTime}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-t pt-2 mt-2">
+                    <span className="text-muted-foreground">Сумма заказа:</span>
+                    <span className="font-bold text-lg">{discountedTotal.toFixed(2)} MDL</span>
+                  </div>
+                  {totalSavings > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Экономия:</span>
+                      <span className="font-semibold">-{totalSavings.toFixed(2)} MDL</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card className="mb-6">
-                <CardContent className="pt-4">
-                  <h3 className="font-medium mb-3">Детали заказа:</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Точка получения:</span>
-                      <span className="font-medium">{pointDetails?.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Адрес:</span>
-                      <span className="font-medium">{pointDetails?.address}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Дата получения:</span>
-                      <span className="font-medium">{getTodayDate()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Время:</span>
-                      <span className="font-medium">{selectedTime}</span>
-                    </div>
-                    <div className="flex justify-between items-center border-t pt-2 mt-2">
-                      <span className="text-muted-foreground">Сумма заказа:</span>
-                      <span className="font-bold text-lg">{discountedTotal.toFixed(2)} MDL</span>
-                    </div>
-                    {totalSavings > 0 && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Экономия:</span>
-                        <span className="font-semibold">-{totalSavings.toFixed(2)} MDL</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+            <Button onClick={handleFinish} className="w-full" size="lg">
+              Вернуться на главную
+            </Button>
+          </div>
+        </div>
 
-              <Button onClick={handleFinish} className="w-full" size="lg">
-                Вернуться на главную
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Warning at the bottom */}
+        <div className="bg-amber-50 border-t border-amber-200 px-4 py-6">
+          <div className="max-w-2xl mx-auto text-center">
+            <p className="text-base font-semibold text-amber-900 mb-2">
+              ⚠️ Важно: Сохраните этот код!
+            </p>
+            <p className="text-sm text-amber-800">
+              Сделайте скриншот или запишите код. Предъявите его производителю при получении заказа.
+            </p>
+          </div>
         </div>
       </div>
     );
