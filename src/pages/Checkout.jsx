@@ -307,8 +307,16 @@ const Checkout = () => {
                       <Copy className="h-5 w-5" />
                     </Button>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Предъявите этот код при получении заказа
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-2">
+                    <p className="text-sm font-semibold text-amber-900 mb-1">
+                      ⚠️ Важно: Сохраните этот код!
+                    </p>
+                    <p className="text-sm text-amber-800">
+                      Сделайте скриншот или запишите код. Предъявите его производителю при получении заказа.
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Код также отправлен производителю в Telegram
                   </p>
                 </CardContent>
               </Card>
