@@ -17,24 +17,14 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { preOrderId, orderCode, pickupPointId, totalAmount, itemsCount } = await req.json();
+    const { orderId, orderCode, pickupPointId, pickupTime, totalAmount, totalSavings, items } = await req.json();
 
-    console.log('Processing pre-order notification:', { preOrderId, orderCode, pickupPointId });
+    console.log('Processing order notification:', { orderId, orderCode, pickupPointId });
 
-    // Fetch pickup point and producer info
+    // Fetch pickup point info
     const { data: pointData, error: pointError } = await supabase
       .from('pickup_points')
-      .select(`
-        id,
-        name,
-        address,
-        city,
-        producer_id,
-        producer_profiles!inner(
-          id,
-          producer_name
-        )
-      `)
+      .select('id, name, address, city, producer_id')
       .eq('id', pickupPointId)
       .single();
 
@@ -45,78 +35,61 @@ serve(async (req) => {
 
     console.log('Point data:', pointData);
 
-    // Fetch producer Telegram settings
-    const { data: telegramSettings, error: telegramError } = await supabase
-      .from('producer_telegram_settings')
-      .select('bot_token, chat_id, is_active')
-      .eq('producer_id', pointData.producer_profiles.id)
+    // Fetch order details
+    const { data: orderData, error: orderError } = await supabase
+      .from('orders')
+      .select('created_at, pickup_time')
+      .eq('id', orderId)
       .single();
 
-    if (telegramError) {
-      console.log('No Telegram settings found for producer:', telegramError);
+    if (orderError) {
+      console.error('Error fetching order data:', orderError);
     }
 
-    // Fetch pre-order items
-    const { data: orderItems, error: itemsError } = await supabase
-      .from('pre_order_items')
-      .select(`
-        quantity,
-        price_regular,
-        price_discount,
-        products!inner(
-          name,
-          price_unit
-        )
-      `)
-      .eq('pre_order_id', preOrderId);
+    // Format dates
+    const orderDate = orderData?.created_at ? new Date(orderData.created_at).toLocaleString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : 'N/A';
 
-    if (itemsError) {
-      console.error('Error fetching order items:', itemsError);
-      throw itemsError;
-    }
+    const pickupDate = orderData?.pickup_time ? new Date(orderData.pickup_time).toLocaleString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : pickupTime;
 
     // Format message
-    let message = `🛒 *Новый предзаказ*\n\n`;
+    let message = `🛒 *Новый заказ*\n\n`;
+    message += `🔢 *Код заказа:* \`${orderCode}\`\n`;
     message += `📍 *Точка:* ${pointData.name}\n`;
-    message += `📫 *Адрес:* ${pointData.address}, ${pointData.city}\n`;
-    message += `🔢 *Код заказа:* \`${orderCode}\`\n\n`;
+    message += `📫 *Адрес:* ${pointData.address}, ${pointData.city}\n\n`;
+    message += `📅 *Дата заказа:* ${orderDate}\n`;
+    message += `⏰ *Время получения:* ${pickupDate}\n\n`;
     message += `*Состав заказа:*\n`;
     
-    orderItems?.forEach((item: any) => {
-      const price = item.price_discount || item.price_regular;
-      message += `• ${item.products.name} - ${item.quantity} ${item.products.price_unit} × ${price} MDL\n`;
+    items?.forEach((item: any) => {
+      message += `• ${item.name} - ${item.quantity} ${item.unit} × ${item.price} MDL\n`;
     });
     
     message += `\n💰 *Сумма:* ${totalAmount} MDL`;
-
-    // Send to producer's Telegram if configured
-    if (telegramSettings && telegramSettings.is_active && telegramSettings.bot_token && telegramSettings.chat_id) {
-      console.log('Sending to producer Telegram');
-      const telegramUrl = `https://api.telegram.org/bot${telegramSettings.bot_token}/sendMessage`;
-      
-      const telegramResponse = await fetch(telegramUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: telegramSettings.chat_id,
-          text: message,
-          parse_mode: 'Markdown'
-        })
-      });
-
-      const telegramResult = await telegramResponse.json();
-      console.log('Producer Telegram response:', telegramResult);
+    if (parseFloat(totalSavings) > 0) {
+      message += `\n💚 *Скидка:* ${totalSavings} MDL`;
     }
 
-    // Also send to admin Telegram as fallback
+    // Send to admin Telegram
     const adminBotToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
     const adminChatId = Deno.env.get('ADMIN_CHAT_ID');
 
     if (adminBotToken && adminChatId) {
       console.log('Sending to admin Telegram');
-      const adminTelegramUrl = `https://api.telegram.org/bot${adminBotToken}/sendMessage`;
+      const telegramUrl = `https://api.telegram.org/bot${adminBotToken}/sendMessage`;
       
-      const adminResponse = await fetch(adminTelegramUrl, {
+      const telegramResponse = await fetch(telegramUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,8 +99,8 @@ serve(async (req) => {
         })
       });
 
-      const adminResult = await adminResponse.json();
-      console.log('Admin Telegram response:', adminResult);
+      const telegramResult = await telegramResponse.json();
+      console.log('Telegram response:', telegramResult);
     }
 
     return new Response(

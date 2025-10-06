@@ -207,14 +207,20 @@ const Checkout = () => {
       if (result.success) {
         // Send Telegram notification
         try {
-          const itemsCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
           await supabase.functions.invoke('create-pre-order-notification', {
             body: {
-              preOrderId: result.orderId,
+              orderId: result.orderId,
               orderCode: result.orderCode,
               pickupPointId: selectedPointInfo.pointId,
+              pickupTime: selectedTime,
               totalAmount: discountedTotal.toFixed(2),
-              itemsCount
+              totalSavings: totalSavings.toFixed(2),
+              items: cartItems.map(item => ({
+                name: item.name,
+                quantity: item.qty,
+                price: item.price,
+                unit: item.unit || 'шт'
+              }))
             }
           });
           console.log('Telegram notification sent');
