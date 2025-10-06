@@ -204,6 +204,17 @@ const Checkout = () => {
         pointId: selectedPointInfo.pointId
       });
 
+      console.log('Pre-order result:', result);
+      
+      if (!result) {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось получить ответ от сервера",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       if (result.success) {
         // Send Telegram notification
         try {

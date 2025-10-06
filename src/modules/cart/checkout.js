@@ -92,6 +92,15 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
 
     // Generate order code
     const orderCode = await generateOrderCode();
+    
+    console.log('Creating pre-order with:', {
+      pickup_point_id: selectedPoint.pointId,
+      total_amount: totalAmount,
+      discount_amount: discountAmount,
+      pickup_time: pickupTime,
+      order_code: orderCode,
+      status: 'created'
+    });
 
     // Create pre-order
     const { data: order, error: orderError } = await supabase
@@ -109,9 +118,10 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
 
     if (orderError) {
       console.error('Error creating pre-order:', orderError);
+      console.error('Error details:', JSON.stringify(orderError, null, 2));
       return {
         success: false,
-        message: 'Не удалось создать заказ'
+        message: orderError.message || 'Не удалось создать заказ'
       };
     }
 
@@ -159,9 +169,10 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
 
   } catch (error) {
     console.error('Error in createPreorder:', error);
+    console.error('Error stack:', error.stack);
     return {
       success: false,
-      message: 'Произошла ошибка при создании заказа'
+      message: error.message || 'Произошла ошибка при создании заказа'
     };
   }
 }

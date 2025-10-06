@@ -55,7 +55,7 @@ const OrderManagement = ({ producerProfile }) => {
         .from('pre_orders')
         .select(`
           *,
-          pickup_points!pre_orders_pickup_point_id_fkey(name, address, city),
+          pickup_points(name, address, city),
           pre_order_items(
             quantity,
             price_regular,
@@ -77,7 +77,12 @@ const OrderManagement = ({ producerProfile }) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Query error details:', error);
+        throw error;
+      }
+      
+      console.log('Fetched orders:', data);
       setOrders(data || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
