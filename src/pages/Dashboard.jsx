@@ -5,7 +5,6 @@ import ProductManagement from '../components/ProductManagement';
 import CategoryManagement from '../components/CategoryManagement';
 import PickupPointManagement from '../components/PickupPointManagement';
 import OrderManagement from '../components/OrderManagement';
-import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
 import CategorySelector from '../components/CategorySelector';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -203,9 +202,6 @@ const Dashboard = () => {
 
       {/* Управление точками выдачи */}
       <PickupPointManagement producerProfile={profile} />
-
-      {/* Панель подтверждения заказов */}
-      {profile && <OrderConfirmationPanel producerId={profile.id} />}
 
       {/* Управление заказами */}
       <OrderManagement producerProfile={profile} />

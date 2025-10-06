@@ -195,6 +195,10 @@ const Checkout = () => {
       const todayDate = utc3Now.toISOString().slice(0, 10);
       const pickupDateTime = new Date(`${todayDate}T${selectedTime}`);
       
+      console.log('Checkout - selectedTime:', selectedTime);
+      console.log('Checkout - pickupDateTime:', pickupDateTime);
+      console.log('Checkout - pickupDateTime.toISOString():', pickupDateTime.toISOString());
+      
       const result = await createPreOrder({
         customer: {
           name: 'Гость',

@@ -33,12 +33,21 @@ import { checkMultipleStock } from './inventoryApi.js';
  */
 export async function createPreorder({ customer, pickupTime, pointId }) {
   try {
+    console.log('createPreorder called with:', { customer, pickupTime, pointId });
+    
     const cart = getCart();
     let selectedPoint = getSelectedPoint();
     
     // Use provided pointId or fall back to selected point
     if (pointId) {
       selectedPoint = { pointId };
+    }
+    
+    if (!pickupTime) {
+      return {
+        success: false,
+        message: 'Не указано время получения'
+      };
     }
     
     if (!cart.items || cart.items.length === 0) {
