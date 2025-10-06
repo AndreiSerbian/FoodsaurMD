@@ -35,15 +35,15 @@ serve(async (req) => {
 
     console.log('Point data:', pointData);
 
-    // Fetch order details
+    // Fetch pre-order details
     const { data: orderData, error: orderError } = await supabase
-      .from('orders')
+      .from('pre_orders')
       .select('created_at, pickup_time')
       .eq('id', orderId)
       .single();
 
     if (orderError) {
-      console.error('Error fetching order data:', orderError);
+      console.error('Error fetching pre-order data:', orderError);
     }
 
     // Format dates
@@ -56,9 +56,6 @@ serve(async (req) => {
     }) : 'N/A';
 
     const pickupDate = orderData?.pickup_time ? new Date(orderData.pickup_time).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     }) : pickupTime;
