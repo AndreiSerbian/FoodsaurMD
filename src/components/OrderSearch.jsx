@@ -22,16 +22,17 @@ const OrderSearch = () => {
       const {
         data,
         error: searchError
-      } = await supabase.from('pre_orders').select(`
+      } = await supabase.from('orders').select(`
           *,
-          pickup_points(name, address, producer_id, producer_profiles(producer_name)),
-          pre_order_items(
-            quantity,
-            price_regular,
-            price_discount,
-            products(name, description)
+          pickup_points(name, address),
+          producer_profiles!orders_producer_id_fkey(producer_name),
+          order_items(
+            qty,
+            price,
+            subtotal,
+            product_snapshot
           )
-        `).eq('order_code', orderCode.trim()).maybeSingle();
+        `).filter('meta->>order_code', 'eq', orderCode.trim()).maybeSingle();
       if (searchError) {
         throw searchError;
       }
@@ -87,8 +88,7 @@ const OrderSearch = () => {
   };
   const calculateTotal = items => {
     return items.reduce((total, item) => {
-      const price = item.price_discount || item.price_regular;
-      return total + price * item.quantity;
+      return total + item.subtotal;
     }, 0);
   };
   return <div className="max-w-2xl mx-auto p-6 space-y-6">
@@ -116,10 +116,10 @@ const OrderSearch = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  Заказ #{order.order_code}
+                  Заказ #{order.meta?.order_code || 'N/A'}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {order.pickup_points.producer_profiles.producer_name}
+                  {order.producer_profiles?.producer_name || 'Неизвестно'}
                 </p>
               </div>
               {getStatusBadge(order.status)}
@@ -153,19 +153,19 @@ const OrderSearch = () => {
             <div>
               <h4 className="font-medium mb-3">Состав заказа</h4>
               <div className="space-y-2">
-                {order.pre_order_items.map((item, index) => <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                {order.order_items.map((item, index) => <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                     <div className="flex-1">
-                      <p className="font-medium">{item.products.name}</p>
+                      <p className="font-medium">{item.product_snapshot?.name || 'Товар'}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.products.description}
+                        {item.product_snapshot?.description || ''}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium">
-                        {item.quantity} шт × {item.price_discount || item.price_regular} MDL
+                        {item.qty} шт × {item.price} MDL
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        = {(item.price_discount || item.price_regular) * item.quantity} MDL
+                        = {item.subtotal} MDL
                       </p>
                     </div>
                   </div>)}
@@ -177,9 +177,6 @@ const OrderSearch = () => {
                 <span className="text-lg font-semibold">Итого:</span>
                 <div className="text-right">
                   <p className="text-lg font-bold">{order.total_amount} MDL</p>
-                  {order.discount_amount > 0 && <p className="text-sm text-green-600">
-                      Скидка: -{order.discount_amount} MDL
-                    </p>}
                 </div>
               </div>
             </div>
