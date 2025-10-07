@@ -75,7 +75,7 @@ const MobileMenu = () => {
       {/* Модальное меню */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-mobile-menu bg-black/40 backdrop-blur-sm"
           onClick={handleBackdropClick}
         >
           {/* Контейнер меню */}

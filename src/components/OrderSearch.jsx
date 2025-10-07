@@ -19,10 +19,10 @@ const OrderSearch = () => {
     setError('');
     setOrder(null);
     try {
-      const {
-        data,
-        error: searchError
-      } = await supabase.from('orders').select(`
+      // Try exact match first
+      let { data, error: searchError } = await supabase
+        .from('orders')
+        .select(`
           *,
           pickup_points(name, address),
           producer_profiles!orders_producer_id_fkey(producer_name),
@@ -32,7 +32,32 @@ const OrderSearch = () => {
             subtotal,
             product_snapshot
           )
-        `).filter('meta->>order_code', 'eq', orderCode.trim()).maybeSingle();
+        `)
+        .eq('meta->>order_code', orderCode.trim())
+        .maybeSingle();
+      
+      // If not found, try without leading zeros
+      if (!data && !searchError) {
+        const codeWithoutLeadingZeros = orderCode.trim().replace(/^0+/, '');
+        const result = await supabase
+          .from('orders')
+          .select(`
+            *,
+            pickup_points(name, address),
+            producer_profiles!orders_producer_id_fkey(producer_name),
+            order_items(
+              qty,
+              price,
+              subtotal,
+              product_snapshot
+            )
+          `)
+          .eq('meta->>order_code', codeWithoutLeadingZeros)
+          .maybeSingle();
+        
+        data = result.data;
+        searchError = result.error;
+      }
       if (searchError) {
         throw searchError;
       }
