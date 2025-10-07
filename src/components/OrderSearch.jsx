@@ -42,8 +42,7 @@ const OrderSearch = () => {
       setOrder(data);
     } catch (err) {
       console.error('Error searching order:', err);
-      console.error('Error details:', JSON.stringify(err, null, 2));
-      setError('Ошибка при поиске заказа: ' + (err.message || 'неизвестная ошибка'));
+      setError('Ошибка при поиске заказа');
     } finally {
       setLoading(false);
     }

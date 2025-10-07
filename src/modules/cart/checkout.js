@@ -33,21 +33,12 @@ import { checkMultipleStock } from './inventoryApi.js';
  */
 export async function createPreorder({ customer, pickupTime, pointId }) {
   try {
-    console.log('createPreorder called with:', { customer, pickupTime, pointId });
-    
     const cart = getCart();
     let selectedPoint = getSelectedPoint();
     
     // Use provided pointId or fall back to selected point
     if (pointId) {
       selectedPoint = { pointId };
-    }
-    
-    if (!pickupTime) {
-      return {
-        success: false,
-        message: 'Не указано время получения'
-      };
     }
     
     if (!cart.items || cart.items.length === 0) {
@@ -95,63 +86,64 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
       };
     }
 
-    // Calculate total and discount
+    // Calculate total
     const totalAmount = cart.items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const discountAmount = 0; // TODO: Calculate discount if applicable
 
     // Generate order code
     const orderCode = await generateOrderCode();
-    
-    console.log('Creating pre-order with:', {
-      pickup_point_id: selectedPoint.pointId,
-      total_amount: totalAmount,
-      discount_amount: discountAmount,
-      pickup_time: pickupTime,
-      order_code: orderCode,
-      status: 'created'
-    });
 
-    // Create pre-order
+    // Create order
     const { data: order, error: orderError } = await supabase
-      .from('pre_orders')
+      .from('orders')
       .insert({
-        pickup_point_id: selectedPoint.pointId,
+        producer_id: producerData.id,
+        point_id: selectedPoint.pointId,
+        status: 'preorder',
         total_amount: totalAmount,
-        discount_amount: discountAmount,
+        customer_name: customer?.name || null,
+        customer_phone: customer?.phone || null,
+        customer_email: customer?.email || null,
         pickup_time: pickupTime,
-        order_code: orderCode,
-        status: 'created'
+        meta: {
+          order_code: orderCode,
+          created_via: 'web_cart'
+        }
       })
       .select()
       .single();
 
     if (orderError) {
-      console.error('Error creating pre-order:', orderError);
-      console.error('Error details:', JSON.stringify(orderError, null, 2));
+      console.error('Error creating order:', orderError);
       return {
         success: false,
-        message: orderError.message || 'Не удалось создать заказ'
+        message: 'Не удалось создать заказ'
       };
     }
 
-    // Create pre-order items
+    // Create order items
     const orderItems = cart.items.map(item => ({
-      pre_order_id: order.id,
+      order_id: order.id,
       product_id: item.productId,
-      quantity: item.qty,
-      price_regular: item.price,
-      price_discount: null // TODO: Add discount price if applicable
+      qty: item.qty,
+      price: item.price,
+      subtotal: item.price * item.qty,
+      product_snapshot: {
+        name: item.name,
+        price: item.price,
+        unit: item.unit || 'шт',
+        producerSlug: item.producerSlug
+      }
     }));
 
     const { error: itemsError } = await supabase
-      .from('pre_order_items')
+      .from('order_items')
       .insert(orderItems);
 
     if (itemsError) {
-      console.error('Error creating pre-order items:', itemsError);
+      console.error('Error creating order items:', itemsError);
       // Try to rollback order
       await supabase
-        .from('pre_orders')
+        .from('orders')
         .delete()
         .eq('id', order.id);
       
@@ -161,7 +153,9 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
       };
     }
 
-    console.log('Pre-order created with status: created. Waiting for producer confirmation.');
+    // Обновление остатков происходит только при подтверждении заказа производителем
+    // Здесь создаем заказ со статусом 'preorder' без списания остатков
+    console.log('Order created with status: preorder. Stock will be updated when producer confirms.');
     
     // TODO: При подтверждении заказа производителем нужно будет обновить остатки
     // Это будет происходить через отдельную функцию confirmOrder
@@ -178,10 +172,9 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
 
   } catch (error) {
     console.error('Error in createPreorder:', error);
-    console.error('Error stack:', error.stack);
     return {
       success: false,
-      message: error.message || 'Произошла ошибка при создании заказа'
+      message: 'Произошла ошибка при создании заказа'
     };
   }
 }
@@ -214,20 +207,21 @@ async function generateOrderCode() {
 export async function getOrderByCode(orderCode) {
   try {
     const { data, error } = await supabase
-      .from('pre_orders')
+      .from('orders')
       .select(`
         *,
-        pre_order_items (
+        order_items (
           *,
-          products (name, price_unit)
+          products (name, description)
         ),
-        pickup_points (name, address, city, producer_id, producer_profiles(producer_name))
+        producer_profiles (producer_name),
+        pickup_points (name, address)
       `)
-      .eq('order_code', orderCode)
+      .eq('meta->>order_code', orderCode)
       .single();
 
     if (error) {
-      console.error('Error fetching pre-order:', error);
+      console.error('Error fetching order:', error);
       return null;
     }
 

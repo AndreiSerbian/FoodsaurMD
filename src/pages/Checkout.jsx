@@ -195,10 +195,6 @@ const Checkout = () => {
       const todayDate = utc3Now.toISOString().slice(0, 10);
       const pickupDateTime = new Date(`${todayDate}T${selectedTime}`);
       
-      console.log('Checkout - selectedTime:', selectedTime);
-      console.log('Checkout - pickupDateTime:', pickupDateTime);
-      console.log('Checkout - pickupDateTime.toISOString():', pickupDateTime.toISOString());
-      
       const result = await createPreOrder({
         customer: {
           name: 'Гость',
@@ -208,17 +204,6 @@ const Checkout = () => {
         pointId: selectedPointInfo.pointId
       });
 
-      console.log('Pre-order result:', result);
-      
-      if (!result) {
-        toast({
-          title: "Ошибка",
-          description: "Не удалось получить ответ от сервера",
-          variant: "destructive"
-        });
-        return;
-      }
-      
       if (result.success) {
         // Send Telegram notification
         try {
