@@ -67,7 +67,7 @@
   .z-content { @apply z-20; }
   .z-cart { @apply z-30; }
   .z-modal { @apply z-40; }
-  .z-mobile-menu { @apply z-50; }
+  .z-mobile-menu { @apply z-[100]; }
   .z-alert { @apply z-[9999]; }
   
   .card-hover {
