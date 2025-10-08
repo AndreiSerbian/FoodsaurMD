@@ -20,7 +20,7 @@ const HeroSection = ({
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-white to-gray-100 rounded-3xl"></div>
       
-      <div className="container mx-auto px-6 py-16 relative z-10">
+      <div className="container mx-auto px-6 py-16 relative">
         <motion.div className="max-w-3xl mx-auto text-center" initial={{
         opacity: 0,
         y: 20
