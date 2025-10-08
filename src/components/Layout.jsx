@@ -14,13 +14,13 @@ const Layout = ({ children }) => {
   return <div className="min-h-screen flex flex-col bg-background">
       <header className="bg-white shadow-sm z-header relative">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-green-900">Foodsaur</Link>
+          <Link to="/" className="text-2xl font-bold text-green-900">{t('appName')}</Link>
           
           {/* Десктопное меню */}
           <nav className="hidden md:flex space-x-8 items-center">
             
             <Link to="/order-search" className="text-green-600 hover:text-green-900 transition duration-200">
-              Поиск заказа
+              {t('orderSearch')}
             </Link>
             
             {user ? <div className="flex items-center space-x-4">

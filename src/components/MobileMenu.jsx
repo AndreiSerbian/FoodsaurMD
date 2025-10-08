@@ -87,7 +87,7 @@ const MobileMenu = () => {
                 className="text-2xl font-bold text-green-900"
                 onClick={closeMenu}
               >
-                Foodsaur
+                {t('appName')}
               </Link>
               <button
                 onClick={closeMenu}
@@ -107,6 +107,15 @@ const MobileMenu = () => {
                 onClick={closeMenu}
               >
                 {t('home')}
+              </Link>
+
+              {/* Поиск заказа */}
+              <Link
+                to="/order-search"
+                className="block py-3 px-4 text-lg text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors"
+                onClick={closeMenu}
+              >
+                {t('orderSearch')}
               </Link>
 
               {/* Секция авторизации */}
