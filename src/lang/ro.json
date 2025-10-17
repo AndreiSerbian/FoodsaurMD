@@ -113,5 +113,7 @@
   "categoryDesserts": "Deserturi",
   "categoryDrinks": "Băuturi",
   "heroSlogan": "Gustos • Avantajos • Ecologic",
-  "searchPlaceholder": "Caută restaurant..."
+  "searchPlaceholder": "Caută restaurant...",
+  "appName": "Foodsaur",
+  "orderSearch": "Căutare comandă"
 }
