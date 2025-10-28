@@ -113,7 +113,10 @@ const ProductForm = ({
         description: formData.description,
         ingredients: formData.ingredients,
         allergen_info: formData.allergen_info,
-        producer_id: producerProfile.id
+        producer_id: producerProfile.id,
+        quantity: 0,
+        price_regular: 0,
+        unit_type: 'pcs'
       };
       let savedProduct;
       if (product?.id) {
