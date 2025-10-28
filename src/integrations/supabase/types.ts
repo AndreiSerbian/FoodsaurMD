@@ -962,7 +962,7 @@ export type Database = {
         Returns: Json
       }
       generate_order_code: { Args: { length_param?: number }; Returns: string }
-      generate_slug: { Args: { input_text: string }; Returns: string }
+      generate_slug: { Args: { text_value: string }; Returns: string }
       get_current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
