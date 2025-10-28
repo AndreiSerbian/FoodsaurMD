@@ -98,7 +98,7 @@ const ProductInventoryManager = ({ producerProfile }) => {
         .upsert({
           point_id: selectedPoint,
           product_id: productId,
-          stock: newStock,
+          bulk_qty: newStock,
           is_listed: true,
           updated_at: new Date().toISOString()
         }, {
@@ -219,7 +219,7 @@ const ProductInventoryManager = ({ producerProfile }) => {
                                 id={`stock-${item.product_id}`}
                                 type="number"
                                 min="0"
-                                value={item.stock}
+                                value={item.bulk_qty}
                                 onChange={(e) => updateStock(item.product_id, parseInt(e.target.value) || 0)}
                                 className="w-20"
                                 disabled={loading}

@@ -26,7 +26,7 @@ export async function syncProductsToPoint(pointId, producerId) {
     const inventoryRecords = products.map(product => ({
       point_id: pointId,
       product_id: product.id,
-      stock: product.quantity, // Копируем глобальный остаток
+      bulk_qty: product.quantity, // Копируем глобальный остаток
       is_listed: true,
       updated_at: new Date().toISOString()
     }));
@@ -65,7 +65,7 @@ export async function updatePointStock(pointId, productId, newStock) {
       .upsert({
         point_id: pointId,
         product_id: productId,
-        stock: newStock,
+        bulk_qty: newStock,
         is_listed: true,
         updated_at: new Date().toISOString()
       }, {

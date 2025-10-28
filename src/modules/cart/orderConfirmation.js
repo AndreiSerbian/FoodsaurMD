@@ -49,7 +49,7 @@ export async function confirmOrder(orderId) {
       await supabase
         .from('point_inventory')
         .update({
-          stock: supabase.raw(`GREATEST(0, stock - ${item.qty})`),
+          bulk_qty: supabase.raw(`GREATEST(0, bulk_qty - ${item.qty})`),
           updated_at: new Date().toISOString()
         })
         .eq('point_id', order.point_id)

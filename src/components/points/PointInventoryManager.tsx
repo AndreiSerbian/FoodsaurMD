@@ -24,7 +24,7 @@ interface PointInventoryManagerProps {
 interface InventoryItem {
   point_id: string;
   product_id: string;
-  stock: number;
+  bulk_qty: number;
   is_listed: boolean;
   products: {
     id: string;
@@ -273,7 +273,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                         <div className="flex items-center gap-2">
                           <Label>Остаток:</Label>
                           <QuantityInput
-                            value={item.stock}
+                            value={item.bulk_qty}
                             unit={item.products.price_unit}
                             onChange={(value) => handleStockUpdate(item.product_id, value)}
                             className="w-24"
@@ -385,7 +385,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                               {formatPrice(item.products.price_regular)} / {item.products.price_unit}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Остаток в источнике: {formatQuantity(item.stock, item.products.price_unit)}
+                              Остаток в источнике: {formatQuantity(item.bulk_qty, item.products.price_unit)}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -393,7 +393,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                               <Badge variant="secondary">Уже добавлен</Badge>
                             )}
                             <Button 
-                              onClick={() => handleCopyFromPoint(item.product_id, item.stock)}
+                              onClick={() => handleCopyFromPoint(item.product_id, item.bulk_qty)}
                               disabled={isAlreadyInPoint}
                               variant={isAlreadyInPoint ? "outline" : "default"}
                               className="gap-2"
