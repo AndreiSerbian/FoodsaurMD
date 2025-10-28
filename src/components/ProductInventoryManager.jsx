@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from './ui/badge';
 import { useToast } from './ui/use-toast';
 import { Trash2, Edit, Plus } from 'lucide-react';
+import PointProductModal from './PointProductModal';
 
 const ProductInventoryManager = ({ producerProfile }) => {
   const [products, setProducts] = useState([]);
@@ -15,6 +16,10 @@ const ProductInventoryManager = ({ producerProfile }) => {
   const [selectedPoint, setSelectedPoint] = useState('');
   const [pointInventory, setPointInventory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalProduct, setModalProduct] = useState(null);
+  const [modalVariant, setModalVariant] = useState(null);
+  const [modalInventory, setModalInventory] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,23 +73,46 @@ const ProductInventoryManager = ({ producerProfile }) => {
 
   const loadPointInventory = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: inventoryData, error: inventoryError } = await supabase
         .from('point_inventory')
         .select(`
           *,
           products (
             id,
             name,
-            price_regular,
-            price_discount,
-            price_unit
+            description,
+            product_images (
+              image_url,
+              is_primary
+            )
           )
         `)
         .eq('point_id', selectedPoint)
         .eq('is_listed', true);
       
-      if (error) throw error;
-      setPointInventory(data || []);
+      if (inventoryError) throw inventoryError;
+
+      // Fetch variants for each product
+      const productIds = inventoryData.map(inv => inv.product_id);
+      const { data: variantsData, error: variantsError } = await supabase
+        .from('point_variants')
+        .select('*')
+        .eq('point_id', selectedPoint)
+        .in('product_id', productIds)
+        .eq('is_active', true);
+
+      if (variantsError) throw variantsError;
+
+      // Merge inventory with variants
+      const mergedData = inventoryData.map(inv => {
+        const variant = variantsData.find(v => v.product_id === inv.product_id);
+        return {
+          ...inv,
+          variant: variant || null
+        };
+      });
+
+      setPointInventory(mergedData || []);
     } catch (error) {
       console.error('Error loading point inventory:', error);
     }
@@ -125,11 +153,27 @@ const ProductInventoryManager = ({ producerProfile }) => {
     }
   };
 
-  const addProductToPoint = async (productId) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
+  const openAddModal = (product) => {
+    setModalProduct(product);
+    setModalVariant(null);
+    setModalInventory(null);
+    setShowModal(true);
+  };
 
-    await updateStock(productId, product.quantity);
+  const openEditModal = (item) => {
+    const product = products.find(p => p.id === item.product_id);
+    setModalProduct(product || item.products);
+    setModalVariant(item.variant);
+    setModalInventory(item);
+    setShowModal(true);
+  };
+
+  const handleModalSave = () => {
+    setShowModal(false);
+    setModalProduct(null);
+    setModalVariant(null);
+    setModalInventory(null);
+    loadPointInventory();
   };
 
   const removeFromPoint = async (productId) => {
@@ -197,46 +241,63 @@ const ProductInventoryManager = ({ producerProfile }) => {
                     <p className="text-gray-500">Товары не добавлены в эту точку</p>
                   ) : (
                     <div className="space-y-3">
-                      {pointInventory.map(item => (
-                        <div key={item.product_id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex-1">
-                            <h4 className="font-medium">{item.products.name}</h4>
-                            <div className="flex items-center gap-4 mt-1">
-                              <span className="text-sm text-gray-600">
-                                Обычная цена: {item.products.price_regular} лей/{item.products.price_unit}
-                              </span>
-                              {item.products.price_discount && (
-                                <span className="text-sm text-green-600">
-                                  Цена со скидкой: {item.products.price_discount} лей/{item.products.price_unit}
-                                </span>
+                      {pointInventory.map(item => {
+                        const variant = item.variant;
+                        const price = variant ? (variant.price_per_unit || variant.price_per_kg || variant.price_per_pack) : null;
+                        const priceDiscount = variant?.price_discount;
+                        const unit = variant ? (variant.sale_mode === 'unit' ? 'шт' : variant.sale_mode === 'weight' ? 'кг' : 'упак') : '';
+                        
+                        return (
+                          <div key={item.product_id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex-1">
+                              <h4 className="font-medium">{item.products.name}</h4>
+                              {variant && (
+                                <div className="flex items-center gap-4 mt-1">
+                                  <span className="text-sm text-gray-600">
+                                    Обычная цена: {price} лей/{unit}
+                                  </span>
+                                  {priceDiscount && (
+                                    <span className="text-sm text-green-600">
+                                      Цена со скидкой: {priceDiscount} лей/{unit}
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
                             <div className="flex items-center gap-2">
-                              <Label htmlFor={`stock-${item.product_id}`} className="text-sm">Остаток:</Label>
-                              <Input
-                                id={`stock-${item.product_id}`}
-                                type="number"
-                                min="0"
-                                value={item.bulk_qty}
-                                onChange={(e) => updateStock(item.product_id, parseInt(e.target.value) || 0)}
-                                className="w-20"
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor={`stock-${item.product_id}`} className="text-sm">Остаток:</Label>
+                                <Input
+                                  id={`stock-${item.product_id}`}
+                                  type="number"
+                                  min="0"
+                                  value={item.bulk_qty}
+                                  onChange={(e) => updateStock(item.product_id, parseInt(e.target.value) || 0)}
+                                  className="w-20"
+                                  disabled={loading}
+                                />
+                                {variant && <span className="text-sm text-gray-500">{unit}</span>}
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditModal(item)}
                                 disabled={loading}
-                              />
-                              <span className="text-sm text-gray-500">{item.products.price_unit}</span>
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeFromPoint(item.product_id)}
+                                disabled={loading}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => removeFromPoint(item.product_id)}
-                              disabled={loading}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -251,24 +312,14 @@ const ProductInventoryManager = ({ producerProfile }) => {
                         <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div>
                             <h4 className="font-medium">{product.name}</h4>
-                            <div className="flex items-center gap-4">
-                              <span className="text-sm text-gray-600">
-                                Обычная цена: {product.price_regular} лей/{product.price_unit}
-                              </span>
-                              {product.price_discount && (
-                                <span className="text-sm text-green-600">
-                                  Цена со скидкой: {product.price_discount} лей/{product.price_unit}
-                                </span>
-                              )}
-                              <Badge variant="secondary">
-                                Общий остаток: {product.quantity} {product.price_unit}
-                              </Badge>
-                            </div>
+                            {product.description && (
+                              <p className="text-sm text-gray-500 mt-1">{product.description}</p>
+                            )}
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => addProductToPoint(product.id)}
+                            onClick={() => openAddModal(product)}
                             disabled={loading}
                           >
                             <Plus className="h-4 w-4 mr-2" />
@@ -284,6 +335,17 @@ const ProductInventoryManager = ({ producerProfile }) => {
           </div>
         </CardContent>
       </Card>
+
+      {showModal && modalProduct && (
+        <PointProductModal
+          product={modalProduct}
+          pointId={selectedPoint}
+          existingVariant={modalVariant}
+          existingInventory={modalInventory}
+          onSave={handleModalSave}
+          onCancel={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 };

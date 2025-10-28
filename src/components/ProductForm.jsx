@@ -19,14 +19,7 @@ const ProductForm = ({
     name: '',
     description: '',
     ingredients: '',
-    allergen_info: '',
-    price_regular: '',
-    price_discount: '',
-    quantity: '',
-    weight: '',
-    price_unit: 'шт',
-    in_stock: true,
-    category_id: ''
+    allergen_info: ''
   });
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -37,14 +30,7 @@ const ProductForm = ({
         name: product.name || '',
         description: product.description || '',
         ingredients: product.ingredients || '',
-        allergen_info: product.allergen_info || '',
-        price_regular: product.price_regular || '',
-        price_discount: product.price_discount || '',
-        quantity: product.quantity || '',
-        weight: product.weight || '',
-        price_unit: product.price_unit || 'шт',
-        in_stock: product.in_stock,
-        category_id: product.category_id || ''
+        allergen_info: product.allergen_info || ''
       });
       fetchProductImages();
     }
@@ -127,12 +113,7 @@ const ProductForm = ({
         description: formData.description,
         ingredients: formData.ingredients,
         allergen_info: formData.allergen_info,
-        producer_id: producerProfile.id,
-        price_regular: parseFloat(formData.price_regular),
-        price_discount: formData.price_discount ? parseFloat(formData.price_discount) : null,
-        quantity: parseInt(formData.quantity),
-        price_unit: formData.price_unit,
-        in_stock: formData.in_stock
+        producer_id: producerProfile.id
       };
       let savedProduct;
       if (product?.id) {
@@ -175,25 +156,12 @@ const ProductForm = ({
   const handleChange = e => {
     const {
       name,
-      value,
-      type,
-      checked
+      value
     } = e.target;
-    
-    let processedValue = type === 'checkbox' ? checked : value;
-    
-    // Валидация количества при изменении
-    if (name === 'quantity' && value && formData.price_unit) {
-      const qty = parseFloat(value);
-      const validation = validateQty(qty, formData.price_unit);
-      if (!validation.valid) {
-        console.warn('Validation error:', validation.error);
-      }
-    }
     
     setFormData({
       ...formData,
-      [name]: processedValue
+      [name]: value
     });
   };
   return <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -226,65 +194,6 @@ const ProductForm = ({
           <div>
             <Label htmlFor="allergen_info">Информация об аллергенах</Label>
             <Textarea id="allergen_info" name="allergen_info" value={formData.allergen_info} onChange={handleChange} placeholder="Укажите возможные аллергены" rows={2} />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="price_regular">Обычная цена</Label>
-              <Input id="price_regular" name="price_regular" type="number" step="0.01" value={formData.price_regular} onChange={handleChange} required />
-            </div>
-            <div>
-              <Label htmlFor="price_discount">Цена со скидкой</Label>
-              <Input id="price_discount" name="price_discount" type="number" step="0.01" value={formData.price_discount} onChange={handleChange} />
-            </div>
-            
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="quantity">Остаток</Label>
-              <QuantityInput
-                value={parseFloat(formData.quantity) || 0}
-                unit={formData.price_unit}
-                onChange={(newQty) => setFormData({...formData, quantity: newQty.toString()})}
-                showButtons={false}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="weight">Вес товара (г)</Label>
-              <Input id="weight" name="weight" type="number" step="0.01" value={formData.weight} onChange={handleChange} placeholder="0.00" />
-            </div>
-            <div>
-              <Label htmlFor="price_unit">Единица измерения</Label>
-              <Select value={formData.price_unit} onValueChange={value => setFormData({
-              ...formData,
-              price_unit: value
-            })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(getGroupedUnits()).map(([type, units]) => (
-                    <div key={type}>
-                      <div className="px-2 py-1 text-xs text-gray-500 bg-gray-50 font-medium">
-                        {getUnitTypeIcon(type)} {type === 'piece' ? 'Штучные' : type === 'weight' ? 'Весовые' : 'Объемные'}
-                      </div>
-                      {units.map(unit => (
-                        <SelectItem key={unit.value} value={unit.value}>
-                          {unit.label}
-                        </SelectItem>
-                      ))}
-                    </div>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input type="checkbox" id="in_stock" name="in_stock" checked={formData.in_stock} onChange={handleChange} className="rounded" />
-            <Label htmlFor="in_stock">В наличии</Label>
           </div>
 
           <div>

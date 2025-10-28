@@ -8,6 +8,7 @@ import { formatPrice, formatQuantity } from '../utils/unitUtils'
 const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [totalStocks, setTotalStocks] = useState({})
 
   useEffect(() => {
     if (producerProfile?.id) {
@@ -32,11 +33,36 @@ const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
 
       if (!error && data) {
         setProducts(data)
+        // Fetch total stocks for all products
+        await fetchTotalStocks(data.map(p => p.id))
       }
     } catch (error) {
       console.error('Error fetching products:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchTotalStocks = async (productIds) => {
+    try {
+      const { data, error } = await supabase
+        .from('point_inventory')
+        .select('product_id, bulk_qty')
+        .in('product_id', productIds)
+        .eq('is_listed', true)
+
+      if (!error && data) {
+        const stocksMap = {}
+        data.forEach(inv => {
+          if (!stocksMap[inv.product_id]) {
+            stocksMap[inv.product_id] = 0
+          }
+          stocksMap[inv.product_id] += inv.bulk_qty
+        })
+        setTotalStocks(stocksMap)
+      }
+    } catch (error) {
+      console.error('Error fetching total stocks:', error)
     }
   }
 
@@ -127,31 +153,9 @@ const ProductList = ({ producerProfile, onEditProduct, onDeleteProduct }) => {
                     <span className="font-medium">Аллергены:</span> {product.allergen_info}
                   </p>
                 )}
-                <div className="flex items-center mt-2 space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg font-semibold text-green-600">
-                      {formatPrice(product.price_discount || product.price_regular, product.price_unit)}
-                    </span>
-                    {product.price_discount && (
-                      <span className="text-sm text-gray-500 line-through">
-                        {formatPrice(product.price_regular, product.price_unit)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Остаток: {formatQuantity(product.quantity, product.price_unit)}
-                  </div>
-                  {product.discount_size && (
-                    <div className="text-xs text-orange-600">
-                      Скидка: {product.discount_size} дн.
-                    </div>
-                  )}
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    product.in_stock 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {product.in_stock ? 'В наличии' : 'Нет в наличии'}
+                <div className="flex items-center mt-2">
+                  <div className="text-sm text-gray-600">
+                    Общий остаток во всех точках: <span className="font-medium">{totalStocks[product.id] || 0}</span>
                   </div>
                 </div>
               </div>
