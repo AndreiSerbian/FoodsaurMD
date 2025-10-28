@@ -31,6 +31,7 @@ const ProductManagement = ({
     setShowAddForm(false);
     setEditingProduct(null);
     setRefreshKey(prev => prev + 1); // Обновляем список товаров
+    setIsOpen(true); // Оставляем список открытым после сохранения
   };
   const handleDeleteProduct = () => {
     setRefreshKey(prev => prev + 1); // Обновляем список товаров
@@ -57,10 +58,10 @@ const ProductManagement = ({
         <div className="px-4 py-5 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-80 text-left">
-              <h3 className="text-lg leading-6 font-medium text-gray-50">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
                 Управление товарами
               </h3>
-              <ChevronDown className={`h-4 w-4 text-gray-50 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 text-gray-900 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button 
