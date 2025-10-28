@@ -27,7 +27,7 @@ const OrderManagement = ({ producerProfile }) => {
         .select(`
           *,
           pickup_points!orders_point_id_fkey(name, address),
-          order_items(
+          order_items!order_items_order_id_fkey(
             qty,
             price,
             subtotal,
