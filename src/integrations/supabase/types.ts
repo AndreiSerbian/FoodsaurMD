@@ -958,16 +958,10 @@ export type Database = {
         }
         Returns: Json
       }
-      generate_order_code: {
-        Args: { length_param?: number }
-        Returns: string
-      }
-      generate_slug: {
-        Args: { input_text: string }
-        Returns: string
-      }
+      generate_order_code: { Args: { length_param?: number }; Returns: string }
+      generate_slug: { Args: { input_text: string }; Returns: string }
       get_current_user_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
       has_role: {
@@ -981,10 +975,7 @@ export type Database = {
         Args: { point_id_param: string; producer_id_param: string }
         Returns: number
       }
-      rpc_cancel_preorder: {
-        Args: { order_id_param: string }
-        Returns: Json
-      }
+      rpc_cancel_preorder: { Args: { order_id_param: string }; Returns: Json }
       rpc_create_preorder_and_decrement: {
         Args: { order_payload: Json }
         Returns: Json
