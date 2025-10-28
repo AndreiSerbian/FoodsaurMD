@@ -309,6 +309,7 @@ export type Database = {
         Row: {
           bulk_qty: number
           id: string
+          is_listed: boolean
           point_id: string
           product_id: string
           updated_at: string
@@ -316,6 +317,7 @@ export type Database = {
         Insert: {
           bulk_qty?: number
           id?: string
+          is_listed?: boolean
           point_id: string
           product_id: string
           updated_at?: string
@@ -323,6 +325,7 @@ export type Database = {
         Update: {
           bulk_qty?: number
           id?: string
+          is_listed?: boolean
           point_id?: string
           product_id?: string
           updated_at?: string
