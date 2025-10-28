@@ -73,7 +73,9 @@ const ProductForm = ({
       try {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-        const filePath = `producers/${producerProfile?.producer_name || 'unknown'}/${fileName}`;
+        // Use slug or sanitized name for file path to avoid issues with special characters
+        const producerSlug = producerProfile?.slug || producerProfile?.producer_name?.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'unknown';
+        const filePath = `producers/${producerSlug}/${fileName}`;
         const {
           error: uploadError
         } = await supabase.storage.from('product-images').upload(filePath, file);
