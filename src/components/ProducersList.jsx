@@ -32,8 +32,15 @@ const ProducerCard = ({
   };
   
   const handleImageError = e => {
+    console.log('Image load error:', e.target.src);
     e.target.src = "/placeholder.svg";
   };
+  
+  // Ensure images have valid URLs
+  const safeImages = images.map(img => ({
+    ...img,
+    url: img.url && img.url !== 'null' ? img.url : '/placeholder.svg'
+  }));
   
   return (
     <Link to={`/producer/${producer.slug}`} className="block">
@@ -41,14 +48,14 @@ const ProducerCard = ({
         <div className="relative">
           <div className="w-full h-48 relative overflow-hidden">
             <img 
-              src={images[currentImageIndex].url} 
-              alt={`${producer.producerName} - ${images[currentImageIndex].label}`} 
+              src={safeImages[currentImageIndex].url} 
+              alt={`${producer.producerName} - ${safeImages[currentImageIndex].label}`} 
               className="w-full h-full object-cover transition-transform duration-300" 
               onError={handleImageError} 
             />
             
             <div className="absolute bottom-3 right-3 bg-white/80 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium">
-              {images[currentImageIndex].label}
+              {safeImages[currentImageIndex].label}
             </div>
             
             <button 

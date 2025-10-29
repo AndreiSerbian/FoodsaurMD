@@ -46,8 +46,8 @@ const Producers = () => {
           discountAvailableTime: producer.discount_available_time || 'не указано',
           categoryName: decodedCategoryName,
           producerImage: {
-            exterior: producer.exterior_image_url || '/placeholder.svg',
-            interior: producer.interior_image_url || '/placeholder.svg'
+            exterior: (producer.exterior_image_url && producer.exterior_image_url !== 'null') ? producer.exterior_image_url : '/placeholder.svg',
+            interior: (producer.interior_image_url && producer.interior_image_url !== 'null') ? producer.interior_image_url : '/placeholder.svg'
           },
           products: producer.products || [] // Используем реальное количество продуктов
         })) || [];

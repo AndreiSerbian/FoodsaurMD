@@ -54,8 +54,8 @@ const ProducerProfile = () => {
         discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
         categoryName: producerData.producer_categories?.[0]?.categories?.name || 'Без категории',
         producerImage: {
-          exterior: producerData.exterior_image_url || '/placeholder.svg',
-          interior: producerData.interior_image_url || '/placeholder.svg'
+          exterior: (producerData.exterior_image_url && producerData.exterior_image_url !== 'null') ? producerData.exterior_image_url : '/placeholder.svg',
+          interior: (producerData.interior_image_url && producerData.interior_image_url !== 'null') ? producerData.interior_image_url : '/placeholder.svg'
         }
       };
 

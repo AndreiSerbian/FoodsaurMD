@@ -64,7 +64,7 @@ const Home = () => {
             categoryName: categoryString,
             slug: producer.slug,
             producerImage: {
-              exterior: producer.exterior_image_url || '/placeholder.svg'
+              exterior: (producer.exterior_image_url && producer.exterior_image_url !== 'null') ? producer.exterior_image_url : '/placeholder.svg'
             }
           };
         });
