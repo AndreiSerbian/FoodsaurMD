@@ -103,12 +103,15 @@ export default function PointsPublicGrid({ producerSlug, onPointSelected }: Poin
       pointName: point.title || point.name
     });
 
+    // Navigate first before showing toast to prevent navigation issues
+    if (onPointSelected) {
+      onPointSelected(point);
+    }
+
     toast({
       title: 'Точка выбрана',
       description: `Теперь вы можете заказывать товары из точки "${point.title || point.name}"`,
     });
-
-    onPointSelected?.(point);
   };
 
   const handleConflictConfirm = () => {
