@@ -6,7 +6,7 @@ import CategoryManagement from '../components/CategoryManagement';
 import PickupPointManagement from '../components/PickupPointManagement';
 import OrderManagement from '../components/OrderManagement';
 import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
-import ProductInventoryManager from '../components/ProductInventoryManager';
+
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -198,20 +198,10 @@ const Dashboard = () => {
       {/* Управление категориями */}
       {profile && <CategoryManagement producerProfile={profile} />}
 
-      {/* Раздел 1: Управление товарами (Мастер-лист) */}
+      {/* Управление товарами (Мастер-лист) */}
       <ProductManagement profile={profile} />
 
-      {/* Раздел 2: Управление остатками по точкам */}
-      {profile && <div className="bg-white overflow-hidden shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6">
-            Управление остатками по точкам
-          </h3>
-          <ProductInventoryManager producerProfile={profile} />
-        </div>
-      </div>}
-
-      {/* Управление точками выдачи */}
+      {/* Управление точками выдачи и остатками */}
       <PickupPointManagement producerProfile={profile} />
 
       {/* Панель подтверждения заказов */}
