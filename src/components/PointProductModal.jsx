@@ -19,7 +19,6 @@ const PointProductModal = ({
     bulk_qty: 0,
     price_regular: '',
     price_discount: '',
-    price_unit: 'шт',
     sale_mode: 'unit'
   });
   const [loading, setLoading] = useState(false);
@@ -31,16 +30,15 @@ const PointProductModal = ({
         bulk_qty: existingInventory.bulk_qty || 0,
         price_regular: existingVariant.price_per_unit || existingVariant.price_per_kg || existingVariant.price_per_pack || '',
         price_discount: existingVariant.price_discount || '',
-        price_unit: getPriceUnitFromVariant(existingVariant),
         sale_mode: existingVariant.sale_mode || 'unit'
       });
     }
   }, [existingVariant, existingInventory]);
 
-  const getPriceUnitFromVariant = (variant) => {
-    if (variant.sale_mode === 'unit') return 'шт';
-    if (variant.sale_mode === 'weight') return 'кг';
-    if (variant.sale_mode === 'pack') return 'упак';
+  const getSaleModeLabel = () => {
+    if (formData.sale_mode === 'unit') return 'шт';
+    if (formData.sale_mode === 'weight') return 'кг';
+    if (formData.sale_mode === 'pack') return 'упак';
     return 'шт';
   };
 
@@ -159,35 +157,18 @@ const PointProductModal = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unit">Штучный</SelectItem>
-                <SelectItem value="weight">Весовой</SelectItem>
-                <SelectItem value="pack">Упаковкой</SelectItem>
+                <SelectItem value="unit">Штучный (шт)</SelectItem>
+                <SelectItem value="weight">Весовой (кг)</SelectItem>
+                <SelectItem value="pack">Упаковкой (упак)</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground mt-1">
+              Единица измерения: {getSaleModeLabel()}
+            </p>
           </div>
 
           <div>
-            <Label htmlFor="price_unit">Единица измерения</Label>
-            <Select 
-              value={formData.price_unit} 
-              onValueChange={(value) => setFormData({ ...formData, price_unit: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="шт">шт</SelectItem>
-                <SelectItem value="кг">кг</SelectItem>
-                <SelectItem value="г">г</SelectItem>
-                <SelectItem value="л">л</SelectItem>
-                <SelectItem value="мл">мл</SelectItem>
-                <SelectItem value="упак">упак</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="price_regular">Обычная цена</Label>
+            <Label htmlFor="price_regular">Обычная цена за {getSaleModeLabel()}</Label>
             <Input
               id="price_regular"
               name="price_regular"

@@ -50,6 +50,8 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
   const [sourcePointInventory, setSourcePointInventory] = useState<InventoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [addQuantity, setAddQuantity] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -137,9 +139,20 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
   };
 
   const handleAddProduct = async (productId: string, stock: number = 0) => {
+    if (stock <= 0) {
+      toast({
+        title: 'Ошибка',
+        description: 'Количество должно быть больше 0',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       await updatePointStock(pointId, productId, stock);
       await loadInventory();
+      setAddingProductId(null);
+      setAddQuantity(0);
       toast({
         title: 'Успешно',
         description: 'Товар добавлен в точку',
@@ -311,7 +324,7 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
               <div className="space-y-2">
                 {filteredAvailableProducts.map((product) => (
                   <div key={product.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center gap-4">
                       <div className="flex-1">
                         <h4 className="font-medium">{product.name}</h4>
                         <p className="text-sm text-muted-foreground">
@@ -321,13 +334,46 @@ export default function PointInventoryManager({ pointId, producerId, isNewPoint 
                           Основной остаток: {formatQuantity(product.quantity, product.price_unit)}
                         </p>
                       </div>
-                      <Button 
-                        onClick={() => handleAddProduct(product.id, Math.min(product.quantity, 10))}
-                        className="gap-2"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Добавить
-                      </Button>
+                      {addingProductId === product.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            max={product.quantity}
+                            value={addQuantity}
+                            onChange={(e) => setAddQuantity(parseInt(e.target.value) || 0)}
+                            placeholder="Кол-во"
+                            className="w-24"
+                          />
+                          <Button 
+                            onClick={() => handleAddProduct(product.id, addQuantity)}
+                            size="sm"
+                          >
+                            OK
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              setAddingProductId(null);
+                              setAddQuantity(0);
+                            }}
+                            size="sm"
+                            variant="outline"
+                          >
+                            Отмена
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={() => {
+                            setAddingProductId(product.id);
+                            setAddQuantity(Math.min(product.quantity, 10));
+                          }}
+                          className="gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Добавить
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

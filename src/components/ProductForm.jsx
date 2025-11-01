@@ -9,6 +9,7 @@ import { X, Upload, Trash2 } from 'lucide-react';
 import { getAvailableUnits, validateQty, formatQty } from '../modules/cart/quantity';
 import { getGroupedUnits, getUnitTypeIcon } from '../utils/unitUtils';
 import QuantityInput from './QuantityInput';
+import { useToast } from '../hooks/use-toast';
 const ProductForm = ({
   product,
   onSave,
@@ -24,6 +25,7 @@ const ProductForm = ({
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   useEffect(() => {
     if (product) {
       setFormData({
@@ -106,13 +108,33 @@ const ProductForm = ({
   };
   const handleSubmit = async e => {
     e.preventDefault();
+
+    // Валидация
+    if (formData.name.trim().length < 3) {
+      toast({
+        title: "Ошибка валидации",
+        description: "Название товара должно содержать минимум 3 символа",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (formData.description.trim().length < 10) {
+      toast({
+        title: "Ошибка валидации",
+        description: "Описание должно содержать минимум 10 символов",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const productData = {
-        name: formData.name,
-        description: formData.description,
-        ingredients: formData.ingredients,
-        allergen_info: formData.allergen_info,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        ingredients: formData.ingredients?.trim() || null,
+        allergen_info: formData.allergen_info?.trim() || null,
         producer_id: producerProfile.id,
         quantity: 0,
         price_regular: 0,
@@ -149,9 +171,19 @@ const ProductForm = ({
           }).eq('id', image.id);
         }
       }
+      toast({
+        title: "Успешно",
+        description: product ? "Товар обновлен" : "Товар создан"
+      });
+
       onSave();
     } catch (error) {
       console.error('Error saving product:', error);
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось сохранить товар",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -226,7 +258,7 @@ const ProductForm = ({
           </div>
 
           <div className="flex space-x-2 pt-4">
-            <Button type="submit" disabled={loading || uploading || images.length === 0} className="flex-1">
+            <Button type="submit" disabled={loading || uploading} className="flex-1">
               {loading ? 'Сохранение...' : 'Сохранить'}
             </Button>
             <Button type="button" variant="outline" onClick={onCancel}>
