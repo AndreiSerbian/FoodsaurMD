@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatPrice, formatQuantity } from '@/utils/unitUtils';
+import { formatPrice, formatQuantity, getCurrencySymbol } from '@/utils/unitUtils';
 import { Badge } from '@/components/ui/badge';
 
 /**
@@ -31,8 +31,6 @@ const CartCalculator = ({ cartItems, currency = 'MDL' }) => {
   };
 
   const { totalAmount, originalAmount, totalItems, hasSavings } = calculateTotals();
-  
-  const { getCurrencySymbol } = require('@/utils/unitUtils');
   const currencySymbol = getCurrencySymbol(currency);
 
   return (
