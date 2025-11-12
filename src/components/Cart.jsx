@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '../hooks/use-toast';
 import CartCalculator from './CartCalculator';
 import StockAwareQuantityInput from './StockAwareQuantityInput';
+import { getCurrencySymbol } from '@/utils/unitUtils';
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -22,7 +23,6 @@ const Cart = () => {
   const [isOpen, setIsOpen] = useState(false);
   
   const currency = selectedPointInfo?.currency || 'MDL';
-  const { getCurrencySymbol } = require('@/utils/unitUtils');
   const currencySymbol = getCurrencySymbol(currency);
 
   const toggleCart = () => {
