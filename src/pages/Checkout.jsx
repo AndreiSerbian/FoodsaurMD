@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Clock, MapPin, Calendar, Percent, CheckCircle2, Copy } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrencySymbol } from '@/utils/unitUtils';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -25,6 +26,9 @@ const Checkout = () => {
   const [selectedTime, setSelectedTime] = useState('');
   const [pointDetails, setPointDetails] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  
+  const currency = selectedPointInfo?.currency || 'MDL';
+  const currencySymbol = getCurrencySymbol(currency);
 
   // Redirect if no cart items or no point selected
   useEffect(() => {
@@ -367,19 +371,19 @@ const Checkout = () => {
                             <>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm line-through text-muted-foreground">
-                                  {(item.regularPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
+                                  {(item.regularPrice || 0).toFixed(2)} {currencySymbol}/{item.unit || 'шт'}
                                 </span>
                                 <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                                   Скидка
                                 </Badge>
                               </div>
                               <div className="font-semibold text-green-600">
-                                {(item.discountPrice || 0).toFixed(2)} MDL/{item.unit || 'шт'}
+                                {(item.discountPrice || 0).toFixed(2)} {currencySymbol}/{item.unit || 'шт'}
                               </div>
                             </>
                           ) : (
                             <div className="font-semibold">
-                              {(item.price || 0).toFixed(2)} MDL/{item.unit || 'шт'}
+                              {(item.price || 0).toFixed(2)} {currencySymbol}/{item.unit || 'шт'}
                             </div>
                           )}
                         </div>
@@ -389,15 +393,15 @@ const Checkout = () => {
                         {item.isDiscountActive ? (
                           <>
                             <div className="text-sm line-through text-muted-foreground">
-                              {((item.regularPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
+                              {((item.regularPrice || 0) * (item.qty || 0)).toFixed(2)} {currencySymbol}
                             </div>
                             <div className="font-bold text-green-600">
-                              {((item.discountPrice || 0) * (item.qty || 0)).toFixed(2)} MDL
+                              {((item.discountPrice || 0) * (item.qty || 0)).toFixed(2)} {currencySymbol}
                             </div>
                           </>
                         ) : (
                           <div className="font-bold">
-                            {((item.price || 0) * (item.qty || 0)).toFixed(2)} MDL
+                            {((item.price || 0) * (item.qty || 0)).toFixed(2)} {currencySymbol}
                           </div>
                         )}
                       </div>
@@ -412,17 +416,17 @@ const Checkout = () => {
                   <>
                     <div className="flex justify-between items-center text-muted-foreground">
                       <span>Сумма без скидки:</span>
-                      <span className="line-through">{(originalTotal || 0).toFixed(2)} MDL</span>
+                      <span className="line-through">{(originalTotal || 0).toFixed(2)} {currencySymbol}</span>
                     </div>
                     <div className="flex justify-between items-center text-green-600">
                       <span>Экономия:</span>
-                      <span>-{(totalSavings || 0).toFixed(2)} MDL</span>
+                      <span>-{(totalSavings || 0).toFixed(2)} {currencySymbol}</span>
                     </div>
                   </>
                 )}
                 <div className="flex justify-between items-center font-bold text-lg">
                   <span>Итого к оплате:</span>
-                  <span className="text-primary">{(discountedTotal || 0).toFixed(2)} MDL</span>
+                  <span className="text-primary">{(discountedTotal || 0).toFixed(2)} {currencySymbol}</span>
                 </div>
               </div>
             </CardContent>
@@ -444,7 +448,7 @@ const Checkout = () => {
               className="flex-1"
               size="lg"
             >
-              {isProcessing ? 'Создание заказа...' : `Оформить заказ на ${(discountedTotal || 0).toFixed(2)} MDL`}
+              {isProcessing ? 'Создание заказа...' : `Оформить заказ на ${(discountedTotal || 0).toFixed(2)} ${currencySymbol}`}
             </Button>
           </div>
         </form>

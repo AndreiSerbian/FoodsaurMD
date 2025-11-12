@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
+import { getCurrencySymbol } from '@/utils/unitUtils';
 
 const ProductsList = ({
   products,
@@ -10,6 +11,9 @@ const ProductsList = ({
   const {
     addToCart
   } = useCart();
+  
+  const currency = producer?.currency || 'MDL';
+  const currencySymbol = getCurrencySymbol(currency);
   
   const container = {
     hidden: {
@@ -90,15 +94,15 @@ const ProductsList = ({
                     {product.price_discount && product.price_discount < product.price_regular ? (
                       <>
                         <span className="text-lg font-bold text-green-600">
-                          {product.price_discount} MDL/{product.price_unit || 'шт'}
+                          {product.price_discount} {currencySymbol}/{product.price_unit || 'шт'}
                         </span>
                         <span className="text-sm text-gray-500 line-through ml-2">
-                          {product.price_regular} MDL/{product.price_unit || 'шт'}
+                          {product.price_regular} {currencySymbol}/{product.price_unit || 'шт'}
                         </span>
                       </>
                     ) : (
                       <span className="text-lg font-bold text-green-600">
-                        {product.price_regular} MDL/{product.price_unit || 'шт'}
+                        {product.price_regular} {currencySymbol}/{product.price_unit || 'шт'}
                       </span>
                     )}
                   </div>

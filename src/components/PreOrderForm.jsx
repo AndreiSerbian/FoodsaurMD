@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, MapPin, Clock, Percent, Receipt } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getCurrencySymbol } from '@/utils/unitUtils';
 
 const PreOrderForm = ({ producer, pointId }) => {
   const {
@@ -24,6 +25,9 @@ const PreOrderForm = ({ producer, pointId }) => {
     email: ''
   });
   const { toast } = useToast();
+  
+  const currency = selectedPointInfo?.currency || 'MDL';
+  const currencySymbol = getCurrencySymbol(currency);
 
   const handleCreateOrder = async () => {
     if (cartItems.length === 0) {
@@ -79,9 +83,9 @@ const PreOrderForm = ({ producer, pointId }) => {
 
   const formatPrice = (price) => {
     if (price === undefined || price === null || isNaN(price)) {
-      return '0.00 лей';
+      return `0.00 ${currencySymbol}`;
     }
-    return `${Number(price).toFixed(2)} лей`;
+    return `${Number(price).toFixed(2)} ${currencySymbol}`;
   };
 
   if (orderCode) {
@@ -204,7 +208,7 @@ const PreOrderForm = ({ producer, pointId }) => {
                  <div className="flex-1">
                    <div className="font-medium text-sm">{item.product?.name || item.name || 'Товар без названия'}</div>
                    <div className="text-xs text-muted-foreground">
-                     {item.price} MDL/{item.priceUnit || 'шт'} × {item.quantity || item.qty} = {formatPrice((item.price || 0) * (item.quantity || item.qty || 0))}
+                     {item.price} {currencySymbol}/{item.priceUnit || 'шт'} × {item.quantity || item.qty} = {formatPrice((item.price || 0) * (item.quantity || item.qty || 0))}
                    </div>
                  </div>
                  <div className="text-sm font-medium">
