@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signUp = async (email, password, brandName, phone, telegramHandle, categories = []) => {
+  const signUp = async (email, password, brandName, phone, telegramHandle, categories = [], currency = 'MDL') => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -73,7 +73,8 @@ export const AuthProvider = ({ children }) => {
             brand_name: brandName,
             phone: phone,
             telegram_handle: telegramHandle,
-            categories: categories
+            categories: categories,
+            currency: currency
           }
         }
       })

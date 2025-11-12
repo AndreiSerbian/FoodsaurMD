@@ -12,13 +12,37 @@ export function getUnitLabel(unit) {
 }
 
 /**
+ * Получает символ валюты
+ * @param {string} currency - код валюты (MDL или RUP)
+ * @returns {string}
+ */
+export function getCurrencySymbol(currency) {
+  const symbols = {
+    'MDL': 'лей',
+    'RUP': 'руб.'
+  };
+  return symbols[currency] || currency;
+}
+
+/**
+ * Форматирует цену с валютой
+ * @param {number} price - цена
+ * @param {string} currency - валюта (MDL или RUP)
+ * @returns {string}
+ */
+export function formatPriceWithCurrency(price, currency = 'MDL') {
+  return `${(price || 0).toFixed(2)} ${getCurrencySymbol(currency)}`;
+}
+
+/**
  * Форматирует цену с единицей измерения
  * @param {number} price - цена
  * @param {string} unit - единица измерения
+ * @param {string} currency - валюта (MDL или RUP)
  * @returns {string}
  */
-export function formatPrice(price, unit) {
-  return `${(price || 0).toFixed(2)} лей/${getUnitLabel(unit)}`;
+export function formatPrice(price, unit, currency = 'MDL') {
+  return `${(price || 0).toFixed(2)} ${getCurrencySymbol(currency)}/${getUnitLabel(unit)}`;
 }
 
 /**

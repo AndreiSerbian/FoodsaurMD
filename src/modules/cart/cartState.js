@@ -7,6 +7,7 @@
  * @property {string} pointId
  * @property {number} qty
  * @property {number} price
+ * @property {string} currency - Currency code (MDL or RUP)
  * @property {Object} product - Product snapshot
  */
 
@@ -15,6 +16,7 @@
  * @property {string} producerSlug
  * @property {string} pointId
  * @property {string} pointName
+ * @property {string} currency - Currency code (MDL or RUP)
  */
 
 const STORAGE_KEYS = {

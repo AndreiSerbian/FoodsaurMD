@@ -631,6 +631,7 @@ export type Database = {
           category_id: string | null
           category_name: string | null
           created_at: string | null
+          currency: string
           discount_available_time: string | null
           email_verified: boolean | null
           exterior_image_url: string | null
@@ -653,6 +654,7 @@ export type Database = {
           category_id?: string | null
           category_name?: string | null
           created_at?: string | null
+          currency?: string
           discount_available_time?: string | null
           email_verified?: boolean | null
           exterior_image_url?: string | null
@@ -675,6 +677,7 @@ export type Database = {
           category_id?: string | null
           category_name?: string | null
           created_at?: string | null
+          currency?: string
           discount_available_time?: string | null
           email_verified?: boolean | null
           exterior_image_url?: string | null

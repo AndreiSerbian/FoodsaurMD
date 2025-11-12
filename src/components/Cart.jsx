@@ -20,6 +20,10 @@ const Cart = () => {
   } = useCart();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  
+  const currency = selectedPointInfo?.currency || 'MDL';
+  const { getCurrencySymbol } = require('@/utils/unitUtils');
+  const currencySymbol = getCurrencySymbol(currency);
 
   const toggleCart = () => {
     setIsOpen(!isOpen);
@@ -155,25 +159,25 @@ const Cart = () => {
                               <div className="mt-1 space-y-1">
                                 {hasActiveDiscount ? (
                                   <>
-                                    <div className="flex items-center gap-2">
+                                     <div className="flex items-center gap-2">
                                       <span className="text-sm line-through text-muted-foreground">
-                                        {regularPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                        {regularPrice.toFixed(2)} {currencySymbol}/{item.unit || 'шт'}
                                       </span>
                                       <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                                         Скидка
                                       </Badge>
                                     </div>
                                     <div className="font-semibold text-green-600">
-                                      {currentPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                      {currentPrice.toFixed(2)} {currencySymbol}/{item.unit || 'шт'}
                                     </div>
                                     <div className="text-xs text-green-600">
-                                      Экономия: {(regularPrice - currentPrice).toFixed(2)} MDL
+                                      Экономия: {(regularPrice - currentPrice).toFixed(2)} {currencySymbol}
                                     </div>
                                   </>
                                 ) : (
                                   <div>
                                     <span className="font-semibold">
-                                      {currentPrice.toFixed(2)} MDL/{item.unit || 'шт'}
+                                      {currentPrice.toFixed(2)} {currencySymbol}/{item.unit || 'шт'}
                                     </span>
                                     {item.discountPrice && (
                                       <div className="text-xs text-amber-600 mt-1">
@@ -214,6 +218,7 @@ const Cart = () => {
               <div className="p-6 border-t">
                 <CartCalculator 
                   cartItems={cartItems}
+                  currency={selectedPointInfo?.currency || 'MDL'}
                 />
                 
                 <button 

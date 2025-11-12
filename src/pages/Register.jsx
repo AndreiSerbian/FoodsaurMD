@@ -16,7 +16,8 @@ const Register = () => {
     telegramHandle: '',
     password: '',
     confirmPassword: '',
-    categories: []
+    categories: [],
+    currency: 'MDL'
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
@@ -84,7 +85,8 @@ const Register = () => {
         formData.brandName, 
         formData.phone,
         formData.telegramHandle,
-        formData.categories
+        formData.categories,
+        formData.currency
       )
 
       if (result.needsConfirmation) {
@@ -208,6 +210,23 @@ const Register = () => {
               onCategoriesChange={handleCategoriesChange}
               errors={errors}
             />
+
+            <div>
+              <Label htmlFor="currency">Валюта</Label>
+              <select
+                id="currency"
+                name="currency"
+                value={formData.currency}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+              >
+                <option value="MDL">Молдавский лей (MDL)</option>
+                <option value="RUP">Рубль ПМР (RUP)</option>
+              </select>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Валюта, в которой будут указаны цены ваших товаров
+              </p>
+            </div>
 
             <div>
               <Label htmlFor="password">{t('password')}</Label>

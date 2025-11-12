@@ -105,13 +105,32 @@ export const CartProvider = ({ children }) => {
       });
 
       if (result.ok) {
-        // Set selected point if not set
+        // Get producer currency if not already set
         if (!selectedPointInfo) {
-          setSelectedPoint({ 
-            producerSlug: actualProducerSlug, 
-            pointId: actualPointId, 
-            pointName: actualPointName 
-          });
+          try {
+            const { data: producerData } = await supabase
+              .from('producer_profiles')
+              .select('currency')
+              .eq('slug', actualProducerSlug)
+              .single();
+            
+            const currency = producerData?.currency || 'MDL';
+            
+            setSelectedPoint({ 
+              producerSlug: actualProducerSlug, 
+              pointId: actualPointId, 
+              pointName: actualPointName,
+              currency: currency
+            });
+          } catch (err) {
+            console.error('Error fetching currency:', err);
+            setSelectedPoint({ 
+              producerSlug: actualProducerSlug, 
+              pointId: actualPointId, 
+              pointName: actualPointName,
+              currency: 'MDL'
+            });
+          }
         }
         
         // НЕ вызываем addItemToCart здесь - товар уже добавлен в addItemWithRules
@@ -159,7 +178,7 @@ export const CartProvider = ({ children }) => {
       // Try to get producer's pickup points
       const { data: producerData, error: producerError } = await supabase
         .from('producer_profiles')
-        .select('id, slug')
+        .select('id, slug, currency')
         .eq('slug', producerSlug)
         .single();
 
@@ -169,7 +188,7 @@ export const CartProvider = ({ children }) => {
         // Try by producer name
         const { data: producerByName, error: nameError } = await supabase
           .from('producer_profiles')
-          .select('id, slug')
+          .select('id, slug, currency')
           .eq('producer_name', producerInfo)
           .single();
 
@@ -215,11 +234,26 @@ export const CartProvider = ({ children }) => {
       // If only one point, select it automatically
       if (points.length === 1) {
         const point = points[0];
+        // Set currency before adding to cart
+        const currency = selectedProducer.currency || 'MDL';
+        setSelectedPoint({
+          producerSlug,
+          pointId: point.id,
+          pointName: point.name,
+          currency: currency
+        });
         await handleAddToCart(product, producerSlug, point.id, point.name);
       } else {
         // Multiple points - for now just use the first one
         // In a real app, you'd show a point selection modal
         const point = points[0];
+        const currency = selectedProducer.currency || 'MDL';
+        setSelectedPoint({
+          producerSlug,
+          pointId: point.id,
+          pointName: point.name,
+          currency: currency
+        });
         await handleAddToCart(product, producerSlug, point.id, point.name);
       }
     } catch (error) {

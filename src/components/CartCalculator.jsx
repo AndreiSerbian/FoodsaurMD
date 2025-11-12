@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
  * Компонент для расчета корзины с учетом единиц измерения
  * Показывает итоговую сумму и количество по каждому товару
  */
-const CartCalculator = ({ cartItems }) => {
+const CartCalculator = ({ cartItems, currency = 'MDL' }) => {
   if (!cartItems || cartItems.length === 0) {
     return null;
   }
@@ -31,6 +31,9 @@ const CartCalculator = ({ cartItems }) => {
   };
 
   const { totalAmount, originalAmount, totalItems, hasSavings } = calculateTotals();
+  
+  const { getCurrencySymbol } = require('@/utils/unitUtils');
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <div className="bg-card p-4 rounded-lg space-y-4">
@@ -59,22 +62,22 @@ const CartCalculator = ({ cartItems }) => {
                 <div className="text-muted-foreground">
                   {formatQuantity(item.qty, unit)} × {hasActiveDiscount ? (
                     <>
-                      <span className="line-through mr-1">{formatPrice(regularPrice, unit)}</span>
-                      <span className="text-green-600 font-medium">{formatPrice(currentPrice, unit)}</span>
+                      <span className="line-through mr-1">{formatPrice(regularPrice, unit, currency)}</span>
+                      <span className="text-green-600 font-medium">{formatPrice(currentPrice, unit, currency)}</span>
                     </>
                   ) : (
-                    formatPrice(currentPrice, unit)
+                    formatPrice(currentPrice, unit, currency)
                   )}
                 </div>
               </div>
               <div className="text-right">
                 {hasActiveDiscount && (
                   <div className="text-xs text-muted-foreground line-through">
-                    {(originalSubtotal || 0).toFixed(2)} лей
+                    {(originalSubtotal || 0).toFixed(2)} {currencySymbol}
                   </div>
                 )}
                 <span className={`font-medium ${hasActiveDiscount ? 'text-green-600' : ''}`}>
-                  {(subtotal || 0).toFixed(2)} лей
+                  {(subtotal || 0).toFixed(2)} {currencySymbol}
                 </span>
               </div>
             </div>
@@ -93,17 +96,17 @@ const CartCalculator = ({ cartItems }) => {
           <>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Сумма без скидки:</span>
-              <span className="text-muted-foreground line-through">{(originalAmount || 0).toFixed(2)} лей</span>
+              <span className="text-muted-foreground line-through">{(originalAmount || 0).toFixed(2)} {currencySymbol}</span>
             </div>
             <div className="flex justify-between text-sm text-green-600 font-medium">
               <span>Экономия:</span>
-              <span>-{((originalAmount - totalAmount) || 0).toFixed(2)} лей</span>
+              <span>-{((originalAmount - totalAmount) || 0).toFixed(2)} {currencySymbol}</span>
             </div>
           </>
         )}
         <div className="flex justify-between text-lg font-semibold">
           <span className="text-foreground">Итого:</span>
-          <span className={hasSavings ? 'text-green-600' : 'text-primary'}>{(totalAmount || 0).toFixed(2)} лей</span>
+          <span className={hasSavings ? 'text-green-600' : 'text-primary'}>{(totalAmount || 0).toFixed(2)} {currencySymbol}</span>
         </div>
       </div>
     </div>
