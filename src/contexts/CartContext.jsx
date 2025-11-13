@@ -306,7 +306,7 @@ export const CartProvider = ({ children }) => {
           description: result.message,
           variant: "destructive"
         });
-        return null;
+        return { success: false, message: result.message };
       }
     } catch (error) {
       console.error('Error creating pre-order:', error);
@@ -315,7 +315,7 @@ export const CartProvider = ({ children }) => {
         description: "Не удалось создать заказ",
         variant: "destructive"
       });
-      return null;
+      return { success: false, message: error.message || "Не удалось создать заказ" };
     }
   };
 

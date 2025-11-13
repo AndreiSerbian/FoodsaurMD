@@ -208,7 +208,7 @@ const Checkout = () => {
         pointId: selectedPointInfo.pointId
       });
 
-      if (result.success) {
+      if (result && result.success) {
         // Send Telegram notification
         try {
           await supabase.functions.invoke('create-pre-order-notification', {
