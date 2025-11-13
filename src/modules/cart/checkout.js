@@ -3,6 +3,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getCart, getSelectedPoint, clearCart } from './cartState.js';
 import { checkMultipleStock } from './inventoryApi.js';
+import { validateCart } from './inventorySync.js';
 
 /**
  * @typedef {Object} CustomerInfo
@@ -56,7 +57,6 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
     }
     
     // Повторная проверка остатков перед созданием заказа
-    const { validateCart } = await import('./inventorySync.js');
     const validation = await validateCart(
       selectedPoint.pointId,
       cart.items.map(item => ({ productId: item.productId, qty: item.qty }))
