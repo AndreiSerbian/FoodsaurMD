@@ -624,6 +624,47 @@ export type Database = {
           },
         ]
       }
+      producer_gallery: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number
+          id: string
+          image_type: string
+          image_url: string
+          producer_id: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_type?: string
+          image_url: string
+          producer_id: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_type?: string
+          image_url?: string
+          producer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producer_gallery_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       producer_profiles: {
         Row: {
           address: string | null
