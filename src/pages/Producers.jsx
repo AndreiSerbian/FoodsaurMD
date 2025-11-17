@@ -38,21 +38,32 @@ const Producers = () => {
         console.error('Error fetching producers:', error);
         setProducers([]);
       } else {
-        // Преобразуем данные в формат, совместимый с ProducersList
-        const formattedProducers = producerData?.map(producer => ({
-          producerName: producer.producer_name,
-          slug: producer.slug,
-          address: producer.address,
-          discountAvailableTime: producer.discount_available_time || 'не указано',
-          categoryName: decodedCategoryName,
-          producerImage: {
-            exterior: (producer.exterior_image_url && producer.exterior_image_url !== 'null') ? producer.exterior_image_url : '/placeholder.svg',
-            interior: (producer.interior_image_url && producer.interior_image_url !== 'null') ? producer.interior_image_url : '/placeholder.svg'
-          },
-          products: producer.products || [] // Используем реальное количество продуктов
-        })) || [];
+        // Fetch gallery images for each producer
+        const producersWithGallery = await Promise.all(
+          producerData.map(async (producer) => {
+            const { data: galleryData } = await supabase
+              .from('producer_gallery')
+              .select('*')
+              .eq('producer_id', producer.id)
+              .order('display_order', { ascending: true })
+              .limit(2);
+
+            return {
+              producerName: producer.producer_name,
+              slug: producer.slug,
+              address: producer.address,
+              discountAvailableTime: producer.discount_available_time || 'не указано',
+              categoryName: decodedCategoryName,
+              producerImage: {
+                exterior: galleryData?.[0]?.image_url || '/placeholder.svg',
+                interior: galleryData?.[1]?.image_url || '/placeholder.svg'
+              },
+              products: producer.products || []
+            };
+          })
+        );
         
-        setProducers(formattedProducers);
+        setProducers(producersWithGallery);
       }
     } catch (error) {
       console.error('Error fetching producers by category:', error);

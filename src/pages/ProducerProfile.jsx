@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { supabase } from '../integrations/supabase/client';
+import { useProducerGallery } from '../hooks/useProducerGallery';
 
 const ProducerProfile = () => {
   const { producerSlug } = useParams();
@@ -12,6 +13,8 @@ const ProducerProfile = () => {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   const [pointsCount, setPointsCount] = useState(0);
+  
+  const { images: galleryImages, loading: galleryLoading } = useProducerGallery(producer?.id);
 
   useEffect(() => {
     fetchProducerData();
@@ -52,11 +55,7 @@ const ProducerProfile = () => {
         producerName: producerData.producer_name,
         address: producerData.address || 'Адрес не указан',
         discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
-        categoryName: producerData.producer_categories?.[0]?.categories?.name || 'Без категории',
-        producerImage: {
-          exterior: (producerData.exterior_image_url && producerData.exterior_image_url !== 'null') ? producerData.exterior_image_url : '/placeholder.svg',
-          interior: (producerData.interior_image_url && producerData.interior_image_url !== 'null') ? producerData.interior_image_url : '/placeholder.svg'
-        }
+        categoryName: producerData.producer_categories?.[0]?.categories?.name || 'Без категории'
       };
 
       setProducer(formattedProducer);
@@ -68,10 +67,14 @@ const ProducerProfile = () => {
     }
   };
 
-  const images = producer ? [
-    { url: producer.producerImage.exterior, label: 'Экстерьер' },
-    { url: producer.producerImage.interior, label: 'Интерьер' }
-  ] : [];
+  // Use gallery images, fallback to placeholder if empty
+  const images = galleryImages.length > 0 
+    ? galleryImages.map(img => ({
+        url: img.image_url,
+        label: img.caption || img.image_type,
+        type: img.image_type
+      }))
+    : [{ url: '/placeholder.svg', label: 'Нет фото', type: 'placeholder' }];
 
   const handleNextImage = (e) => {
     e.preventDefault();
