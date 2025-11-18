@@ -19,29 +19,36 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Проверяем текущую сессию
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        checkUserRole(session.user.id)
-      }
-      setLoading(false)
-    })
-
-    // Слушаем изменения авторизации
+    // Сначала устанавливаем слушатель изменений авторизации
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
+        setLoading(false)
+        
+        // Defer Supabase calls с setTimeout для предотвращения deadlock
         if (session?.user) {
-          checkUserRole(session.user.id)
+          setTimeout(() => {
+            checkUserRole(session.user.id)
+          }, 0)
         } else {
           setUserRole(null)
         }
-        setLoading(false)
       }
     )
+
+    // Затем проверяем текущую сессию
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
+      
+      if (session?.user) {
+        setTimeout(() => {
+          checkUserRole(session.user.id)
+        }, 0)
+      }
+    })
 
     return () => subscription.unsubscribe()
   }, [])
