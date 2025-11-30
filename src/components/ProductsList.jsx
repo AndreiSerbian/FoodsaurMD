@@ -1,29 +1,28 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { getCurrencySymbol } from '@/utils/unitUtils';
-import ProductDetailModal from './ProductDetailModal';
 import { AlertTriangle } from 'lucide-react';
 
 const ProductsList = ({
   products,
   producer
 }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const pointId = searchParams.get('pointId');
   const {
     addToCart
   } = useCart();
   
   const currency = producer?.currency || 'MDL';
   const currencySymbol = getCurrencySymbol(currency);
-  
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenProductDetail = (product) => {
-    console.log('Opening product detail for:', product);
-    setSelectedProduct(product);
-    setIsModalOpen(true);
+    const pointParam = pointId ? `?pointId=${pointId}` : '';
+    navigate(`/producer/${producer.slug}/products/${product.id}${pointParam}`);
   };
   
   const container = {
@@ -147,14 +146,6 @@ const ProductsList = ({
             </motion.div>
           ))}
         </motion.div>
-
-        <ProductDetailModal 
-          product={selectedProduct}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onAddToCart={handleAddToCart}
-          currencySymbol={currencySymbol}
-        />
       </div>
     </section>
   );
