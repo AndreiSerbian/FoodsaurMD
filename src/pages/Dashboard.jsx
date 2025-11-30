@@ -6,6 +6,7 @@ import CategoryManagement from '../components/CategoryManagement';
 import PickupPointManagement from '../components/PickupPointManagement';
 import OrderManagement from '../components/OrderManagement';
 import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
+import ProducerDashboard from '../components/producer/ProducerDashboard';
 
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -102,9 +103,12 @@ const Dashboard = () => {
   if (loading && !profile) {
     return <div className="flex justify-center items-center h-64">Загрузка...</div>;
   }
-  return <div className="max-w-4xl mx-auto p-6 space-y-8">
+  return <div className="max-w-7xl mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold text-gray-900">Панель производителя</h1>
       
+      {/* Аналитика производителя */}
+      {profile && <ProducerDashboard producerId={profile.id} />}
+
       {/* Профиль производителя */}
       <div className="bg-white overflow-hidden shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
