@@ -21,6 +21,7 @@ const ProductsList = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenProductDetail = (product) => {
+    console.log('Opening product detail for:', product);
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
@@ -89,12 +90,12 @@ const ProductsList = ({
                      e.currentTarget.src = "/placeholder.svg";
                    }}
                  />
-                {product.priceDiscount < product.priceRegular && (
-                  <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
-                    -{calculateDiscount(product.priceRegular, product.priceDiscount)}%
-                  </div>
-                )}
-              </div>
+                 {product.price_discount && product.price_discount < product.price_regular && (
+                   <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-2 py-1 rounded-full">
+                     -{calculateDiscount(product.price_regular, product.price_discount)}%
+                   </div>
+                 )}
+               </div>
               <div className="p-6">
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="text-xl font-semibold">{product.productName || product.name}</h3>
@@ -103,6 +104,8 @@ const ProductsList = ({
                   )}
                 </div>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-3">{product.description}</p>
+                
+                {console.log('Product in list:', product)}
                 
                 <div className="flex justify-between items-center mb-4">
                   <div>
