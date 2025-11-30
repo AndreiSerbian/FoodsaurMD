@@ -58,7 +58,7 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
         .select(`
           *,
           pickup_points!fk_orders_point_id(name),
-          order_items(
+          order_items!fk_order_items_order_id(
             id,
             qty,
             price,
