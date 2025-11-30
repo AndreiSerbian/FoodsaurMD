@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, AlertTriangle, List, ShoppingCart } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, List, ShoppingCart, Maximize2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductImages } from '@/hooks/useProductImages';
 import { useCart } from '@/contexts/CartContext';
 import { getCurrencySymbol } from '@/utils/unitUtils';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { toast } from 'sonner';
 
@@ -20,6 +21,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [producer, setProducer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   
   const { images, loading: imagesLoading } = useProductImages(productId);
 
@@ -171,34 +173,39 @@ const ProductDetail = () => {
             {imagesLoading ? (
               <div className="w-full h-96 bg-muted animate-pulse" />
             ) : displayImages.length > 1 ? (
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {displayImages.map((imageUrl, index) => (
-                    <CarouselItem key={index}>
-                      <div className="relative">
-                        <img 
-                          src={imageUrl} 
-                          alt={`${product.productName} - фото ${index + 1}`} 
-                          className="w-full h-96 object-cover"
-                          onError={(e) => {
-                            console.error('Failed to load image:', imageUrl);
-                            e.currentTarget.src = "/placeholder.svg";
-                          }}
-                        />
-                        {hasDiscount && index === 0 && (
-                          <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-                            -{calculateDiscount(product.price_regular, product.price_discount)}%
+              <div className="relative group">
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {displayImages.map((imageUrl, index) => (
+                      <CarouselItem key={index}>
+                        <div className="relative cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
+                          <img 
+                            src={imageUrl} 
+                            alt={`${product.productName} - фото ${index + 1}`} 
+                            className="w-full h-96 object-cover"
+                            onError={(e) => {
+                              console.error('Failed to load image:', imageUrl);
+                              e.currentTarget.src = "/placeholder.svg";
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                            <Maximize2 className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
-                        )}
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-4" />
-                <CarouselNext className="right-4" />
-              </Carousel>
+                          {hasDiscount && index === 0 && (
+                            <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
+                              -{calculateDiscount(product.price_regular, product.price_discount)}%
+                            </div>
+                          )}
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="left-4" />
+                  <CarouselNext className="right-4" />
+                </Carousel>
+              </div>
             ) : (
-              <div className="relative">
+              <div className="relative group cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
                 <img 
                   src={displayImages[0]} 
                   alt={product.productName} 
@@ -208,6 +215,9 @@ const ProductDetail = () => {
                     e.currentTarget.src = "/placeholder.svg";
                   }}
                 />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <Maximize2 className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
                 {hasDiscount && (
                   <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
                     -{calculateDiscount(product.price_regular, product.price_discount)}%
@@ -216,6 +226,33 @@ const ProductDetail = () => {
               </div>
             )}
           </div>
+
+          {/* Gallery Modal */}
+          <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+            <DialogContent className="max-w-4xl h-[90vh] p-0">
+              <div className="relative h-full flex items-center justify-center bg-black">
+                <Carousel className="w-full h-full">
+                  <CarouselContent className="h-full">
+                    {displayImages.map((imageUrl, index) => (
+                      <CarouselItem key={index} className="h-full flex items-center justify-center">
+                        <img 
+                          src={imageUrl} 
+                          alt={`${product.productName} - фото ${index + 1}`} 
+                          className="max-h-full max-w-full object-contain"
+                          onError={(e) => {
+                            console.error('Failed to load image:', imageUrl);
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="left-4" />
+                  <CarouselNext className="right-4" />
+                </Carousel>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Product Details */}
           <div className="p-8">
@@ -244,30 +281,41 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Price and Add to Cart */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t">
-              <div>
-                {hasDiscount ? (
-                  <div className="flex flex-col">
+            {/* Price and Actions */}
+            <div className="space-y-4 pt-6 border-t">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                  {hasDiscount ? (
+                    <div className="flex flex-col">
+                      <span className="text-3xl font-bold text-green-600">
+                        {product.price_discount} {currencySymbol}/{product.price_unit}
+                      </span>
+                      <span className="text-base text-muted-foreground line-through">
+                        {product.price_regular} {currencySymbol}/{product.price_unit}
+                      </span>
+                    </div>
+                  ) : (
                     <span className="text-3xl font-bold text-green-600">
-                      {product.price_discount} {currencySymbol}/{product.price_unit}
-                    </span>
-                    <span className="text-base text-muted-foreground line-through">
                       {product.price_regular} {currencySymbol}/{product.price_unit}
                     </span>
-                  </div>
-                ) : (
-                  <span className="text-3xl font-bold text-green-600">
-                    {product.price_regular} {currencySymbol}/{product.price_unit}
-                  </span>
-                )}
+                  )}
+                </div>
+                <Button 
+                  onClick={handleAddToCart}
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" /> Добавить в корзину
+                </Button>
               </div>
+              
               <Button 
-                onClick={handleAddToCart}
+                onClick={handleBack}
+                variant="outline"
                 size="lg"
-                className="bg-green-900 hover:bg-green-800 w-full sm:w-auto"
+                className="w-full"
               >
-                <ShoppingCart className="mr-2 h-5 w-5" /> Добавить в корзину
+                <ChevronLeft className="mr-2 h-5 w-5" /> Вернуться к товарам точки
               </Button>
             </div>
           </div>
