@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, AlertTriangle, List, ShoppingCart, Maximize2 } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, List, ShoppingCart, Maximize2, Home, Store } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductImages } from '@/hooks/useProductImages';
 import { useCart } from '@/contexts/CartContext';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { toast } from 'sonner';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 
 const ProductDetail = () => {
   const { producerSlug, productId } = useParams();
@@ -146,20 +147,38 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen pb-20">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Back Button */}
+        {/* Breadcrumbs Navigation */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="mb-6"
         >
-          <button 
-            onClick={handleBack}
-            className="inline-flex items-center text-green-600 hover:text-green-800 transition duration-200"
-          >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            Назад к товарам
-          </button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Главная
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to={`/producer/${producerSlug}`} className="flex items-center gap-1">
+                    <Store className="h-4 w-4" />
+                    {producer.producerName}
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="font-medium">{product.productName}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </motion.div>
 
         <motion.div 
@@ -200,8 +219,12 @@ const ProductDetail = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="left-4" />
-                  <CarouselNext className="right-4" />
+                  <CarouselPrevious className="left-4">
+                    <span className="sr-only">Предыдущее фото</span>
+                  </CarouselPrevious>
+                  <CarouselNext className="right-4">
+                    <span className="sr-only">Следующее фото</span>
+                  </CarouselNext>
                 </Carousel>
               </div>
             ) : (
@@ -247,8 +270,12 @@ const ProductDetail = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious className="left-4" />
-                  <CarouselNext className="right-4" />
+                  <CarouselPrevious className="left-4">
+                    <span className="sr-only">Предыдущее фото</span>
+                  </CarouselPrevious>
+                  <CarouselNext className="right-4">
+                    <span className="sr-only">Следующее фото</span>
+                  </CarouselNext>
                 </Carousel>
               </div>
             </DialogContent>
