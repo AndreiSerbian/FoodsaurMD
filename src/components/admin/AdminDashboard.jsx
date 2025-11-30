@@ -7,7 +7,6 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Package, Store, MapPin, ShoppingBag, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import OrdersChart from './OrdersChart';
-import OrdersChart from './OrdersChart';
 
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState({
