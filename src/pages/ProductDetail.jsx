@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, AlertTriangle, List, ShoppingCart, Maximize2, Home, Store } from 'lucide-react';
+import { ChevronLeft, AlertTriangle, List, ShoppingCart, Maximize2, Home, Store, Plus, Minus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductImages } from '@/hooks/useProductImages';
 import { useCart } from '@/contexts/CartContext';
 import { getCurrencySymbol } from '@/utils/unitUtils';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { toast } from 'sonner';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Card } from '@/components/ui/card';
 
 const ProductDetail = () => {
   const { producerSlug, productId } = useParams();
@@ -23,6 +24,9 @@ const ProductDetail = () => {
   const [producer, setProducer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [availableStock, setAvailableStock] = useState(0);
   
   const { images, loading: imagesLoading } = useProductImages(productId);
 
@@ -84,6 +88,20 @@ const ProductDetail = () => {
           quantity: productData.quantity,
           in_stock: productData.in_stock
         });
+
+        // Получаем наличие на складе для точки
+        if (pointId) {
+          const { data: inventoryData } = await supabase
+            .from('point_inventory')
+            .select('bulk_qty')
+            .eq('point_id', pointId)
+            .eq('product_id', productId)
+            .single();
+          
+          if (inventoryData) {
+            setAvailableStock(inventoryData.bulk_qty);
+          }
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -92,13 +110,29 @@ const ProductDetail = () => {
     };
 
     fetchData();
-  }, [producerSlug, productId]);
+  }, [producerSlug, productId, pointId]);
 
   const handleAddToCart = () => {
     if (product && producer) {
-      addToCart(product, producer.slug);
-      toast.success('Товар добавлен в корзину');
+      if (quantity > availableStock && pointId) {
+        toast.error(`Доступно только ${availableStock} шт.`);
+        return;
+      }
+      
+      for (let i = 0; i < quantity; i++) {
+        addToCart(product, producer.slug);
+      }
+      toast.success(`${quantity} шт. добавлено в корзину`);
     }
+  };
+
+  const handleQuantityChange = (newQuantity) => {
+    if (newQuantity < 1) return;
+    if (pointId && newQuantity > availableStock) {
+      toast.error(`Доступно только ${availableStock} шт.`);
+      return;
+    }
+    setQuantity(newQuantity);
   };
 
   const handleBack = () => {
@@ -191,59 +225,53 @@ const ProductDetail = () => {
           <div className="relative">
             {imagesLoading ? (
               <div className="w-full h-96 bg-muted animate-pulse" />
-            ) : displayImages.length > 1 ? (
-              <div className="relative group">
-                <Carousel className="w-full">
-                  <CarouselContent>
-                    {displayImages.map((imageUrl, index) => (
-                      <CarouselItem key={index}>
-                        <div className="relative cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
-                          <img 
-                            src={imageUrl} 
-                            alt={`${product.productName} - фото ${index + 1}`} 
-                            className="w-full h-96 object-cover"
-                            onError={(e) => {
-                              console.error('Failed to load image:', imageUrl);
-                              e.currentTarget.src = "/placeholder.svg";
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                            <Maximize2 className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-                          {hasDiscount && index === 0 && (
-                            <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-                              -{calculateDiscount(product.price_regular, product.price_discount)}%
-                            </div>
-                          )}
-                        </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-4">
-                    <span className="sr-only">Предыдущее фото</span>
-                  </CarouselPrevious>
-                  <CarouselNext className="right-4">
-                    <span className="sr-only">Следующее фото</span>
-                  </CarouselNext>
-                </Carousel>
-              </div>
             ) : (
-              <div className="relative group cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
-                <img 
-                  src={displayImages[0]} 
-                  alt={product.productName} 
-                  className="w-full h-96 object-cover"
-                  onError={(e) => {
-                    console.error('Failed to load single image:', displayImages[0]);
-                    e.currentTarget.src = "/placeholder.svg";
-                  }}
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <Maximize2 className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="space-y-4">
+                {/* Main Image */}
+                <div className="relative group cursor-pointer" onClick={() => setIsGalleryOpen(true)}>
+                  <img 
+                    src={displayImages[selectedImageIndex]} 
+                    alt={`${product.productName} - фото ${selectedImageIndex + 1}`} 
+                    className="w-full h-96 object-cover rounded-lg"
+                    onError={(e) => {
+                      console.error('Failed to load image:', displayImages[selectedImageIndex]);
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center rounded-lg">
+                    <Maximize2 className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  {hasDiscount && (
+                    <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
+                      -{calculateDiscount(product.price_regular, product.price_discount)}%
+                    </div>
+                  )}
                 </div>
-                {hasDiscount && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-                    -{calculateDiscount(product.price_regular, product.price_discount)}%
+
+                {/* Thumbnails */}
+                {displayImages.length > 1 && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {displayImages.map((imageUrl, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedImageIndex === index 
+                            ? 'border-primary ring-2 ring-primary ring-offset-2' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <img 
+                          src={imageUrl} 
+                          alt={`${product.productName} - миниатюра ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            console.error('Failed to load thumbnail:', imageUrl);
+                            e.currentTarget.src = "/placeholder.svg";
+                          }}
+                        />
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
@@ -252,31 +280,75 @@ const ProductDetail = () => {
 
           {/* Gallery Modal */}
           <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
-            <DialogContent className="max-w-4xl h-[90vh] p-0">
-              <div className="relative h-full flex items-center justify-center bg-black">
-                <Carousel className="w-full h-full">
-                  <CarouselContent className="h-full">
+            <DialogContent className="max-w-5xl h-[90vh] p-4">
+              <div className="flex flex-col h-full gap-4">
+                {/* Main image viewer */}
+                <div className="relative flex-1 flex items-center justify-center bg-black/95 rounded-lg overflow-hidden">
+                  <img 
+                    src={displayImages[selectedImageIndex]} 
+                    alt={`${product.productName} - фото ${selectedImageIndex + 1}`} 
+                    className="max-h-full max-w-full object-contain"
+                    onError={(e) => {
+                      console.error('Failed to load modal image:', displayImages[selectedImageIndex]);
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
+                  />
+                  
+                  {/* Navigation arrows */}
+                  {displayImages.length > 1 && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSelectedImageIndex((prev) => prev > 0 ? prev - 1 : displayImages.length - 1)}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-12 w-12"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setSelectedImageIndex((prev) => prev < displayImages.length - 1 ? prev + 1 : 0)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white h-12 w-12"
+                      >
+                        <ChevronLeft className="h-6 w-6 rotate-180" />
+                      </Button>
+                    </>
+                  )}
+                  
+                  {/* Image counter */}
+                  {displayImages.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                      {selectedImageIndex + 1} / {displayImages.length}
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnails strip */}
+                {displayImages.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2">
                     {displayImages.map((imageUrl, index) => (
-                      <CarouselItem key={index} className="h-full flex items-center justify-center">
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedImageIndex === index 
+                            ? 'border-primary ring-2 ring-primary' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
                         <img 
                           src={imageUrl} 
-                          alt={`${product.productName} - фото ${index + 1}`} 
-                          className="max-h-full max-w-full object-contain"
+                          alt={`Миниатюра ${index + 1}`} 
+                          className="w-full h-full object-cover"
                           onError={(e) => {
-                            console.error('Failed to load image:', imageUrl);
                             e.currentTarget.src = "/placeholder.svg";
                           }}
                         />
-                      </CarouselItem>
+                      </button>
                     ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="left-4">
-                    <span className="sr-only">Предыдущее фото</span>
-                  </CarouselPrevious>
-                  <CarouselNext className="right-4">
-                    <span className="sr-only">Следующее фото</span>
-                  </CarouselNext>
-                </Carousel>
+                  </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
@@ -310,7 +382,8 @@ const ProductDetail = () => {
 
             {/* Price and Actions */}
             <div className="space-y-4 pt-6 border-t">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              {/* Price */}
+              <div className="flex justify-between items-center">
                 <div>
                   {hasDiscount ? (
                     <div className="flex flex-col">
@@ -327,23 +400,69 @@ const ProductDetail = () => {
                     </span>
                   )}
                 </div>
+                {pointId && availableStock > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    В наличии: {availableStock} шт.
+                  </div>
+                )}
+              </div>
+
+              {/* Quantity Selector and Add to Cart */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Card className="flex items-center justify-between p-1 w-full sm:w-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                    disabled={quantity <= 1}
+                    className="h-10 w-10"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="min-w-[3rem] text-center font-semibold">
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    disabled={pointId && quantity >= availableStock}
+                    className="h-10 w-10"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </Card>
+                
                 <Button 
                   onClick={handleAddToCart}
                   size="lg"
-                  className="w-full sm:w-auto"
+                  disabled={pointId && availableStock === 0}
+                  className="flex-1 h-12"
                 >
-                  <ShoppingCart className="mr-2 h-5 w-5" /> Добавить в корзину
+                  <ShoppingCart className="mr-2 h-5 w-5" /> 
+                  Добавить в корзину
                 </Button>
               </div>
               
-              <Button 
-                onClick={handleBack}
-                variant="outline"
-                size="lg"
-                className="w-full"
-              >
-                <ChevronLeft className="mr-2 h-5 w-5" /> Вернуться к товарам точки
-              </Button>
+              {/* Navigation Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button 
+                  onClick={() => navigate('/')}
+                  variant="outline"
+                  size="lg"
+                  className="h-12"
+                >
+                  <Home className="mr-2 h-5 w-5" /> Главная
+                </Button>
+                <Button 
+                  onClick={handleBack}
+                  variant="outline"
+                  size="lg"
+                  className="h-12"
+                >
+                  <Store className="mr-2 h-5 w-5" /> К товарам точки
+                </Button>
+              </div>
             </div>
           </div>
         </motion.div>
