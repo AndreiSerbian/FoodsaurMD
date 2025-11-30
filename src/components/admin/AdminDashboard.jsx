@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Package, Store, MapPin, ShoppingBag, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import OrdersChart from './OrdersChart';
+import OrdersChart from './OrdersChart';
 
 export default function AdminDashboard() {
   const [metrics, setMetrics] = useState({
@@ -191,6 +193,9 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Orders Chart */}
+      <OrdersChart />
 
       {/* Pending Producers */}
       {pendingProducers.length > 0 && (
