@@ -331,6 +331,7 @@ export const CartProvider = ({ children }) => {
       selectedPointInfo,
       setSelectedPickupTime,
       addToCart: legacyAddToCart, // Use legacy function for backward compatibility
+      addToCartWithPoint: handleAddToCart, // Direct function with point parameters
       removeFromCart: handleRemoveFromCart,
       updateQuantity: handleUpdateQuantity,
       clearCart: handleClearCart,
