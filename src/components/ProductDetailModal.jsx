@@ -2,9 +2,13 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { AlertTriangle, List, ShoppingCart } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from './ui/carousel';
+import { useProductImages } from '@/hooks/useProductImages';
 
 const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySymbol }) => {
   if (!product) return null;
+
+  const { images, loading } = useProductImages(product.id);
 
   const calculateDiscount = (regular, discounted) => {
     return Math.round((1 - discounted / regular) * 100);
@@ -12,22 +16,59 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySym
 
   const hasDiscount = product.price_discount && product.price_discount < product.price_regular;
 
+  // Use images from product_images table or fallback to product.image
+  const displayImages = images.length > 0 
+    ? images.map(img => img.image_url) 
+    : [product.image];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Product Image */}
+        {/* Product Image Gallery */}
         <div className="relative">
-          <img 
-            src={product.image} 
-            alt={product.productName || product.name} 
-            className="w-full h-64 object-cover rounded-lg"
-            onError={(e) => {
-              e.currentTarget.src = "/placeholder.svg";
-            }}
-          />
-          {hasDiscount && (
-            <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-              -{calculateDiscount(product.price_regular, product.price_discount)}%
+          {loading ? (
+            <div className="w-full h-64 bg-muted animate-pulse rounded-lg" />
+          ) : displayImages.length > 1 ? (
+            <Carousel className="w-full">
+              <CarouselContent>
+                {displayImages.map((imageUrl, index) => (
+                  <CarouselItem key={index}>
+                    <div className="relative">
+                      <img 
+                        src={imageUrl} 
+                        alt={`${product.productName || product.name} - фото ${index + 1}`} 
+                        className="w-full h-64 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
+                      {hasDiscount && index === 0 && (
+                        <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                          -{calculateDiscount(product.price_regular, product.price_discount)}%
+                        </div>
+                      )}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
+          ) : (
+            <div className="relative">
+              <img 
+                src={displayImages[0]} 
+                alt={product.productName || product.name} 
+                className="w-full h-64 object-cover rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.src = "/placeholder.svg";
+                }}
+              />
+              {hasDiscount && (
+                <div className="absolute top-3 right-3 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+                  -{calculateDiscount(product.price_regular, product.price_discount)}%
+                </div>
+              )}
             </div>
           )}
         </div>
