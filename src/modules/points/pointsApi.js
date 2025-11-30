@@ -181,3 +181,78 @@ export async function getPointsByProducerSlug(producerSlug) {
   console.log(`Found ${data?.length || 0} active points for producer ${producerSlug}`);
   return data || [];
 }
+
+/**
+ * Получить настройки Telegram для точки выдачи
+ * @param {string} pointId
+ * @returns {Promise<{bot_token: string|null, chat_id: string|null, is_active: boolean}|null>}
+ */
+export async function getPointTelegramSettings(pointId) {
+  const { data, error } = await supabase
+    .from('point_telegram_settings')
+    .select('*')
+    .eq('point_id', pointId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null; // Settings not found
+    }
+    console.error('Error fetching Telegram settings:', error);
+    throw new Error(`Ошибка при получении настроек Telegram: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Создать или обновить настройки Telegram для точки выдачи
+ * @param {string} pointId
+ * @param {{bot_token: string|null, chat_id: string|null, is_active: boolean}} settings
+ * @returns {Promise<any>}
+ */
+export async function upsertPointTelegramSettings(pointId, settings) {
+  const { data, error } = await supabase
+    .from('point_telegram_settings')
+    .upsert({
+      point_id: pointId,
+      bot_token: settings.bot_token,
+      chat_id: settings.chat_id,
+      is_active: settings.is_active,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'point_id'
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error upserting Telegram settings:', error);
+    throw new Error(`Ошибка при сохранении настроек Telegram: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Отправить тестовое уведомление в Telegram
+ * @param {string} botToken
+ * @param {string} chatId
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function sendTestTelegramNotification(botToken, chatId) {
+  try {
+    const response = await supabase.functions.invoke('test-telegram-notification', {
+      body: { botToken, chatId }
+    });
+
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error sending test notification:', error);
+    throw new Error(`Ошибка при отправке тестового уведомления: ${error.message}`);
+  }
+}

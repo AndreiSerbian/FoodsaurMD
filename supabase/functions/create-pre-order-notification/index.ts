@@ -100,7 +100,40 @@ serve(async (req) => {
       });
 
       const telegramResult = await telegramResponse.json();
-      console.log('Telegram response:', telegramResult);
+      console.log('Admin Telegram response:', telegramResult);
+    }
+
+    // Send to point Telegram (if configured)
+    const { data: pointTelegramSettings, error: telegramError } = await supabase
+      .from('point_telegram_settings')
+      .select('bot_token, chat_id, is_active')
+      .eq('point_id', pickupPointId)
+      .single();
+
+    if (telegramError) {
+      console.log('No Telegram settings for point:', telegramError.message);
+    } else if (pointTelegramSettings?.is_active && pointTelegramSettings?.bot_token && pointTelegramSettings?.chat_id) {
+      console.log('Sending to point Telegram');
+      const pointTelegramUrl = `https://api.telegram.org/bot${pointTelegramSettings.bot_token}/sendMessage`;
+      
+      const pointTelegramResponse = await fetch(pointTelegramUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: pointTelegramSettings.chat_id,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      });
+
+      const pointTelegramResult = await pointTelegramResponse.json();
+      console.log('Point Telegram response:', pointTelegramResult);
+
+      if (!pointTelegramResult.ok) {
+        console.error('Failed to send to point Telegram:', pointTelegramResult);
+      }
+    } else {
+      console.log('Point Telegram not configured or inactive');
     }
 
     return new Response(

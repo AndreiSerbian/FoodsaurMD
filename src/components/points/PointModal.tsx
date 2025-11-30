@@ -7,8 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, Clock, Package } from 'lucide-react';
-import { createPoint, updatePoint } from '@/modules/points/pointsApi.js';
+import { Plus, Trash2, Clock, Package, Send } from 'lucide-react';
+import { createPoint, updatePoint, getPointTelegramSettings, upsertPointTelegramSettings, sendTestTelegramNotification } from '@/modules/points/pointsApi.js';
 import { createDefaultWorkHours, validateDayHours, WEEKDAYS_FULL } from '@/modules/points/workHoursUtil.js';
 import { useToast } from '@/hooks/use-toast';
 import PointInventoryManager from './PointInventoryManager';
@@ -35,6 +35,13 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [savedPointId, setSavedPointId] = useState<string | null>(null);
+  const [telegramSettings, setTelegramSettings] = useState({
+    bot_token: '',
+    chat_id: '',
+    is_active: false
+  });
+  const [telegramLoading, setTelegramLoading] = useState(false);
+  const [testingTelegram, setTestingTelegram] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,6 +55,9 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
         is_active: point.is_active,
         work_hours: point.work_hours || createDefaultWorkHours()
       });
+      setSavedPointId(point.id);
+      // Load Telegram settings for existing point
+      loadTelegramSettings(point.id);
     } else {
       setFormData({
         title: '',
@@ -58,9 +68,30 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
         is_active: true,
         work_hours: createDefaultWorkHours()
       });
+      setSavedPointId(null);
+      setTelegramSettings({
+        bot_token: '',
+        chat_id: '',
+        is_active: false
+      });
     }
     setErrors({});
   }, [point, isOpen]);
+
+  const loadTelegramSettings = async (pointId: string) => {
+    try {
+      const settings = await getPointTelegramSettings(pointId);
+      if (settings) {
+        setTelegramSettings({
+          bot_token: settings.bot_token || '',
+          chat_id: settings.chat_id || '',
+          is_active: settings.is_active
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load Telegram settings:', error);
+    }
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -176,6 +207,77 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
     updateWorkHours(day, updatedHours);
   };
 
+  const handleSaveTelegramSettings = async () => {
+    if (!savedPointId && !point) {
+      toast({
+        title: 'Ошибка',
+        description: 'Сначала сохраните основные данные точки',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const pointId = savedPointId || point?.id;
+    if (!pointId) return;
+
+    setTelegramLoading(true);
+    try {
+      await upsertPointTelegramSettings(pointId, telegramSettings);
+      toast({
+        title: 'Успешно',
+        description: 'Настройки Telegram сохранены',
+      });
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось сохранить настройки Telegram',
+        variant: 'destructive',
+      });
+    } finally {
+      setTelegramLoading(false);
+    }
+  };
+
+  const handleTestTelegram = async () => {
+    if (!telegramSettings.bot_token || !telegramSettings.chat_id) {
+      toast({
+        title: 'Ошибка',
+        description: 'Заполните Bot Token и Chat ID',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setTestingTelegram(true);
+    try {
+      const result = await sendTestTelegramNotification(
+        telegramSettings.bot_token,
+        telegramSettings.chat_id
+      );
+
+      if (result.success) {
+        toast({
+          title: 'Успешно',
+          description: 'Тестовое сообщение отправлено',
+        });
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: result.error || 'Не удалось отправить тестовое сообщение',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось отправить тестовое сообщение',
+        variant: 'destructive',
+      });
+    } finally {
+      setTestingTelegram(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -186,10 +288,14 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
         </DialogHeader>
 
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general" className="gap-2">
               <Clock className="h-4 w-4" />
               Основные данные
+            </TabsTrigger>
+            <TabsTrigger value="telegram" className="gap-2" disabled={!savedPointId && !point}>
+              <Send className="h-4 w-4" />
+              Telegram
             </TabsTrigger>
             <TabsTrigger value="inventory" className="gap-2" disabled={!savedPointId && !point}>
               <Package className="h-4 w-4" />
@@ -347,6 +453,70 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
                 </Button>
               </DialogFooter>
             </form>
+          </TabsContent>
+
+          <TabsContent value="telegram" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Настройки Telegram уведомлений</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bot_token">Bot Token</Label>
+                  <Input
+                    id="bot_token"
+                    type="password"
+                    value={telegramSettings.bot_token}
+                    onChange={(e) => setTelegramSettings(prev => ({ ...prev, bot_token: e.target.value }))}
+                    placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Создайте бота через @BotFather в Telegram и получите токен
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="chat_id">Chat ID</Label>
+                  <Input
+                    id="chat_id"
+                    value={telegramSettings.chat_id}
+                    onChange={(e) => setTelegramSettings(prev => ({ ...prev, chat_id: e.target.value }))}
+                    placeholder="-1001234567890"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    ID чата или канала для получения уведомлений. Используйте @userinfobot для получения ID
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={telegramSettings.is_active}
+                    onCheckedChange={(checked) => setTelegramSettings(prev => ({ ...prev, is_active: checked }))}
+                  />
+                  <Label>Уведомления активны</Label>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={handleTestTelegram}
+                    disabled={testingTelegram || !telegramSettings.bot_token || !telegramSettings.chat_id}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    {testingTelegram ? 'Отправка...' : 'Тестовое сообщение'}
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSaveTelegramSettings}
+                    disabled={telegramLoading}
+                  >
+                    {telegramLoading ? 'Сохранение...' : 'Сохранить настройки'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="inventory" className="space-y-4">
