@@ -8,7 +8,9 @@ import { useProductImages } from '@/hooks/useProductImages';
 const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySymbol }) => {
   if (!product) return null;
 
-  const { images, loading } = useProductImages(product.id);
+  // Handle different product id field names
+  const productId = product.id || product.productId;
+  const { images, loading } = useProductImages(productId);
 
   const calculateDiscount = (regular, discounted) => {
     return Math.round((1 - discounted / regular) * 100);
