@@ -6,10 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProductImages } from '@/hooks/useProductImages';
 import { useCart } from '@/contexts/CartContext';
 import { getCurrencySymbol } from '@/utils/unitUtils';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { toast } from 'sonner';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Card } from '@/components/ui/card';
 
@@ -18,7 +18,7 @@ const ProductDetail = () => {
   const [searchParams] = useSearchParams();
   const pointId = searchParams.get('pointId');
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCartWithPoint } = useCart();
   
   const [product, setProduct] = useState(null);
   const [producer, setProducer] = useState(null);
@@ -112,17 +112,25 @@ const ProductDetail = () => {
     fetchData();
   }, [producerSlug, productId, pointId]);
 
-  const handleAddToCart = () => {
-    if (product && producer) {
-      if (quantity > availableStock && pointId) {
+  const handleAddToCart = async () => {
+    if (product && producer && pointId) {
+      if (quantity > availableStock) {
         toast.error(`Доступно только ${availableStock} шт.`);
         return;
       }
       
+      // Get point name
+      const { data: pointData } = await supabase
+        .from('pickup_points')
+        .select('name')
+        .eq('id', pointId)
+        .single();
+      
+      const pointName = pointData?.name || 'Точка выдачи';
+      
       for (let i = 0; i < quantity; i++) {
-        addToCart(product, producer.slug);
+        await addToCartWithPoint(product, producer.slug, pointId, pointName);
       }
-      toast.success(`${quantity} шт. добавлено в корзину`);
     }
   };
 
