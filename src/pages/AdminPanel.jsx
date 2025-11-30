@@ -7,6 +7,9 @@ import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
 import AdminDashboard from '../components/admin/AdminDashboard'
+import AdminOrdersManagement from '../components/admin/AdminOrdersManagement'
+import PointsAdminTable from '../components/points/PointsAdminTable'
+import PointModal from '../components/points/PointModal'
 
 const AdminPanel = () => {
   const { user, signOut } = useAuth()
@@ -14,6 +17,11 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(true)
   const [editingProducer, setEditingProducer] = useState(null)
   const [formData, setFormData] = useState({})
+  
+  // Points management state
+  const [isPointModalOpen, setIsPointModalOpen] = useState(false)
+  const [editingPoint, setEditingPoint] = useState(null)
+  const [pointsRefreshKey, setPointsRefreshKey] = useState(0)
 
   useEffect(() => {
     fetchProducers()
@@ -107,6 +115,26 @@ const AdminPanel = () => {
     console.log('Reset password for producer:', producer.id, 'New password:', tempPassword)
   }
 
+  // Points handlers
+  const handleAddPoint = () => {
+    setEditingPoint(null)
+    setIsPointModalOpen(true)
+  }
+
+  const handleEditPoint = (point) => {
+    setEditingPoint(point)
+    setIsPointModalOpen(true)
+  }
+
+  const handlePointModalSuccess = () => {
+    setPointsRefreshKey(prev => prev + 1)
+  }
+
+  const handlePointModalClose = () => {
+    setIsPointModalOpen(false)
+    setEditingPoint(null)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -126,11 +154,25 @@ const AdminPanel = () => {
           <Tabs defaultValue="dashboard" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
+              <TabsTrigger value="orders">Заказы</TabsTrigger>
+              <TabsTrigger value="points">Точки выдачи</TabsTrigger>
               <TabsTrigger value="producers">Производители</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dashboard">
               <AdminDashboard />
+            </TabsContent>
+
+            <TabsContent value="orders">
+              <AdminOrdersManagement />
+            </TabsContent>
+
+            <TabsContent value="points">
+              <PointsAdminTable
+                key={pointsRefreshKey}
+                onAddPoint={handleAddPoint}
+                onEditPoint={handleEditPoint}
+              />
             </TabsContent>
 
             <TabsContent value="producers">
@@ -285,6 +327,14 @@ const AdminPanel = () => {
               </div>
             </TabsContent>
           </Tabs>
+
+          <PointModal
+            isOpen={isPointModalOpen}
+            onClose={handlePointModalClose}
+            onSuccess={handlePointModalSuccess}
+            point={editingPoint}
+            producerId=""
+          />
         </div>
       </div>
     </div>
