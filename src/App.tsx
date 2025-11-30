@@ -12,7 +12,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Producers from "./pages/Producers";
 import ProducerProfile from "./pages/ProducerProfile";
-import ProducerPoints from "./pages/ProducerPoints";
 import Products from "./pages/Products";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -39,7 +38,6 @@ const App = () => (
                 <Route path="/" element={<Layout><Home /></Layout>} />
                 <Route path="/category/:categoryName" element={<Layout><Producers /></Layout>} />
                 <Route path="/producer/:producerSlug" element={<Layout><ProducerProfile /></Layout>} />
-                <Route path="/producer/:producerSlug/points" element={<Layout><ProducerPoints /></Layout>} />
                 <Route path="/producer/:producerSlug/products" element={<Layout><Products /></Layout>} />
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/order-success" element={<OrderSuccess />} />

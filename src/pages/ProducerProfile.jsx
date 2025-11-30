@@ -5,6 +5,7 @@ import { MapPin, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { supabase } from '../integrations/supabase/client';
 import { useProducerGallery } from '../hooks/useProducerGallery';
+import PointsPublicGrid from '../components/points/PointsPublicGrid';
 
 const ProducerProfile = () => {
   const { producerSlug } = useParams();
@@ -88,8 +89,8 @@ const ProducerProfile = () => {
     setCurrentImage((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  const handleSelectPoint = () => {
-    navigate(`/producer/${producerSlug}/points`);
+  const handlePointSelected = (point) => {
+    navigate(`/producer/${producerSlug}/products?pointId=${point.id}`);
   };
 
   if (loading) {
@@ -212,21 +213,23 @@ const ProducerProfile = () => {
           </div>
         </motion.div>
 
-        {/* Кнопка выбора точки */}
+        {/* Список точек выдачи */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="text-center"
         >
           {pointsCount > 0 ? (
-            <Button 
-              onClick={handleSelectPoint}
-              size="lg"
-              className="px-8 py-4 text-lg"
-            >
-              Выбрать точку выдачи ({pointsCount})
-            </Button>
+            <div>
+              <h2 className="text-2xl font-bold mb-6">Выберите точку выдачи</h2>
+              <p className="text-muted-foreground mb-6">
+                Вы можете заказывать товары только из одной точки выдачи
+              </p>
+              <PointsPublicGrid 
+                producerSlug={producerSlug}
+                onPointSelected={handlePointSelected}
+              />
+            </div>
           ) : (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
               <p className="text-yellow-800 font-medium">
