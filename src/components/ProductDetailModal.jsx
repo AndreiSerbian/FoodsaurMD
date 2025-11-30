@@ -10,7 +10,16 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySym
 
   // Handle different product id field names
   const productId = product.id || product.productId;
-  const { images, loading } = useProductImages(productId);
+  console.log('ProductDetailModal - product:', product);
+  console.log('ProductDetailModal - productId:', productId);
+  
+  const { images, loading, error } = useProductImages(productId);
+  
+  if (error) {
+    console.error('ProductDetailModal - Error loading images:', error);
+  }
+  
+  console.log('ProductDetailModal - images loaded:', images);
 
   const calculateDiscount = (regular, discounted) => {
     return Math.round((1 - discounted / regular) * 100);
@@ -41,6 +50,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySym
                         alt={`${product.productName || product.name} - фото ${index + 1}`} 
                         className="w-full h-64 object-cover rounded-lg"
                         onError={(e) => {
+                          console.error('ProductDetailModal - Failed to load image:', imageUrl, 'for product:', product.productName || product.name);
                           e.currentTarget.src = "/placeholder.svg";
                         }}
                       />
@@ -63,6 +73,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySym
                 alt={product.productName || product.name} 
                 className="w-full h-64 object-cover rounded-lg"
                 onError={(e) => {
+                  console.error('ProductDetailModal - Failed to load single image:', displayImages[0], 'for product:', product.productName || product.name);
                   e.currentTarget.src = "/placeholder.svg";
                 }}
               />
