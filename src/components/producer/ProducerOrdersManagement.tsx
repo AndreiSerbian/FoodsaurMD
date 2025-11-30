@@ -52,13 +52,14 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
     
     try {
       console.log('Fetching orders for producer:', producerId)
+      console.log('Using correct foreign key relationship')
       
       const { data, error } = await supabase
         .from('orders')
         .select(`
           *,
           pickup_points!fk_orders_point_id(name),
-          order_items!fk_order_items_order_id(
+          order_items!order_items_order_id_fkey(
             id,
             qty,
             price,
