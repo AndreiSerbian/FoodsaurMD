@@ -50,26 +50,41 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
   const fetchOrders = async () => {
     setLoading(true)
     
-    let query = supabase
-      .from('orders')
-      .select(`
-        *,
-        pickup_points!fk_orders_point_id(name),
-        order_items(
-          id,
-          qty,
-          price,
-          subtotal,
-          product_snapshot
-        )
-      `)
-      .eq('producer_id', producerId)
-      .order('created_at', { ascending: false })
+    try {
+      console.log('Fetching orders for producer:', producerId)
+      
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          pickup_points!fk_orders_point_id(name),
+          order_items(
+            id,
+            qty,
+            price,
+            subtotal,
+            product_snapshot
+          )
+        `)
+        .eq('producer_id', producerId)
+        .order('created_at', { ascending: false })
 
-    const { data, error } = await query
+      if (error) {
+        console.error('Error fetching orders:', error)
+        console.error('Error details:', JSON.stringify(error, null, 2))
+        throw error
+      }
 
-    if (data) setOrders(data)
-    setLoading(false)
+      console.log('Orders loaded successfully:', data?.length || 0)
+      
+      if (data) {
+        setOrders(data)
+      }
+    } catch (error) {
+      console.error('Failed to load orders:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
