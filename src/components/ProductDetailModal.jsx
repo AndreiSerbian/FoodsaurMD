@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { AlertTriangle, List, ShoppingCart } from 'lucide-react';
 
@@ -34,12 +34,10 @@ const ProductDetailModal = ({ product, isOpen, onClose, onAddToCart, currencySym
         
         <DialogHeader>
           <DialogTitle className="text-2xl">{product.productName || product.name}</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            {product.description}
+          </DialogDescription>
         </DialogHeader>
-        
-        {/* Description */}
-        <div>
-          <p className="text-muted-foreground">{product.description}</p>
-        </div>
         
         {/* Ingredients */}
         {product.ingredients && (
