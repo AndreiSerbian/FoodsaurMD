@@ -5,6 +5,8 @@ import { supabase } from '../integrations/supabase/client'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs'
+import AdminDashboard from '../components/admin/AdminDashboard'
 
 const AdminPanel = () => {
   const { user, signOut } = useAuth()
@@ -114,16 +116,27 @@ const AdminPanel = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Управление производителями
+          <h2 className="text-3xl font-bold mb-6">
+            Админ-панель
           </h2>
 
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
-              {producers.map((producer) => (
+          <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
+              <TabsTrigger value="producers">Производители</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="dashboard">
+              <AdminDashboard />
+            </TabsContent>
+
+            <TabsContent value="producers">
+              <div className="bg-card shadow overflow-hidden sm:rounded-md">
+                <ul className="divide-y divide-border">
+                  {producers.map((producer) => (
                 <li key={producer.id} className="px-6 py-4">
                   {editingProducer === producer.id ? (
                     <div className="space-y-4">
@@ -268,8 +281,10 @@ const AdminPanel = () => {
                   )}
                 </li>
               ))}
-            </ul>
-          </div>
+                </ul>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
