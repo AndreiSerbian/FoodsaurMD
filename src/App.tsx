@@ -13,6 +13,7 @@ import Home from "./pages/Home";
 import Producers from "./pages/Producers";
 import ProducerProfile from "./pages/ProducerProfile";
 import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -39,6 +40,7 @@ const App = () => (
                 <Route path="/category/:categoryName" element={<Layout><Producers /></Layout>} />
                 <Route path="/producer/:producerSlug" element={<Layout><ProducerProfile /></Layout>} />
                 <Route path="/producer/:producerSlug/products" element={<Layout><Products /></Layout>} />
+                <Route path="/producer/:producerSlug/products/:productId" element={<Layout><ProductDetail /></Layout>} />
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/login" element={<Login />} />
