@@ -7,11 +7,14 @@ import PickupPointManagement from '../components/PickupPointManagement';
 import OrderManagement from '../components/OrderManagement';
 import OrderConfirmationPanel from '../components/OrderConfirmationPanel';
 import ProducerDashboard from '../components/producer/ProducerDashboard';
+import ProducerOrdersManagement from '../components/producer/ProducerOrdersManagement';
+import ProducerProductsManagement from '../components/producer/ProducerProductsManagement';
 
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useProducerCategories } from '../hooks/useProducerCategories';
 const Dashboard = () => {
   const {
@@ -106,10 +109,29 @@ const Dashboard = () => {
   return <div className="max-w-7xl mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold text-gray-900">Панель производителя</h1>
       
-      {/* Аналитика производителя */}
-      {profile && <ProducerDashboard producerId={profile.id} />}
+      {profile && (
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="dashboard">Дашборд</TabsTrigger>
+            <TabsTrigger value="orders">Заказы</TabsTrigger>
+            <TabsTrigger value="products">Товары</TabsTrigger>
+            <TabsTrigger value="profile">Профиль</TabsTrigger>
+          </TabsList>
 
-      {/* Профиль производителя */}
+          <TabsContent value="dashboard">
+            <ProducerDashboard producerId={profile.id} />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <ProducerOrdersManagement producerId={profile.id} />
+          </TabsContent>
+
+          <TabsContent value="products">
+            <ProducerProductsManagement producerId={profile.id} />
+          </TabsContent>
+
+          <TabsContent value="profile" className="space-y-8">
+            {/* Профиль производителя */}
       <div className="bg-white overflow-hidden shadow rounded-lg">
         <div className="px-4 py-5 sm:p-6">
           <div className="flex justify-between items-center mb-4">
@@ -211,8 +233,11 @@ const Dashboard = () => {
       {/* Панель подтверждения заказов */}
       {profile && <OrderConfirmationPanel producerId={profile.id} />}
 
-      {/* Управление заказами */}
-      <OrderManagement producerProfile={profile} />
+            {/* Управление заказами */}
+            <OrderManagement producerProfile={profile} />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>;
 };
 export default Dashboard;
