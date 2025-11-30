@@ -18,10 +18,22 @@ const Producers = () => {
       const decodedCategoryName = decodeURIComponent(categoryName);
       
       // Получаем producer_profiles с их категориями и количеством продуктов
+      // SECURITY: Exclude sensitive fields (phone, telegram_handle, email_verified) from public query
       const { data: producerData, error } = await supabase
         .from('producer_profiles')
         .select(`
-          *,
+          id,
+          producer_name,
+          slug,
+          address,
+          discount_available_time,
+          logo_url,
+          exterior_image_url,
+          interior_image_url,
+          is_approved,
+          currency,
+          categories,
+          category_name,
           producer_categories!inner(
             categories!inner(
               name,

@@ -24,10 +24,22 @@ const ProducerProfile = () => {
   const fetchProducerData = async () => {
     try {
       // Получаем данные производителя
+      // SECURITY: Exclude sensitive fields (phone, telegram_handle, email_verified) from public query
       const { data: producerData, error: producerError } = await supabase
         .from('producer_profiles')
         .select(`
-          *,
+          id,
+          producer_name,
+          slug,
+          address,
+          discount_available_time,
+          logo_url,
+          exterior_image_url,
+          interior_image_url,
+          is_approved,
+          currency,
+          categories,
+          category_name,
           producer_categories(
             categories(name)
           )

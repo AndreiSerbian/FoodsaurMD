@@ -1029,6 +1029,14 @@ export type Database = {
         }
         Returns: Json
       }
+      can_view_order_customer_data: {
+        Args: { order_id: string }
+        Returns: boolean
+      }
+      can_view_producer_sensitive_data: {
+        Args: { producer_profile_id: string }
+        Returns: boolean
+      }
       generate_order_code: { Args: { length_param?: number }; Returns: string }
       generate_slug: { Args: { text_value: string }; Returns: string }
       get_current_user_role: {
