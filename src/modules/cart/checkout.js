@@ -104,8 +104,8 @@ export async function createPreorder({ customer, pickupTime, pointId }) {
         customer_phone: customer?.phone || null,
         customer_email: customer?.email || null,
         pickup_time: pickupTime,
+        order_code: orderCode,
         meta: {
-          order_code: orderCode,
           created_via: 'web_cart'
         }
       })
@@ -217,7 +217,7 @@ export async function getOrderByCode(orderCode) {
         producer_profiles (producer_name),
         pickup_points (name, address)
       `)
-      .eq('meta->>order_code', orderCode)
+      .eq('order_code', orderCode)
       .single();
 
     if (error) {

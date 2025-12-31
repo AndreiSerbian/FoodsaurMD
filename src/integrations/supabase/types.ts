@@ -169,6 +169,7 @@ export type Database = {
           customer_phone: string | null
           id: string
           meta: Json | null
+          order_code: string | null
           pickup_time: string | null
           point_id: string
           producer_id: string
@@ -185,6 +186,7 @@ export type Database = {
           customer_phone?: string | null
           id?: string
           meta?: Json | null
+          order_code?: string | null
           pickup_time?: string | null
           point_id: string
           producer_id: string
@@ -201,6 +203,7 @@ export type Database = {
           customer_phone?: string | null
           id?: string
           meta?: Json | null
+          order_code?: string | null
           pickup_time?: string | null
           point_id?: string
           producer_id?: string
@@ -460,116 +463,6 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pre_order_items: {
-        Row: {
-          created_at: string
-          id: string
-          pre_order_id: string
-          price_discount: number | null
-          price_regular: number
-          product_id: string
-          quantity: number
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          pre_order_id: string
-          price_discount?: number | null
-          price_regular: number
-          product_id: string
-          quantity: number
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          pre_order_id?: string
-          price_discount?: number | null
-          price_regular?: number
-          product_id?: string
-          quantity?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pre_order_items_pre_order_id"
-            columns: ["pre_order_id"]
-            isOneToOne: false
-            referencedRelation: "pre_orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_pre_order_items_product_id"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pre_order_items_pre_order_id_fkey"
-            columns: ["pre_order_id"]
-            isOneToOne: false
-            referencedRelation: "pre_orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pre_order_items_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pre_orders: {
-        Row: {
-          created_at: string
-          discount_amount: number
-          id: string
-          order_code: string
-          pickup_point_id: string
-          pickup_time: string
-          status: string
-          total_amount: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          discount_amount?: number
-          id?: string
-          order_code: string
-          pickup_point_id: string
-          pickup_time: string
-          status?: string
-          total_amount: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          discount_amount?: number
-          id?: string
-          order_code?: string
-          pickup_point_id?: string
-          pickup_time?: string
-          status?: string
-          total_amount?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_pre_orders_pickup_point_id"
-            columns: ["pickup_point_id"]
-            isOneToOne: false
-            referencedRelation: "pickup_points"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pre_orders_pickup_point_id_fkey"
-            columns: ["pickup_point_id"]
-            isOneToOne: false
-            referencedRelation: "pickup_points"
             referencedColumns: ["id"]
           },
         ]
