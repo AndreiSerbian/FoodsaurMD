@@ -263,7 +263,7 @@ export default function AdminOrdersManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ID</TableHead>
+                      <TableHead>Код заказа</TableHead>
                       <TableHead>Производитель</TableHead>
                       <TableHead>Точка</TableHead>
                       <TableHead>Клиент</TableHead>
@@ -278,8 +278,8 @@ export default function AdminOrdersManagement() {
                     {orders.map((order) => (
                       <React.Fragment key={order.id}>
                         <TableRow>
-                          <TableCell className="font-mono text-xs">
-                            {order.id.slice(0, 8)}
+                          <TableCell className="font-mono text-sm font-medium">
+                            #{order.order_code || order.id.slice(0, 8)}
                           </TableCell>
                           <TableCell>{order.producer_profiles?.producer_name}</TableCell>
                           <TableCell>
