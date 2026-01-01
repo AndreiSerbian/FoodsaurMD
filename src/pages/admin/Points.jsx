@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import PointsAdminTable from '../../components/points/PointsAdminTable';
 import PointModal from '../../components/points/PointModal';
+import GeocodePointsButton from '../../components/points/GeocodePointsButton';
 
 export default function AdminPoints() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,13 +30,16 @@ export default function AdminPoints() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">
-          Управление точками выдачи
-        </h1>
-        <p className="text-muted-foreground">
-          Все точки выдачи в системе
-        </p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">
+            Управление точками выдачи
+          </h1>
+          <p className="text-muted-foreground">
+            Все точки выдачи в системе
+          </p>
+        </div>
+        <GeocodePointsButton onComplete={() => setRefreshKey(prev => prev + 1)} />
       </div>
 
       <PointsAdminTable

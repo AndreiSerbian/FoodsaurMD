@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.order-status-notification]
 verify_jwt = false
+
+[functions.geocode-points]
+verify_jwt = false
+
+[functions.test-telegram-notification]
+verify_jwt = false
+
+[functions.create-pre-order-notification]
+verify_jwt = false
