@@ -38,7 +38,8 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
   const [telegramSettings, setTelegramSettings] = useState({
     bot_token: '',
     chat_id: '',
-    is_active: false
+    is_active: false,
+    notify_status_changes: true
   });
   const [telegramLoading, setTelegramLoading] = useState(false);
   const [testingTelegram, setTestingTelegram] = useState(false);
@@ -72,7 +73,8 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
       setTelegramSettings({
         bot_token: '',
         chat_id: '',
-        is_active: false
+        is_active: false,
+        notify_status_changes: true
       });
     }
     setErrors({});
@@ -85,7 +87,8 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
         setTelegramSettings({
           bot_token: settings.bot_token || '',
           chat_id: settings.chat_id || '',
-          is_active: settings.is_active
+          is_active: settings.is_active,
+          notify_status_changes: settings.notify_status_changes ?? true
         });
       }
     } catch (error) {
@@ -493,7 +496,15 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
                     checked={telegramSettings.is_active}
                     onCheckedChange={(checked) => setTelegramSettings(prev => ({ ...prev, is_active: checked }))}
                   />
-                  <Label>Уведомления активны</Label>
+                  <Label>Уведомления о новых заказах</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={telegramSettings.notify_status_changes}
+                    onCheckedChange={(checked) => setTelegramSettings(prev => ({ ...prev, notify_status_changes: checked }))}
+                  />
+                  <Label>Уведомления об изменении статуса заказа</Label>
                 </div>
 
                 <div className="flex gap-2">

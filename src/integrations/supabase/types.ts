@@ -367,6 +367,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          notify_status_changes: boolean
           point_id: string
           updated_at: string
         }
@@ -376,6 +377,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          notify_status_changes?: boolean
           point_id: string
           updated_at?: string
         }
@@ -385,6 +387,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          notify_status_changes?: boolean
           point_id?: string
           updated_at?: string
         }

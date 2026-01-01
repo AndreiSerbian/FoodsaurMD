@@ -117,16 +117,19 @@ serve(async (req) => {
       console.log('Admin Telegram response:', telegramResult);
     }
 
-    // Send to point Telegram if configured
+    // Send to point Telegram if configured and notify_status_changes is enabled
     if (order.point_id) {
       const { data: pointTelegramSettings } = await supabase
         .from('point_telegram_settings')
-        .select('bot_token, chat_id, is_active')
+        .select('bot_token, chat_id, is_active, notify_status_changes')
         .eq('point_id', order.point_id)
         .single();
 
-      if (pointTelegramSettings?.is_active && pointTelegramSettings?.bot_token && pointTelegramSettings?.chat_id) {
-        console.log('Sending to point Telegram');
+      if (pointTelegramSettings?.is_active && 
+          pointTelegramSettings?.notify_status_changes !== false && 
+          pointTelegramSettings?.bot_token && 
+          pointTelegramSettings?.chat_id) {
+        console.log('Sending status change notification to point Telegram');
         const pointTelegramUrl = `https://api.telegram.org/bot${pointTelegramSettings.bot_token}/sendMessage`;
         
         await fetch(pointTelegramUrl, {
@@ -138,6 +141,8 @@ serve(async (req) => {
             parse_mode: 'Markdown'
           })
         });
+      } else {
+        console.log('Point status notifications disabled or not configured');
       }
     }
 
