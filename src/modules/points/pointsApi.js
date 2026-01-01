@@ -185,7 +185,7 @@ export async function getPointsByProducerSlug(producerSlug) {
 /**
  * Получить настройки Telegram для точки выдачи
  * @param {string} pointId
- * @returns {Promise<{bot_token: string|null, chat_id: string|null, is_active: boolean}|null>}
+ * @returns {Promise<{bot_token: string|null, chat_id: string|null, is_active: boolean, notify_status_changes: boolean}|null>}
  */
 export async function getPointTelegramSettings(pointId) {
   const { data, error } = await supabase
@@ -208,7 +208,7 @@ export async function getPointTelegramSettings(pointId) {
 /**
  * Создать или обновить настройки Telegram для точки выдачи
  * @param {string} pointId
- * @param {{bot_token: string|null, chat_id: string|null, is_active: boolean}} settings
+ * @param {{bot_token: string|null, chat_id: string|null, is_active: boolean, notify_status_changes?: boolean}} settings
  * @returns {Promise<any>}
  */
 export async function upsertPointTelegramSettings(pointId, settings) {
@@ -219,6 +219,7 @@ export async function upsertPointTelegramSettings(pointId, settings) {
       bot_token: settings.bot_token,
       chat_id: settings.chat_id,
       is_active: settings.is_active,
+      notify_status_changes: settings.notify_status_changes ?? true,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'point_id'
