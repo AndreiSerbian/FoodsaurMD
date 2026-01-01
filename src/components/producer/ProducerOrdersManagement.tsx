@@ -8,6 +8,19 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
+const sendStatusNotification = async (orderId: string, newStatus: string, oldStatus: string) => {
+  try {
+    const { error } = await supabase.functions.invoke('order-status-notification', {
+      body: { orderId, newStatus, oldStatus }
+    })
+    if (error) {
+      console.error('Error sending status notification:', error)
+    }
+  } catch (err) {
+    console.error('Failed to send status notification:', err)
+  }
+}
+
 interface Order {
   id: string
   order_code: string | null
@@ -90,7 +103,7 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
     }
   }
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
+  const handleStatusChange = async (orderId: string, newStatus: string, oldStatus: string) => {
     const { error } = await supabase
       .from('orders')
       .update({ status: newStatus })
@@ -98,6 +111,9 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
 
     if (!error) {
       setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
+      
+      // Send Telegram notification
+      sendStatusNotification(orderId, newStatus, oldStatus)
     }
   }
 
@@ -212,7 +228,7 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
                   <div className="flex flex-col gap-2">
                     <Select
                       value={order.status}
-                      onValueChange={(value) => handleStatusChange(order.id, value)}
+                      onValueChange={(value) => handleStatusChange(order.id, value, order.status)}
                     >
                       <SelectTrigger className="w-40">
                         <SelectValue />

@@ -1,5 +1,7 @@
-
 project_id = "qpljdodpbygbwnskuxsq"
 
 [functions.producer-notification]
+verify_jwt = false
+
+[functions.order-status-notification]
 verify_jwt = false
