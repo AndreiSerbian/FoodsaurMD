@@ -11,6 +11,19 @@ import { Package, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+const sendStatusNotification = async (orderId, newStatus, oldStatus) => {
+  try {
+    const { error } = await supabase.functions.invoke('order-status-notification', {
+      body: { orderId, newStatus, oldStatus }
+    });
+    if (error) {
+      console.error('Error sending status notification:', error);
+    }
+  } catch (err) {
+    console.error('Failed to send status notification:', err);
+  }
+};
+
 export default function AdminOrdersManagement() {
   const [orders, setOrders] = useState([]);
   const [producers, setProducers] = useState([]);
@@ -114,7 +127,7 @@ export default function AdminOrdersManagement() {
     }
   };
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  const handleStatusChange = async (orderId, newStatus, oldStatus) => {
     try {
       const { error } = await supabase
         .from('orders')
@@ -124,6 +137,10 @@ export default function AdminOrdersManagement() {
       if (error) throw error;
       
       toast.success('Статус заказа обновлен');
+      
+      // Send Telegram notification
+      sendStatusNotification(orderId, newStatus, oldStatus);
+      
       fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -313,7 +330,7 @@ export default function AdminOrdersManagement() {
                           <TableCell>
                             <Select
                               value={order.status}
-                              onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                              onValueChange={(newStatus) => handleStatusChange(order.id, newStatus, order.status)}
                             >
                               <SelectTrigger className="w-[140px]">
                                 {getStatusBadge(order.status)}
