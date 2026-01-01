@@ -33,7 +33,7 @@ const OrderSearch = () => {
             product_snapshot
           )
         `)
-        .eq('meta->>order_code', orderCode.trim())
+        .eq('order_code', orderCode.trim())
         .maybeSingle();
       
       // If not found, try without leading zeros
@@ -52,7 +52,7 @@ const OrderSearch = () => {
               product_snapshot
             )
           `)
-          .eq('meta->>order_code', codeWithoutLeadingZeros)
+          .eq('order_code', codeWithoutLeadingZeros)
           .maybeSingle();
         
         data = result.data;
@@ -141,7 +141,7 @@ const OrderSearch = () => {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
-                  Заказ #{order.meta?.order_code || 'N/A'}
+                  Заказ #{order.order_code || 'N/A'}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   {order.producer_profiles?.producer_name || 'Неизвестно'}
