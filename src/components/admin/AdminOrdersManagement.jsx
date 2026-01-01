@@ -20,6 +20,7 @@ export default function AdminOrdersManagement() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   
   const [filters, setFilters] = useState({
+    orderCode: '',
     status: 'all',
     producerId: 'all',
     pointId: 'all',
@@ -80,6 +81,9 @@ export default function AdminOrdersManagement() {
         `)
         .order('created_at', { ascending: false });
 
+      if (filters.orderCode.trim()) {
+        query = query.ilike('order_code', `%${filters.orderCode.trim()}%`);
+      }
       if (filters.status !== 'all') {
         query = query.eq('status', filters.status);
       }
@@ -141,6 +145,7 @@ export default function AdminOrdersManagement() {
 
   const resetFilters = () => {
     setFilters({
+      orderCode: '',
       status: 'all',
       producerId: 'all',
       pointId: 'all',
@@ -173,7 +178,15 @@ export default function AdminOrdersManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="space-y-2">
+              <Label>Код заказа</Label>
+              <Input
+                placeholder="Поиск по коду..."
+                value={filters.orderCode}
+                onChange={(e) => setFilters(f => ({...f, orderCode: e.target.value}))}
+              />
+            </div>
             <div className="space-y-2">
               <Label>Статус</Label>
               <Select value={filters.status} onValueChange={(val) => setFilters(f => ({...f, status: val}))}>
