@@ -7,7 +7,8 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, Clock, Package, Send } from 'lucide-react';
+import { Plus, Trash2, Clock, Package, Send, MapPin } from 'lucide-react';
+import LocationPicker from '@/components/maps/LocationPicker';
 import { createPoint, updatePoint, getPointTelegramSettings, upsertPointTelegramSettings, sendTestTelegramNotification } from '@/modules/points/pointsApi.js';
 import { createDefaultWorkHours, validateDayHours, WEEKDAYS_FULL } from '@/modules/points/workHoursUtil.js';
 import { useToast } from '@/hooks/use-toast';
@@ -343,26 +344,26 @@ export default function PointModal({ isOpen, onClose, onSuccess, point, producer
               {errors.address && <p className="text-sm text-destructive mt-1">{errors.address}</p>}
             </div>
 
-            <div>
-              <Label htmlFor="lat">Широта (необязательно)</Label>
-              <Input
-                id="lat"
-                value={formData.lat}
-                onChange={(e) => setFormData(prev => ({ ...prev, lat: e.target.value }))}
-                placeholder="47.0105"
+            {/* Карта для выбора координат */}
+            <div className="md:col-span-2">
+              <Label className="flex items-center gap-2 mb-2">
+                <MapPin className="h-4 w-4" />
+                Местоположение на карте
+              </Label>
+              <LocationPicker
+                lat={formData.lat ? Number(formData.lat) : null}
+                lng={formData.lng ? Number(formData.lng) : null}
+                address={formData.address}
+                city={formData.city}
+                onLocationChange={(lat, lng) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    lat: lat.toString(),
+                    lng: lng.toString()
+                  }));
+                }}
+                height="250px"
               />
-              {errors.lat && <p className="text-sm text-destructive mt-1">{errors.lat}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="lng">Долгота (необязательно)</Label>
-              <Input
-                id="lng"
-                value={formData.lng}
-                onChange={(e) => setFormData(prev => ({ ...prev, lng: e.target.value }))}
-                placeholder="28.8638"
-              />
-              {errors.lng && <p className="text-sm text-destructive mt-1">{errors.lng}</p>}
             </div>
           </div>
 
