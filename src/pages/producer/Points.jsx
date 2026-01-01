@@ -5,6 +5,7 @@ import PointsAdminTable from '../../components/points/PointsAdminTable';
 import PointModal from '../../components/points/PointModal';
 import SyncProductsButton from '../../components/SyncProductsButton';
 import ProducerInventorySync from '../../components/ProducerInventorySync';
+import GeocodePointsButton from '../../components/points/GeocodePointsButton';
 
 export default function ProducerPoints() {
   const { profile } = useContext(AuthContext);
@@ -48,11 +49,17 @@ export default function ProducerPoints() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="mb-6">
-        <div className="flex justify-between items-start mb-2">
+        <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
           <h1 className="text-3xl font-bold">
             Мои точки выдачи
           </h1>
-          <SyncProductsButton producerId={profile.id} />
+          <div className="flex gap-2 flex-wrap">
+            <GeocodePointsButton 
+              producerId={profile.id} 
+              onComplete={() => setRefreshKey(prev => prev + 1)} 
+            />
+            <SyncProductsButton producerId={profile.id} />
+          </div>
         </div>
         <p className="text-muted-foreground">
           Управление точками выдачи вашей продукции
