@@ -154,7 +154,7 @@ const OrderConfirmationPanel = ({ producerId }) => {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h4 className="font-semibold">
-                        Заказ #{order.meta?.order_code || order.id.slice(0, 8)}
+                        Заказ #{order.order_code || order.id.slice(0, 8)}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {formatDateTime(order.created_at)}

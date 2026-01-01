@@ -187,7 +187,7 @@ const OrderManagement = ({ producerProfile }) => {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-semibold">
-                      Заказ #{order.meta?.order_code || order.id.slice(0, 8)}
+                      Заказ #{order.order_code || order.id.slice(0, 8)}
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       {order.pickup_points?.name}
