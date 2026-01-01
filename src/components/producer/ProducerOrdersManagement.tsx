@@ -10,6 +10,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface Order {
   id: string
+  order_code: string | null
   created_at: string
   pickup_time: string | null
   total_amount: number
@@ -39,6 +40,7 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   
   // Фильтры
+  const [orderCodeSearch, setOrderCodeSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -111,6 +113,7 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
   }
 
   const filteredOrders = orders.filter(order => {
+    if (orderCodeSearch.trim() && !order.order_code?.toLowerCase().includes(orderCodeSearch.trim().toLowerCase())) return false
     if (statusFilter !== 'all' && order.status !== statusFilter) return false
     if (dateFrom && new Date(order.created_at) < new Date(dateFrom)) return false
     if (dateTo && new Date(order.created_at) > new Date(dateTo)) return false
@@ -128,7 +131,16 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
           <CardTitle>Фильтры заказов</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <Label>Код заказа</Label>
+              <Input
+                placeholder="Поиск по коду..."
+                value={orderCodeSearch}
+                onChange={(e) => setOrderCodeSearch(e.target.value)}
+              />
+            </div>
+
             <div>
               <Label>Статус</Label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -175,7 +187,7 @@ export default function ProducerOrdersManagement({ producerId }: ProducerOrdersM
                 <div className="flex items-start justify-between">
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">Заказ #{order.id.slice(0, 8)}</h3>
+                      <h3 className="font-semibold">Заказ #{order.order_code || order.id.slice(0, 8)}</h3>
                       {getStatusBadge(order.status)}
                     </div>
                     
