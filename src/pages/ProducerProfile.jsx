@@ -5,6 +5,7 @@ import { MapPin, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { supabase } from '../integrations/supabase/client';
 import { useProducerGallery } from '../hooks/useProducerGallery';
+import PublicPointsMap from '../components/maps/PublicPointsMap';
 import PointsPublicGrid from '../components/points/PointsPublicGrid';
 
 const ProducerProfile = () => {
@@ -225,7 +226,6 @@ const ProducerProfile = () => {
           </div>
         </motion.div>
 
-        {/* Список точек выдачи */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -237,6 +237,17 @@ const ProducerProfile = () => {
               <p className="text-muted-foreground mb-6">
                 Вы можете заказывать товары только из одной точки выдачи
               </p>
+              
+              {/* Map for producer points */}
+              <div className="mb-6">
+                <PublicPointsMap 
+                  mode="producer"
+                  producerSlug={producerSlug}
+                  showCityFilter={true}
+                  height="300px"
+                />
+              </div>
+              
               <PointsPublicGrid 
                 producerSlug={producerSlug}
                 onPointSelected={handlePointSelected}

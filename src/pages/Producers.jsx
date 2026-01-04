@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import ProducersList from '../components/ProducersList';
+import PublicPointsMap from '../components/maps/PublicPointsMap';
 import { motion } from 'framer-motion';
 const Producers = () => {
   const {
@@ -9,6 +10,7 @@ const Producers = () => {
   } = useParams();
   const [producers, setProducers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoryData, setCategoryData] = useState(null);
   useEffect(() => {
     fetchProducersByCategory();
   }, [categoryName]);
@@ -16,6 +18,15 @@ const Producers = () => {
   const fetchProducersByCategory = async () => {
     try {
       const decodedCategoryName = decodeURIComponent(categoryName);
+      
+      // Get category data first
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .eq('name', decodedCategoryName)
+        .maybeSingle();
+      
+      setCategoryData(catData);
       
       // Получаем producer_profiles с их категориями и количеством продуктов
       // SECURITY: Exclude sensitive fields (phone, telegram_handle, email_verified) from public query
@@ -119,6 +130,24 @@ const Producers = () => {
             Назад к категориям
           </Link>
         </motion.div>
+        
+        {/* Category Points Map */}
+        {categoryData?.id && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mb-8"
+          >
+            <h2 className="text-xl font-semibold mb-4">Точки выдачи</h2>
+            <PublicPointsMap 
+              mode="category" 
+              categoryId={categoryData.id}
+              showCityFilter={true}
+              height="300px"
+            />
+          </motion.div>
+        )}
         
         <ProducersList producers={producers} categoryName={decodeURIComponent(categoryName)} />
       </div>

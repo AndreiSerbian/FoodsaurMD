@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import HeroSection from '../components/HeroSection';
 import CategoryList from '../components/CategoryList';
+import PublicPointsMap from '../components/maps/PublicPointsMap';
 import { motion } from 'framer-motion';
 
 const Home = () => {
@@ -126,9 +127,27 @@ const Home = () => {
           </motion.div>
         )}
         
-        {/* If no search query show categories */}
+        {/* If no search query show map and categories */}
         {searchQuery.trim() === '' && (
-          <CategoryList categories={categories} />
+          <>
+            {/* Public Points Map */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mt-12 mb-12"
+            >
+              <h2 className="text-2xl font-bold mb-6">Точки выдачи</h2>
+              <PublicPointsMap 
+                mode="all" 
+                showCityFilter={true}
+                showPointsList={true}
+                height="400px"
+              />
+            </motion.div>
+
+            <CategoryList categories={categories} />
+          </>
         )}
       </div>
     </div>
