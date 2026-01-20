@@ -2,8 +2,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Link } from 'react-router-dom';
-import { Loader2, MapPin, AlertCircle } from 'lucide-react';
+import { Loader2, MapPin, AlertCircle, Map, List } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { motion } from 'framer-motion';
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons in Leaflet
@@ -41,6 +43,7 @@ interface PickupPoint {
 }
 
 type MapMode = 'all' | 'category' | 'producer' | 'single';
+type ViewMode = 'map' | 'list';
 
 interface PublicPointsMapProps {
   mode: MapMode;
@@ -51,6 +54,7 @@ interface PublicPointsMapProps {
   pointId?: string;
   showCityFilter?: boolean;
   showPointsList?: boolean;
+  showViewToggle?: boolean;
   height?: string;
   className?: string;
 }
@@ -76,6 +80,29 @@ function FitBounds({ points }: { points: PickupPoint[] }) {
   return null;
 }
 
+// Animation variants for scroll reveal
+const containerVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1],
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: 'easeOut' },
+  },
+};
+
 export default function PublicPointsMap({
   mode,
   categoryId,
@@ -85,6 +112,7 @@ export default function PublicPointsMap({
   pointId,
   showCityFilter = true,
   showPointsList = false,
+  showViewToggle = true,
   height = '400px',
   className = '',
 }: PublicPointsMapProps) {
@@ -92,6 +120,7 @@ export default function PublicPointsMap({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('map');
 
   // Fetch points based on mode
   useEffect(() => {
@@ -253,108 +282,181 @@ export default function PublicPointsMap({
     : defaultCenter;
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* City filter */}
-      {showCityFilter && mode !== 'single' && cities.length > 1 && (
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Выберите город" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все города</SelectItem>
-              {cities.map(city => (
-                <SelectItem key={city} value={city}>{city}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Map */}
-      {validPoints.length === 0 ? (
-        <div 
-          className="flex items-center justify-center bg-muted rounded-lg"
-          style={{ height }}
-        >
-          <div className="flex flex-col items-center gap-2 text-muted-foreground p-4 text-center">
-            <MapPin className="h-8 w-8" />
-            <span>
-              {selectedCity !== 'all' 
-                ? `В городе "${selectedCity}" пока нет точек`
-                : 'Нет точек для отображения на карте'
-              }
-            </span>
+    <motion.div
+      className={`space-y-4 ${className}`}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      variants={containerVariants}
+    >
+      {/* Controls row: City filter + View toggle */}
+      <motion.div 
+        className="flex flex-wrap items-center justify-between gap-3"
+        variants={itemVariants}
+      >
+        {/* City filter */}
+        {showCityFilter && mode !== 'single' && cities.length > 1 ? (
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <Select value={selectedCity} onValueChange={setSelectedCity}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Выберите город" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все города</SelectItem>
+                {cities.map(city => (
+                  <SelectItem key={city} value={city}>{city}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-      ) : (
-        <div className="rounded-lg overflow-hidden" style={{ height }}>
-          <MapContainer
-            center={center}
-            zoom={defaultZoom}
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={true}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <FitBounds points={validPoints} />
-            
-            {validPoints.map((point) => (
-              <Marker
-                key={point.id}
-                position={[point.lat!, point.lng!]}
+        ) : (
+          <div />
+        )}
+
+        {/* View toggle */}
+        {showViewToggle && mode !== 'single' && filteredPoints.length > 0 && (
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+            <TabsList className="h-9">
+              <TabsTrigger value="map" className="gap-1.5 px-3">
+                <Map className="h-4 w-4" />
+                <span className="hidden sm:inline">Карта</span>
+              </TabsTrigger>
+              <TabsTrigger value="list" className="gap-1.5 px-3">
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Список</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
+      </motion.div>
+
+      {/* Map View */}
+      {viewMode === 'map' && (
+        <motion.div variants={itemVariants}>
+          {validPoints.length === 0 ? (
+            <div 
+              className="flex items-center justify-center bg-muted rounded-lg"
+              style={{ height }}
+            >
+              <div className="flex flex-col items-center gap-2 text-muted-foreground p-4 text-center">
+                <MapPin className="h-8 w-8" />
+                <span>
+                  {selectedCity !== 'all' 
+                    ? `В городе "${selectedCity}" пока нет точек`
+                    : 'Нет точек для отображения на карте'
+                  }
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg overflow-hidden shadow-md" style={{ height }}>
+              <MapContainer
+                center={center}
+                zoom={defaultZoom}
+                style={{ height: '100%', width: '100%' }}
+                scrollWheelZoom={true}
               >
-                <Popup>
-                  <div className="min-w-[200px] space-y-2">
-                    <h3 className="font-semibold text-sm">
-                      {point.title || point.name}
-                    </h3>
-                    <p className="text-xs text-gray-600">
-                      {point.address}, {point.city}
-                    </p>
-                    {point.producer && (
-                      <p className="text-xs text-primary">
-                        {point.producer.producer_name}
-                      </p>
-                    )}
-                    <Link 
-                      to={`/point/${point.id}`}
-                      className="inline-block text-xs text-white bg-primary hover:bg-primary/90 px-3 py-1 rounded mt-2"
-                    >
-                      Открыть точку
-                    </Link>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <FitBounds points={validPoints} />
+                
+                {validPoints.map((point) => (
+                  <Marker
+                    key={point.id}
+                    position={[point.lat!, point.lng!]}
+                  >
+                    <Popup>
+                      <div className="min-w-[200px] space-y-2">
+                        <h3 className="font-semibold text-sm">
+                          {point.title || point.name}
+                        </h3>
+                        <p className="text-xs text-gray-600">
+                          {point.address}, {point.city}
+                        </p>
+                        {point.producer && (
+                          <p className="text-xs text-primary">
+                            {point.producer.producer_name}
+                          </p>
+                        )}
+                        <Link 
+                          to={`/point/${point.id}`}
+                          className="inline-block text-xs text-white bg-primary hover:bg-primary/90 px-3 py-1 rounded mt-2"
+                        >
+                          Открыть точку
+                        </Link>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          )}
+        </motion.div>
       )}
 
-      {/* Points list (optional) */}
-      {showPointsList && filteredPoints.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
-          {filteredPoints.slice(0, 6).map((point) => (
-            <Card key={point.id} className="p-3">
-              <h4 className="font-medium text-sm truncate">
-                {point.title || point.name}
-              </h4>
-              <p className="text-xs text-muted-foreground truncate mt-1">
-                {point.address}, {point.city}
-              </p>
-              <Link 
-                to={`/point/${point.id}`}
-                className="text-xs text-primary hover:underline mt-2 inline-block"
-              >
-                Подробнее →
-              </Link>
-            </Card>
+      {/* List View */}
+      {viewMode === 'list' && (
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {filteredPoints.map((point) => (
+            <motion.div key={point.id} variants={itemVariants}>
+              <Card className="p-4 h-full hover:shadow-lg transition-shadow duration-200">
+                <h4 className="font-semibold text-base mb-2">
+                  {point.title || point.name}
+                </h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {point.address}, {point.city}
+                </p>
+                {point.producer && (
+                  <p className="text-xs text-primary mb-3">
+                    {point.producer.producer_name}
+                  </p>
+                )}
+                <Link 
+                  to={`/point/${point.id}`}
+                  className="inline-block text-sm text-primary hover:underline font-medium"
+                >
+                  Подробнее →
+                </Link>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+
+      {/* Points list (optional - always visible below) */}
+      {showPointsList && viewMode === 'map' && filteredPoints.length > 0 && (
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4"
+          variants={containerVariants}
+        >
+          {filteredPoints.slice(0, 6).map((point) => (
+            <motion.div key={point.id} variants={itemVariants}>
+              <Card className="p-3">
+                <h4 className="font-medium text-sm truncate">
+                  {point.title || point.name}
+                </h4>
+                <p className="text-xs text-muted-foreground truncate mt-1">
+                  {point.address}, {point.city}
+                </p>
+                <Link 
+                  to={`/point/${point.id}`}
+                  className="text-xs text-primary hover:underline mt-2 inline-block"
+                >
+                  Подробнее →
+                </Link>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
+    </motion.div>
   );
 }
