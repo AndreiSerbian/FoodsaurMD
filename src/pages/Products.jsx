@@ -1,8 +1,8 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import ProductsList from '../components/ProductsList';
-import Breadcrumbs from '../components/Breadcrumbs';
 import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 
@@ -66,7 +66,7 @@ const Products = () => {
             producerName: producerData.producer_name,
            address: producerData.address || 'Адрес не указан',
            discountAvailableTime: producerData.discount_available_time || 'Скидки не доступны',
-           categoryName: producerData.category_name || 'Без категории',
+           categoryName: 'Десерты', // Можно получить из producer_categories если нужно
            producerImage: {
              exterior: producerData.exterior_image_url || '/placeholder.svg',
              interior: producerData.interior_image_url || '/placeholder.svg'
@@ -182,13 +182,6 @@ const Products = () => {
         
         <ProductsList products={producer.products} producer={producer} />
       </div>
-      
-      <Breadcrumbs 
-        items={[
-          { label: producer.categoryName, href: `/category/${encodeURIComponent(producer.categoryName)}` },
-          { label: producer.producerName, href: `/producer/${producer.slug}/points` }
-        ]} 
-      />
     </div>;
 };
 
