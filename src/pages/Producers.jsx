@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import ProducersList from '../components/ProducersList';
 import PublicPointsMap from '../components/maps/PublicPointsMap';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { motion } from 'framer-motion';
 const Producers = () => {
   const {
@@ -151,6 +152,12 @@ const Producers = () => {
         
         <ProducersList producers={producers} categoryName={decodeURIComponent(categoryName)} />
       </div>
+      
+      <Breadcrumbs 
+        items={[
+          { label: decodeURIComponent(categoryName), href: `/category/${categoryName}` }
+        ]} 
+      />
     </div>;
 };
 export default Producers;

@@ -7,6 +7,7 @@ import { supabase } from '../integrations/supabase/client';
 import { useProducerGallery } from '../hooks/useProducerGallery';
 import PublicPointsMap from '../components/maps/PublicPointsMap';
 import PointsPublicGrid from '../components/points/PointsPublicGrid';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const ProducerProfile = () => {
   const { producerSlug } = useParams();
@@ -262,6 +263,13 @@ const ProducerProfile = () => {
           )}
         </motion.div>
       </div>
+      
+      <Breadcrumbs 
+        items={[
+          { label: producer.categoryName, href: `/category/${encodeURIComponent(producer.categoryName)}` },
+          { label: producer.producerName, href: `/producer/${producer.slug}/points` }
+        ]} 
+      />
     </div>
   );
 };
