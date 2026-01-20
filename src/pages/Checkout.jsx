@@ -11,6 +11,7 @@ import { Clock, MapPin, Calendar, Percent, CheckCircle2, Copy } from 'lucide-rea
 import { useToast } from '../hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getCurrencySymbol } from '@/utils/unitUtils';
+import PublicPointsMap from '../components/maps/PublicPointsMap';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -452,6 +453,19 @@ const Checkout = () => {
             </Button>
           </div>
         </form>
+        
+        {/* Map showing pickup point location - at the end before footer */}
+        {pointDetails && (
+          <div className="mt-16">
+            <h2 className="text-xl font-semibold mb-4">Расположение точки выдачи</h2>
+            <PublicPointsMap 
+              mode="single"
+              pointId={selectedPointInfo?.pointId}
+              showCityFilter={false}
+              height="300px"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -131,13 +131,15 @@ const Producers = () => {
           </Link>
         </motion.div>
         
-        {/* Category Points Map */}
+        <ProducersList producers={producers} categoryName={decodeURIComponent(categoryName)} />
+        
+        {/* Category Points Map - at the end before footer */}
         {categoryData?.id && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-8"
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-16"
           >
             <h2 className="text-xl font-semibold mb-4">Точки выдачи</h2>
             <PublicPointsMap 
@@ -148,8 +150,6 @@ const Producers = () => {
             />
           </motion.div>
         )}
-        
-        <ProducersList producers={producers} categoryName={decodeURIComponent(categoryName)} />
       </div>
     </div>;
 };
