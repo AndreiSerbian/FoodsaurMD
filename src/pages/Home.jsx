@@ -127,15 +127,17 @@ const Home = () => {
           </motion.div>
         )}
         
-        {/* If no search query show map and categories */}
+        {/* If no search query show categories first, then map */}
         {searchQuery.trim() === '' && (
           <>
-            {/* Public Points Map */}
+            <CategoryList categories={categories} />
+            
+            {/* Public Points Map - at the end before footer */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-12 mb-12"
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-16"
             >
               <h2 className="text-2xl font-bold mb-6">Точки выдачи</h2>
               <PublicPointsMap 
@@ -145,8 +147,6 @@ const Home = () => {
                 height="400px"
               />
             </motion.div>
-
-            <CategoryList categories={categories} />
           </>
         )}
       </div>

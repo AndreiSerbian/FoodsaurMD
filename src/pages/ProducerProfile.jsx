@@ -238,8 +238,14 @@ const ProducerProfile = () => {
                 Вы можете заказывать товары только из одной точки выдачи
               </p>
               
-              {/* Map for producer points */}
-              <div className="mb-6">
+              <PointsPublicGrid 
+                producerSlug={producerSlug}
+                onPointSelected={handlePointSelected}
+              />
+              
+              {/* Map for producer points - at the end before footer */}
+              <div className="mt-16">
+                <h3 className="text-xl font-semibold mb-4">Карта точек выдачи</h3>
                 <PublicPointsMap 
                   mode="producer"
                   producerSlug={producerSlug}
@@ -247,11 +253,6 @@ const ProducerProfile = () => {
                   height="300px"
                 />
               </div>
-              
-              <PointsPublicGrid 
-                producerSlug={producerSlug}
-                onPointSelected={handlePointSelected}
-              />
             </div>
           ) : (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
